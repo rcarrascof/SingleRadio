@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "657661782912",
+    "project_id": "alofokefm-9cf3c",
+    "storage_bucket": "alofokefm-9cf3c.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:657661782912:android:b9df9b4eacab03e2152f65",
+        "android_client_info": {
+          "package_name": "com.app.AlofokeFm"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "657661782912-qiqkekq3eint87ep1q91efjqc4s0hffo.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBub8Ocq8yC4KxslZ9XTn-EtOWc0FX549E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "657661782912-qiqkekq3eint87ep1q91efjqc4s0hffo.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

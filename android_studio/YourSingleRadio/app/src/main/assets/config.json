@@ -1,0 +1,59 @@
+{
+  "radio": [
+    {
+      "radio_name": "Alofoke Fm",
+      "radio_genre": "Urbana",
+      "radio_url": "https://radio5.domint.net:8222/stream",
+      "radio_image_url": "https://i.ibb.co/RQqggB6/radio-image.png",
+      "background_image_url": "https://i.ibb.co/XXNDXj7/radio-background.jpg"
+    }
+  ],
+  "settings": [
+    {
+      "onesignal_app_id": "6b49527e-7af2-44d9-bcf2-1622202212a6",
+      "fcm_notification_topic": "alofoke_fm",
+      "privacy_policy_url": "https://sites.google.com/view/alofokefm/home",
+      "more_apps_url": "https://play.google.com/store/apps/developer?id=rcdev"
+    }
+  ],
+  "ads": [
+    {
+      "ad_status": "on",
+      "ad_type": "admob",
+      "admob_publisher_id": "pub-3940256099942544",
+      "admob_banner_unit_id": "ca-app-pub-5031389661702499/2705579456",
+      "admob_interstitial_unit_id": "ca-app-pub-5031389661702499/8709032402",
+      "admob_native_unit_id": "ca-app-pub-5031389661702499/3443946056",
+      "admob_app_open_unit_id": "ca-app-pub-5031389661702499/5746992999",
+      "startapp_app_id": 0,
+      "unity_game_id": 4089993,
+      "unity_banner_placement_id": "banner",
+      "unity_interstitial_placement_id": "video",
+      "applovin_banner_unit_id": "0",
+      "applovin_interstitial_unit_id": "0",
+      "interstitial_ad_interval": 2
+    }
+  ],
+  "socials": [
+    {
+      "social_name": "Website",
+      "social_icon": "https://image.flaticon.com/icons/png/512/61/61027.png",
+      "social_url": "https://www.solodroid.net"
+    },
+    {
+      "social_name": "Facebook",
+      "social_icon": "https://image.flaticon.com/icons/png/512/61/61045.png",
+      "social_url": "https://www.facebook.com/solodroid.net"
+    },
+    {
+      "social_name": "Twitter",
+      "social_icon": "https://image.flaticon.com/icons/png/512/60/60580.png",
+      "social_url": "https://twitter.com/solodroiddev"
+    },
+    {
+      "social_name": "Instagram",
+      "social_icon": "https://image.flaticon.com/icons/png/512/61/61164.png",
+      "social_url": "https://www.instagram.com/solodroid.developer"
+    }
+  ]
+}

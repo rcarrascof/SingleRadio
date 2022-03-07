@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!--application name-->
+    <string name="app_name">Alofoke Fm</string>
+
+    <!--navigation drawer menu name-->
+    <string name="drawer_recent">Home</string>
+    <string name="drawer_social">Social</string>
+    <string name="drawer_other">Other</string>
+    <string name="drawer_rate_us">Rate us</string>
+    <string name="drawer_more_apps">More apps</string>
+    <string name="drawer_share">Share to friends</string>
+    <string name="drawer_privacy_policy">Privacy policy</string>
+    <string name="drawer_permission">Additional permission</string>
+    <string name="drawer_about">About</string>
+
+    <!--permission agreement-->
+    <string name="permission_title">Thanks for installing Your Radio App</string>
+    <string name="btn_allow_permissions">Allow permissions now</string>
+    <string name="btn_later">I will do it later</string>
+    <string name="permission_message">
+        <![CDATA[
+        <p>Please give us the below permissions :</p>
+        <p><strong>PHONE PERMISSION</strong> : it will used to stop playing radio when there is an incoming phone call.</p>
+        <p>Do not worry, we guarantee your data is 100% safe and we do not collect any data that you have, the permission you give is only for the purpose of this app running properly.</p>
+        ]]>
+    </string>
+
+    <!--about information-->
+    <string name="sub_about_app_copyright">Copyright © 2021 Solodroid Developer. \nAll right reserved</string>
+    <string name="sub_about_app_version">Version</string>
+
+    <!--sleeping timer-->
+    <string name="sleep_time">Sleeping Time</string>
+    <string name="min">Minutes</string>
+    <string name="set">Set</string>
+    <string name="cancel">Cancel</string>
+    <string name="stop">Stop</string>
+
+    <!--network & error message-->
+    <string name="failed_title_text">Whoops!</string>
+    <string name="failed_text">No internet connections found. Check your connection or try again later!</string>
+    <string name="internet_not_connected">Internet not connected</string>
+    <string name="error_loading_radio">Error loading radio or server currently down, please try it again later.</string>
+
+    <!--share-->
+    <string name="share_content">I Would like to share this with you. Here You Can Download This Application from PlayStore </string>
+
+    <!--exit dialog-->
+    <string name="message">What do you want to do?</string>
+    <string name="dialog_option_cancel">CANCEL</string>
+    <string name="dialog_option_quit">EXIT</string>
+    <string name="dialog_option_minimize">MINIMIZE</string>
+
+    <!--other string tag name-->
+    <string name="option_ok">OK</string>
+    <string name="btn_retry">RETRY</string>
+    <string name="no_radio_selected">Whoops, No Radio Selected!</string>
+    <string name="drawer_open">Open navigation drawer</string>
+    <string name="drawer_close">Close navigation drawer</string>
+    <string name="no_social_found">Whoops, no social available at this time</string>
+
+</resources>
