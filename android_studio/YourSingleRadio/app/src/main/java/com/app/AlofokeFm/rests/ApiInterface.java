@@ -16,7 +16,15 @@ public interface ApiInterface {
 
     @Headers({"Cache-Control: max-age=0"})
     @GET
-    Call<CallbackConfig> getConfig(@Url String url);
+    Call<CallbackConfig> getJsonUrl(
+            @Url String url
+    );
+
+    @Headers({CACHE, AGENT})
+    @GET("uc?export=download")
+    Call<CallbackConfig> getDriveJsonFileId(
+            @Query("id") String id
+    );
 
     @Headers({CACHE, AGENT})
     @GET("search")

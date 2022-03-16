@@ -1,20 +1,16 @@
 package com.app.AlofokeFm.activities;
 
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.app.AlofokeFm.R;
 import com.app.AlofokeFm.adapters.GroupAdapter;
@@ -55,7 +51,7 @@ public class mainchatActivity extends AppCompatActivity {
 
         // Instantiate layout variables
         avatarText = findViewById(R.id.avatarTextMain);
-      //  addGroupBtn = findViewById(R.id.addGroup);
+        //  addGroupBtn = findViewById(R.id.addGroup);
 
         //Get current user instance
         user = FirebaseAuth.getInstance().getCurrentUser();

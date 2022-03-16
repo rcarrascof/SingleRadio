@@ -20,39 +20,38 @@
     {
       "ad_status": "on",
       "ad_type": "admob",
+      "backup_ads": "none",
       "admob_publisher_id": "pub-3940256099942544",
       "admob_banner_unit_id": "ca-app-pub-5031389661702499/2705579456",
       "admob_interstitial_unit_id": "ca-app-pub-5031389661702499/8709032402",
       "admob_native_unit_id": "ca-app-pub-5031389661702499/3443946056",
       "admob_app_open_unit_id": "ca-app-pub-5031389661702499/5746992999",
-      "startapp_app_id": 0,
-      "unity_game_id": 4089993,
+      "startapp_app_id": "0",
+      "unity_game_id": "4089993",
       "unity_banner_placement_id": "banner",
       "unity_interstitial_placement_id": "video",
       "applovin_banner_unit_id": "0",
       "applovin_interstitial_unit_id": "0",
+      "applovin_native_ad_manual_unit_id": "0",
+      "applovin_banner_zone_id": "0",
+      "applovin_interstitial_zone_id": "0",
       "interstitial_ad_interval": 2
     }
   ],
   "socials": [
-   /* {
-      "social_name": "Website",
-      "social_icon": "https://image.flaticon.com/icons/png/512/61/61027.png",
-      "social_url": "https://www.solodroid.net"
-    },*/
     {
       "social_name": "Facebook",
-      "social_icon": "https://image.flaticon.com/icons/png/512/61/61045.png",
+      "social_icon": "https://i.ibb.co/hfjH7LL/facebook.png",
       "social_url": "https://www.facebook.com/Estonoesradioshow1"
     },
     {
       "social_name": "Twitter",
-      "social_icon": "https://image.flaticon.com/icons/png/512/60/60580.png",
+      "social_icon": "https://i.ibb.co/dDZYx1P/twitter.png",
       "social_url": "https://twitter.com/estonoesradioTW"
     },
     {
       "social_name": "Instagram",
-      "social_icon": "https://image.flaticon.com/icons/png/512/61/61164.png",
+      "social_icon": "https://i.ibb.co/82ykbnp/instagram.png",
       "social_url": "https://www.instagram.com/estonoesradioshow/"
     }
   ]

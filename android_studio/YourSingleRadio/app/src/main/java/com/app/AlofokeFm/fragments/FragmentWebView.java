@@ -27,7 +27,7 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
 
 import com.app.AlofokeFm.R;
-import com.app.AlofokeFm.utils.Tools;
+import com.app.AlofokeFm.utils.Utils;
 
 import java.util.Objects;
 
@@ -36,11 +36,11 @@ public class FragmentWebView extends DialogFragment {
     View rootView;
     WebView webView;
     ProgressBar progressBar;
-    Button btn_failed_retry;
-    View lyt_failed;
-    String str_url;
-    String str_title;
-    TextView dialog_title;
+    Button btnFailedRetry;
+    View lytFailed;
+    String strUrl;
+    String strTitle;
+    TextView dialogTitle;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -52,38 +52,36 @@ public class FragmentWebView extends DialogFragment {
 
     private void initView() {
         if (getArguments() != null) {
-            str_title = getArguments().getString("title");
-            str_url = getArguments().getString("url");
+            strTitle = getArguments().getString("title");
+            strUrl = getArguments().getString("url");
         }
 
-        dialog_title = rootView.findViewById(R.id.dialog_title);
-        dialog_title.setText(str_title);
+        dialogTitle = rootView.findViewById(R.id.dialog_title);
+        dialogTitle.setText(strTitle);
 
-        (rootView.findViewById(R.id.button_close)).setOnClickListener(v -> {
-            new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                if (getActivity() != null) {
-                    int count = getActivity().getSupportFragmentManager().getBackStackEntryCount();
-                    if (count != 0) {
-                        getActivity().getSupportFragmentManager().popBackStack();
-                        if (count == 1) {
-                            Tools.darkStatusBar(getActivity(), true);
-                        }
+        (rootView.findViewById(R.id.button_close)).setOnClickListener(v -> new Handler(Looper.getMainLooper()).postDelayed(() -> {
+            if (getActivity() != null) {
+                int count = getActivity().getSupportFragmentManager().getBackStackEntryCount();
+                if (count != 0) {
+                    getActivity().getSupportFragmentManager().popBackStack();
+                    if (count == 1) {
+                        Utils.darkStatusBar(getActivity(), true);
                     }
                 }
-                dismiss();
-            }, 300);
-        });
+            }
+            dismiss();
+        }, 300));
 
         (rootView.findViewById(R.id.open_in_browser)).setOnClickListener(v -> {
             new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(str_url.trim())));
+                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(strUrl.trim())));
             }, 300);
         });
 
         webView = rootView.findViewById(R.id.webView);
         progressBar = rootView.findViewById(R.id.progressBar);
-        btn_failed_retry = rootView.findViewById(R.id.btn_failed_retry);
-        lyt_failed = rootView.findViewById(R.id.lyt_failed);
+        btnFailedRetry = rootView.findViewById(R.id.btn_failed_retry);
+        lytFailed = rootView.findViewById(R.id.lyt_failed);
     }
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -92,7 +90,7 @@ public class FragmentWebView extends DialogFragment {
         webView.getSettings().setBuiltInZoomControls(false);
         webView.getSettings().setSupportZoom(true);
         webView.setWebViewClient(new CustomWebViewClient());
-        webView.loadUrl(str_url);
+        webView.loadUrl(strUrl);
 
         webView.setOnKeyListener((v, keyCode, event) -> {
             if (event.getAction() == KeyEvent.ACTION_DOWN) {
@@ -163,7 +161,7 @@ public class FragmentWebView extends DialogFragment {
         public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
             progressBar.setVisibility(View.GONE);
             Toast.makeText(getActivity(), getResources().getString(R.string.failed_text), Toast.LENGTH_LONG).show();
-            lyt_failed.setVisibility(View.VISIBLE);
+            lytFailed.setVisibility(View.VISIBLE);
         }
     }
 

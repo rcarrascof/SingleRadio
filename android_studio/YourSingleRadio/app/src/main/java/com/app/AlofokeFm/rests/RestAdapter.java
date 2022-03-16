@@ -1,7 +1,5 @@
 package com.app.AlofokeFm.rests;
 
-import com.app.AlofokeFm.Config;
-
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.OkHttpClient;
@@ -24,7 +22,7 @@ public class RestAdapter {
                 .build();
 
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(Config.JSON_URL + "/")
+                .baseUrl("https://drive.google.com/")
                 .addConverterFactory(GsonConverterFactory.create())
                 .client(okHttpClient)
                 .build();

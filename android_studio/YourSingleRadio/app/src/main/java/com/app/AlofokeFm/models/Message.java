@@ -1,5 +1,9 @@
 package com.app.AlofokeFm.models;
 
+/**
+ * Created by Reinold Carrasco
+ * on 2022-03-16
+ */
 public class Message {
 
     private String text; // message body

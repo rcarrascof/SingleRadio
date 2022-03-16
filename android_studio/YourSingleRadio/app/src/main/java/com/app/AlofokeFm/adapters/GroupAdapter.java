@@ -13,6 +13,10 @@ import com.app.AlofokeFm.models.Group;
 
 import java.util.List;
 
+/**
+ * Created by Reinold Carrasco
+ * on 2022-03-16
+ */
 public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder> {
 
     private List<Group> mData;

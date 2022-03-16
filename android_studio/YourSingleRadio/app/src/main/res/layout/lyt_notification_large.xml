@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/notificationbg"
     android:layout_width="match_parent"
     android:layout_height="100dp"
     android:background="@color/colorToolbarDark">
@@ -39,6 +40,7 @@
                 android:src="@android:drawable/ic_menu_close_clear_cancel" />
 
             <LinearLayout
+                android:id="@+id/textarea"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_alignParentTop="true"
@@ -84,6 +86,7 @@
             android:visibility="gone" />
 
         <LinearLayout
+            android:id="@+id/buttons"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:divider="?android:listDivider"
@@ -93,6 +96,7 @@
             android:showDividers="middle">
 
             <ImageButton
+                android:id="@+id/img_notification_previous"
                 android:layout_width="0dp"
                 android:layout_height="48dp"
                 android:layout_weight="1"
@@ -113,6 +117,7 @@
                 android:src="@android:drawable/ic_media_play" />
 
             <ImageButton
+                android:id="@+id/img_notification_next"
                 android:layout_width="0dp"
                 android:layout_height="48dp"
                 android:layout_weight="1"

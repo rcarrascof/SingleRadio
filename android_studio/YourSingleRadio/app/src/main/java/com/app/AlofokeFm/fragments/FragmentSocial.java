@@ -1,5 +1,7 @@
 package com.app.AlofokeFm.fragments;
 
+import static com.app.AlofokeFm.utils.Constant.LOCALHOST_ADDRESS;
+
 import android.app.Dialog;
 import android.content.Intent;
 import android.net.Uri;
@@ -31,9 +33,11 @@ import com.app.AlofokeFm.database.dao.SocialEntity;
 import com.app.AlofokeFm.models.Social;
 import com.app.AlofokeFm.rests.ApiInterface;
 import com.app.AlofokeFm.rests.RestAdapter;
-import com.app.AlofokeFm.utils.Tools;
+import com.app.AlofokeFm.utils.Utils;
+import com.solodroid.ads.sdk.util.Tools;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import retrofit2.Call;
@@ -43,8 +47,8 @@ import retrofit2.Response;
 public class FragmentSocial extends DialogFragment {
 
     private RecyclerView recyclerView;
-    private AdapterSocial mAdapter;
-    private SwipeRefreshLayout swipe_refresh;
+    private AdapterSocial adapterSocial;
+    private SwipeRefreshLayout swipeRefreshLayout;
     private Call<CallbackConfig> callbackCall = null;
     ArrayList<Social> items = new ArrayList<>();
     DAO db;
@@ -73,13 +77,13 @@ public class FragmentSocial extends DialogFragment {
                         fm.popBackStack();
                     }
                 }
-                Tools.darkStatusBar(getActivity(), true);
+                Utils.darkStatusBar(getActivity(), true);
                 dismiss();
             }, 300);
         });
 
-        swipe_refresh = rootView.findViewById(R.id.swipeRefreshLayout);
-        swipe_refresh.setColorSchemeResources(R.color.colorPrimary);
+        swipeRefreshLayout = rootView.findViewById(R.id.swipeRefreshLayout);
+        swipeRefreshLayout.setColorSchemeResources(R.color.colorPrimary);
 
         recyclerView = rootView.findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new StaggeredGridLayoutManager(1, StaggeredGridLayoutManager.VERTICAL));
@@ -91,7 +95,7 @@ public class FragmentSocial extends DialogFragment {
             loadDataFromDatabase(db.getAllSocial());
         }
 
-        mAdapter.setOnItemClickListener((view, obj, position) -> {
+        adapterSocial.setOnItemClickListener((view, obj, position) -> {
             if (Config.OPEN_SOCIAL_MENU_IN_EXTERNAL_BROWSER) {
                 Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(obj.social_url));
                 startActivity(intent);
@@ -103,6 +107,7 @@ public class FragmentSocial extends DialogFragment {
                 fragmentWebView.setArguments(args);
 
                 FragmentManager fragmentManager = getFragmentManager();
+                assert fragmentManager != null;
                 FragmentTransaction transaction = fragmentManager.beginTransaction()
                         .setCustomAnimations(R.anim.slide_in, R.anim.fade_out, R.anim.fade_in, R.anim.slide_out);
                 transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
@@ -113,38 +118,49 @@ public class FragmentSocial extends DialogFragment {
     }
 
     private void loadDataFromDatabase(final List<SocialEntity> socials) {
-        swipe_refresh.setEnabled(false);
-        mAdapter = new AdapterSocial(getActivity(), new ArrayList<>());
-        recyclerView.setAdapter(mAdapter);
+        swipeRefreshLayout.setEnabled(false);
+        adapterSocial = new AdapterSocial(getActivity(), new ArrayList<>());
+        recyclerView.setAdapter(adapterSocial);
         ArrayList<Social> items = new ArrayList<>();
         for (SocialEntity p : socials) items.add(p.original());
         showNoItemView(false);
         showFailedView(false, "");
-        mAdapter.resetListData();
-        mAdapter.setItems(items);
+        adapterSocial.resetListData();
+        adapterSocial.setItems(items);
         if (socials.size() == 0) {
             showNoItemView(true);
         }
     }
 
     private void loadDataFromRemoteJson() {
-        mAdapter = new AdapterSocial(getActivity(), items);
-        recyclerView.setAdapter(mAdapter);
-        swipe_refresh.setOnRefreshListener(() -> {
+        adapterSocial = new AdapterSocial(getActivity(), items);
+        recyclerView.setAdapter(adapterSocial);
+        swipeRefreshLayout.setOnRefreshListener(() -> {
             if (callbackCall != null && callbackCall.isExecuted()) callbackCall.cancel();
-            mAdapter.resetListData();
+            adapterSocial.resetListData();
             requestAction();
         });
 
         requestAction();
     }
 
-    private void requestAPI() {
+    private void requestAPI(String remoteUrl) {
         ApiInterface apiInterface = RestAdapter.createAPI();
-        callbackCall = apiInterface.getConfig(Config.JSON_URL);
+        if (remoteUrl.startsWith("http://") || remoteUrl.startsWith("https://")) {
+            if (remoteUrl.contains("https://drive.google.com")) {
+                String driveUrl = remoteUrl.replace("https://", "").replace("http://", "");
+                List<String> data = Arrays.asList(driveUrl.split("/"));
+                String googleDriveFileId = data.get(3);
+                callbackCall = apiInterface.getDriveJsonFileId(googleDriveFileId);
+            } else {
+                callbackCall = apiInterface.getJsonUrl(remoteUrl);
+            }
+        } else {
+            callbackCall = apiInterface.getDriveJsonFileId(remoteUrl);
+        }
         callbackCall.enqueue(new Callback<CallbackConfig>() {
             @Override
-            public void onResponse(Call<CallbackConfig> call, Response<CallbackConfig> response) {
+            public void onResponse(@NonNull Call<CallbackConfig> call, @NonNull Response<CallbackConfig> response) {
                 CallbackConfig resp = response.body();
                 if (resp != null) {
                     displayData(resp.socials);
@@ -154,7 +170,7 @@ public class FragmentSocial extends DialogFragment {
             }
 
             @Override
-            public void onFailure(Call<CallbackConfig> call, Throwable t) {
+            public void onFailure(@NonNull Call<CallbackConfig> call, @NonNull Throwable t) {
                 if (!call.isCanceled()) onFailRequest();
             }
 
@@ -162,7 +178,7 @@ public class FragmentSocial extends DialogFragment {
     }
 
     private void displayData(final ArrayList<Social> socials) {
-        mAdapter.setItems(socials);
+        adapterSocial.setItems(socials);
         swipeProgress(false);
         if (socials.size() == 0) {
             showNoItemView(true);
@@ -171,7 +187,7 @@ public class FragmentSocial extends DialogFragment {
 
     private void onFailRequest() {
         swipeProgress(false);
-        if (Tools.isConnect(getActivity())) {
+        if (Utils.isConnect(getActivity())) {
             showFailedView(true, getString(R.string.failed_text));
         } else {
             showFailedView(true, getString(R.string.failed_text));
@@ -182,7 +198,12 @@ public class FragmentSocial extends DialogFragment {
         showFailedView(false, "");
         showNoItemView(false);
         swipeProgress(true);
-        new Handler(Looper.getMainLooper()).postDelayed(this::requestAPI, 0);
+        new Handler(Looper.getMainLooper()).postDelayed(()-> {
+            String data = Tools.decode(Config.ACCESS_KEY);
+            String[] results = data.split("_applicationId_");
+            String remoteUrl = results[0].replace("http://localhost", LOCALHOST_ADDRESS);
+            requestAPI(remoteUrl);
+        }, 10);
     }
 
     @Override
@@ -221,10 +242,10 @@ public class FragmentSocial extends DialogFragment {
 
     private void swipeProgress(final boolean show) {
         if (!show) {
-            swipe_refresh.setRefreshing(false);
+            swipeRefreshLayout.setRefreshing(false);
             return;
         }
-        swipe_refresh.post(() -> swipe_refresh.setRefreshing(true));
+        swipeRefreshLayout.post(() -> swipeRefreshLayout.setRefreshing(true));
     }
 
     @NonNull

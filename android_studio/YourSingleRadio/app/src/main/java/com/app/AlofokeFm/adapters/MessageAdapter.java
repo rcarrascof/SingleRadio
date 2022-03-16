@@ -1,5 +1,10 @@
 package com.app.AlofokeFm.adapters;
 
+/**
+ * Created by Reinold Carrasco
+ * on 2022-03-16
+ */
+
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.drawable.ColorDrawable;
@@ -30,7 +35,7 @@ public class MessageAdapter extends BaseAdapter {
         this.context = context;
     }
 
-   public static String getUserNameInitials(String username) {
+    public static String getUserNameInitials(String username) {
         String inits = "XX";
         if (username == null) {
             return inits;

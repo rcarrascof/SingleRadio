@@ -63,9 +63,16 @@ public class MyFirebaseMessageService extends FirebaseMessagingService {
         intent.putExtra("title", title);
         intent.putExtra("link", web_url);
 
+        int FLAG_PENDING_INTENT;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            FLAG_PENDING_INTENT = PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT;
+        } else {
+            FLAG_PENDING_INTENT = PendingIntent.FLAG_UPDATE_CURRENT;
+        }
+
         //intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent,FLAG_PENDING_INTENT);
 
         NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         String NOTIFICATION_CHANNEL_ID = getApplicationContext().getString(R.string.app_name);
@@ -75,7 +82,7 @@ public class MyFirebaseMessageService extends FirebaseMessagingService {
                 .setDefaults(Notification.DEFAULT_ALL)
                 .setWhen(System.currentTimeMillis())
                 .setSmallIcon(getNotificationIcon(notificationBuilder))
-                .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.ic_notification_large))
+                .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher))
                 .setContentTitle(title)
                 .setContentText(message)
                 .setStyle(new NotificationCompat.BigTextStyle().bigText(message))

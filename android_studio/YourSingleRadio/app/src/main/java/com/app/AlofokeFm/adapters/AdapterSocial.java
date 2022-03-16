@@ -20,8 +20,8 @@ import java.util.ArrayList;
 
 public class AdapterSocial extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
+    Context context;
     private ArrayList<Social> items;
-    private Context context;
     private OnItemClickListener mOnItemClickListener;
 
     public interface OnItemClickListener {
@@ -39,15 +39,15 @@ public class AdapterSocial extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
     public static class OriginalViewHolder extends RecyclerView.ViewHolder {
 
-        private TextView txt_name;
-        private ImageView img_icon;
-        private LinearLayout lyt_parent;
+        TextView txtName;
+        ImageView imgIcon;
+        LinearLayout lytParent;
 
         public OriginalViewHolder(View view) {
             super(view);
-            lyt_parent = view.findViewById(R.id.lyt_parent);
-            txt_name = view.findViewById(R.id.txt_name);
-            img_icon = view.findViewById(R.id.img_icon);
+            lytParent = view.findViewById(R.id.lyt_parent);
+            txtName = view.findViewById(R.id.txt_name);
+            imgIcon = view.findViewById(R.id.img_icon);
         }
 
     }
@@ -68,16 +68,16 @@ public class AdapterSocial extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             final Social social = items.get(position);
             final OriginalViewHolder vItem = (OriginalViewHolder) holder;
 
-            vItem.txt_name.setText(social.social_name);
+            vItem.txtName.setText(social.social_name);
 
             Glide.with(context)
                     .load(social.social_icon.replace(" ", "%20"))
                     .placeholder(R.drawable.ic_thumbnail)
                     .thumbnail(0.3f)
                     .diskCacheStrategy(DiskCacheStrategy.ALL)
-                    .into(vItem.img_icon);
+                    .into(vItem.imgIcon);
 
-            vItem.lyt_parent.setOnClickListener(view -> {
+            vItem.lytParent.setOnClickListener(view -> {
                 if (mOnItemClickListener != null) {
                     mOnItemClickListener.onItemClick(view, social, position);
                 }

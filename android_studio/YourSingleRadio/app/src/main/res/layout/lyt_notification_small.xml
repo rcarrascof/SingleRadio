@@ -75,6 +75,7 @@
             android:weightSum="2">
 
             <ImageButton
+                android:id="@+id/status_bar_prev"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_margin="5dp"
@@ -93,6 +94,7 @@
                 android:src="@android:drawable/ic_media_play" />
 
             <ImageButton
+                android:id="@+id/status_bar_next"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_margin="5dp"

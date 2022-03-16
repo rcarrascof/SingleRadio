@@ -82,4 +82,13 @@ public class SharedPref {
         return sharedPreferences.getString("more_apps_url", "");
     }
 
+    public Integer getInAppReviewToken() {
+        return sharedPreferences.getInt("in_app_review_token", 0);
+    }
+
+    public void updateInAppReviewToken(int value) {
+        editor.putInt("in_app_review_token", value);
+        editor.apply();
+    }
+
 }

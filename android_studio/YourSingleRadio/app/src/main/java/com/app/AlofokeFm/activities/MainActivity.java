@@ -1,11 +1,8 @@
 package com.app.AlofokeFm.activities;
 
-import static com.app.AlofokeFm.Config.USE_LEGACY_GDPR_EU_CONSENT;
-import static com.app.AlofokeFm.utils.Constant.ADMOB;
-import static com.app.AlofokeFm.utils.Constant.AD_STATUS_ON;
-import static com.app.AlofokeFm.utils.Constant.APPLOVIN;
-import static com.app.AlofokeFm.utils.Constant.STARTAPP;
-import static com.app.AlofokeFm.utils.Constant.UNITY;
+import static com.app.AlofokeFm.utils.Constant.BANNER_AD;
+import static com.app.AlofokeFm.utils.Constant.INTERSTITIAL_AD;
+import static com.app.AlofokeFm.utils.Constant.NATIVE_AD;
 
 import android.annotation.SuppressLint;
 import android.app.ActivityManager;
@@ -14,6 +11,7 @@ import android.app.PendingIntent;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.graphics.Color;
@@ -67,40 +65,33 @@ import com.app.AlofokeFm.fragments.FragmentSocial;
 import com.app.AlofokeFm.fragments.FragmentWebView;
 import com.app.AlofokeFm.models.Radio;
 import com.app.AlofokeFm.services.RadioPlayerService;
-import com.app.AlofokeFm.utils.AdNetwork;
+import com.app.AlofokeFm.utils.AdsManager;
 import com.app.AlofokeFm.utils.Constant;
-import com.app.AlofokeFm.utils.GDPR;
 import com.app.AlofokeFm.utils.RelativePopupWindow;
 import com.app.AlofokeFm.utils.SleepTimeReceiver;
-import com.app.AlofokeFm.utils.Tools;
-import com.applovin.sdk.AppLovinMediationProvider;
-import com.applovin.sdk.AppLovinSdk;
+import com.app.AlofokeFm.utils.Utils;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
-import com.google.android.gms.ads.MobileAds;
-import com.google.android.gms.ads.initialization.AdapterStatus;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
-import com.google.android.ump.ConsentDebugSettings;
-import com.google.android.ump.ConsentForm;
-import com.google.android.ump.ConsentInformation;
-import com.google.android.ump.ConsentRequestParameters;
-import com.google.android.ump.UserMessagingPlatform;
+import com.google.android.play.core.appupdate.AppUpdateInfo;
+import com.google.android.play.core.appupdate.AppUpdateManager;
+import com.google.android.play.core.appupdate.AppUpdateManagerFactory;
+import com.google.android.play.core.install.model.AppUpdateType;
+import com.google.android.play.core.install.model.UpdateAvailability;
+import com.google.android.play.core.review.ReviewInfo;
+import com.google.android.play.core.review.ReviewManager;
+import com.google.android.play.core.review.ReviewManagerFactory;
+import com.google.android.play.core.tasks.Task;
 import com.h6ah4i.android.widget.verticalseekbar.VerticalSeekBar;
 import com.makeramen.roundedimageview.RoundedImageView;
-import com.startapp.sdk.adsbase.StartAppAd;
-import com.startapp.sdk.adsbase.StartAppSDK;
-import com.unity3d.ads.IUnityAdsInitializationListener;
-import com.unity3d.ads.IUnityAdsListener;
-import com.unity3d.ads.UnityAds;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
@@ -117,54 +108,51 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private DrawerLayout drawerLayout;
     NavigationView navigationView;
     ProgressBar progressBar;
-    RoundedImageView img_radio_large;
-    RoundedImageView img_album_art_large;
-    ImageView img_music_background;
-    ImageButton img_volume;
-    ImageButton img_timer;
-    FloatingActionButton fab_play_expand;
-    TextView txt_radio_expand, txt_radio_music_song, txt_song_expand;
+    RoundedImageView imgRadioLarge;
+    RoundedImageView imgAlbumArtLarge;
+    ImageView imgMusicBackground;
+    ImageButton imgVolume;
+    ImageButton imgTimer;
+    FloatingActionButton fabPlayExpand;
+    TextView txtRadioExpand, txtRadioMusicSong, txtSongExpand;
     SharedPref sharedPref;
     Handler handler = new Handler();
     FragmentManager fragmentManager;
     EqualizerView equalizerView;
-    Tools tools;
+    Utils utils;
     AdsPref adsPref;
-    private ConsentInformation consentInformation;
-    ConsentForm consentForm;
     private DAO db;
-    AdNetwork adNetwork;
-    LinearLayout lyt_exit;
-    View lyt_dialog;
+    AdsManager adsManager;
+    LinearLayout lytExit;
+    View lytDialog;
     List<RadioEntity> radioEntities;
     ArrayList<Radio> radios;
+    private AppUpdateManager appUpdateManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Tools.darkStatusBar(this, true);
+        Utils.darkStatusBar(this, true);
         adsPref = new AdsPref(this);
-        if (adsPref.getAdStatus().equals(AD_STATUS_ON)) {
-            if (adsPref.getAdType().equals(STARTAPP)) {
-                StartAppSDK.init(MainActivity.this, adsPref.getStartappAppID(), false);
-                StartAppSDK.setTestAdsEnabled(BuildConfig.DEBUG);
-            }
-        }
         setContentView(R.layout.activity_main);
         db = AppDatabase.getDb(this).get();
-        adNetwork = new AdNetwork(this);
+
+        adsManager = new AdsManager(this);
+        adsManager.initializeAd();
+        adsManager.updateConsentStatus();
+        adsManager.loadBannerAd(BANNER_AD);
+        adsManager.loadInterstitialAd(INTERSTITIAL_AD, adsPref.getInterstitialAdInterval());
+        adsManager.loadNativeAd(NATIVE_AD);
 
         if (Config.ENABLE_RTL_MODE) {
             getWindow().getDecorView().setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
         }
 
-        initAdNetwork();
-
         Constant.is_app_open = true;
 
         sharedPref = new SharedPref(this);
         sharedPref.setCheckSleepTime();
-        tools = new Tools(this);
+        utils = new Utils(this);
 
         navigationView = findViewById(R.id.navigation_view);
         navigationView.setNavigationItemSelectedListener(this);
@@ -189,85 +177,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         initComponent();
         initExitDialog();
-        Tools.notificationHandler(this, getIntent());
+        Utils.notificationHandler(this, getIntent());
         loadConfig();
 
-        adNetwork.loadBannerAdNetwork(1);
-        adNetwork.loadInterstitialAdNetwork(1);
-        adNetwork.loadNativeAdNetwork(1);
-
-    }
-
-    private void initAdNetwork() {
-        if (adsPref.getAdStatus().equals(AD_STATUS_ON)) {
-            switch (adsPref.getAdType()) {
-                case ADMOB:
-                    MobileAds.initialize(this, initializationStatus -> {
-                        Map<String, AdapterStatus> statusMap = initializationStatus.getAdapterStatusMap();
-                        for (String adapterClass : statusMap.keySet()) {
-                            AdapterStatus status = statusMap.get(adapterClass);
-                            assert status != null;
-                            Log.d(TAG, String.format("Adapter name: %s, Description: %s, Latency: %d", adapterClass, status.getDescription(), status.getLatency()));
-                            Log.d(TAG, "FAN open bidding with AdMob as mediation partner selected");
-                        }
-                    });
-                    if (USE_LEGACY_GDPR_EU_CONSENT) {
-                        GDPR.updateConsentStatus(this);
-                    } else {
-                        updateConsentStatus();
-                    }
-                    break;
-                case STARTAPP:
-                    StartAppSDK.setUserConsent(this, "pas", System.currentTimeMillis(), true);
-                    StartAppAd.disableSplash();
-                    break;
-                case UNITY:
-                    UnityAds.addListener(new IUnityAdsListener() {
-                        @Override
-                        public void onUnityAdsReady(String placementId) {
-                            Log.d(TAG, placementId);
-                        }
-
-                        @Override
-                        public void onUnityAdsStart(String placementId) {
-
-                        }
-
-                        @Override
-                        public void onUnityAdsFinish(String placementId, UnityAds.FinishState finishState) {
-
-                        }
-
-                        @Override
-                        public void onUnityAdsError(UnityAds.UnityAdsError unityAdsError, String message) {
-
-                        }
-                    });
-                    UnityAds.initialize(getApplicationContext(), adsPref.getUnityGameId(), BuildConfig.DEBUG, new IUnityAdsInitializationListener() {
-                        @Override
-                        public void onInitializationComplete() {
-                            Log.d(TAG, "Unity Ads Initialization Complete");
-                            Log.d(TAG, "Unity Ads Game ID : " + adsPref.getUnityGameId());
-                        }
-
-                        @Override
-                        public void onInitializationFailed(UnityAds.UnityAdsInitializationError error, String message) {
-                            Log.d(TAG, "Unity Ads Initialization Failed: [" + error + "] " + message);
-                        }
-                    });
-                    break;
-                case APPLOVIN:
-                    AppLovinSdk.getInstance(this).setMediationProvider(AppLovinMediationProvider.MAX);
-                    AppLovinSdk.getInstance(this).initializeSdk(config -> {
-                    });
-                    final String sdkKey = AppLovinSdk.getInstance(getApplicationContext()).getSdkKey();
-                    if (!sdkKey.equals(getString(R.string.applovin_sdk_key))) {
-                        Log.e(TAG, "AppLovin ERROR : Please update your sdk key in the manifest file.");
-                    }
-                    Log.d(TAG, "AppLovin SDK Key : " + sdkKey);
-                    break;
-            }
+        if (!BuildConfig.DEBUG) {
+            appUpdateManager = AppUpdateManagerFactory.create(getApplicationContext());
+            inAppUpdate();
+            inAppReview();
         }
+
     }
 
     private void loadConfig() {
@@ -285,10 +203,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         Constant.item_radio.addAll(radios);
         changeText(radios.get(0));
 
-        fab_play_expand.setOnClickListener(view -> {
-            if (!tools.isNetworkAvailable()) {
+        fabPlayExpand.setOnClickListener(view -> {
+            if (!utils.isNetworkAvailable()) {
                 Toast.makeText(MainActivity.this, getResources().getString(R.string.internet_not_connected), Toast.LENGTH_SHORT).show();
-            } else if (txt_song_expand.getText().equals(getString(R.string.app_name))) {
+            } else if (txtSongExpand.getText().equals(getString(R.string.app_name))) {
                 Toast.makeText(MainActivity.this, getResources().getString(R.string.no_radio_selected), Toast.LENGTH_SHORT).show();
             } else {
                 Radio radio = radios.get(0);
@@ -314,15 +232,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 startService(intent);
 
                 if (!Constant.is_playing) {
-                    adNetwork.showInterstitialAdNetwork(1, adsPref.getInterstitialAdInterval());
+                    adsManager.showInterstitialAd();
                 }
 
             }
         });
 
         if (Config.ENABLE_AUTOPLAY) {
-            if (tools.isNetworkAvailable()) {
-                new Handler(Looper.getMainLooper()).postDelayed(() -> fab_play_expand.performClick(), Constant.DELAY_PERFORM_CLICK);
+            if (utils.isNetworkAvailable()) {
+                new Handler(Looper.getMainLooper()).postDelayed(() -> fabPlayExpand.performClick(), Constant.DELAY_PERFORM_CLICK);
             }
         }
 
@@ -332,36 +250,36 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         fragmentManager = getSupportFragmentManager();
 
-        img_music_background = findViewById(R.id.img_music_background);
+        imgMusicBackground = findViewById(R.id.img_music_background);
 
         equalizerView = findViewById(R.id.equalizer_view);
         progressBar = findViewById(R.id.progress_bar);
-        img_timer = findViewById(R.id.img_timer);
+        imgTimer = findViewById(R.id.img_timer);
 
-        img_radio_large = findViewById(R.id.img_radio_large);
-        img_album_art_large = findViewById(R.id.img_album_art_large);
+        imgRadioLarge = findViewById(R.id.img_radio_large);
+        imgAlbumArtLarge = findViewById(R.id.img_album_art_large);
 
         if (Config.CIRCULAR_RADIO_IMAGE_ALBUM_ART) {
-            img_radio_large.setOval(true);
-            img_album_art_large.setOval(true);
+            imgRadioLarge.setOval(true);
+            imgAlbumArtLarge.setOval(true);
         } else {
-            img_radio_large.setOval(false);
-            img_album_art_large.setOval(false);
+            imgRadioLarge.setOval(false);
+            imgAlbumArtLarge.setOval(false);
         }
 
-        img_volume = findViewById(R.id.img_volume);
-        fab_play_expand = findViewById(R.id.fab_play);
-        txt_radio_expand = findViewById(R.id.txt_radio_name_expand);
-        txt_song_expand = findViewById(R.id.txt_metadata_expand);
+        imgVolume = findViewById(R.id.img_volume);
+        fabPlayExpand = findViewById(R.id.fab_play);
+        txtRadioExpand = findViewById(R.id.txt_radio_name_expand);
+        txtSongExpand = findViewById(R.id.txt_metadata_expand);
 
-        if (!tools.isNetworkAvailable()) {
-            txt_radio_expand.setText(getResources().getString(R.string.app_name));
-            txt_song_expand.setText(getResources().getString(R.string.internet_not_connected));
+        if (!utils.isNetworkAvailable()) {
+            txtRadioExpand.setText(getResources().getString(R.string.app_name));
+            txtSongExpand.setText(getResources().getString(R.string.internet_not_connected));
         }
 
         setIfPlaying();
 
-        img_timer.setOnClickListener(v -> {
+        imgTimer.setOnClickListener(v -> {
             if (sharedPref.getIsSleepTimeOn()) {
                 openTimeDialog();
             } else {
@@ -369,7 +287,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }
         });
 
-        img_volume.setOnClickListener(v -> changeVolume());
+        imgVolume.setOnClickListener(v -> changeVolume());
 
     }
 
@@ -397,7 +315,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
             transaction.add(android.R.id.content, fragmentSocial).addToBackStack("social");
             transaction.commit();
-            Tools.darkStatusBar(this, false);
+            Utils.darkStatusBar(this, false);
             drawerLayout.closeDrawer(GravityCompat.START);
             hideKeyboard();
 
@@ -438,7 +356,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
             transaction.add(android.R.id.content, fragmentWebView).addToBackStack("page");
             transaction.commit();
-            Tools.darkStatusBar(this, false);
+            Utils.darkStatusBar(this, false);
             drawerLayout.closeDrawer(GravityCompat.START);
             hideKeyboard();
             return true;
@@ -457,6 +375,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         {
             Intent i = new Intent(MainActivity.this, LoginActivity.class);
             startActivity(i);
+            return true;
 
         }
         return false;
@@ -495,16 +414,24 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             Radio radio = RadioPlayerService.getInstance().getPlayingRadioStation();
             if (radio != null) {
                 changeText(radio);
-                fab_play_expand.setImageDrawable(ContextCompat.getDrawable(MainActivity.this, R.drawable.ic_pause_white));
+                fabPlayExpand.setImageDrawable(ContextCompat.getDrawable(MainActivity.this, R.drawable.ic_pause_white));
                 equalizerView.animateBars();
             }
         } else {
             if (Constant.item_radio.size() > 0) {
                 changeText(Constant.item_radio.get(Constant.position));
             }
-            fab_play_expand.setImageDrawable(ContextCompat.getDrawable(MainActivity.this, R.drawable.ic_play_arrow_white));
+            fabPlayExpand.setImageDrawable(ContextCompat.getDrawable(MainActivity.this, R.drawable.ic_play_arrow_white));
             equalizerView.stopBars();
-            img_album_art_large.setVisibility(View.GONE);
+            imgAlbumArtLarge.setVisibility(View.GONE);
+        }
+    }
+
+    public void showImageAlbumArt(boolean show) {
+        if (show) {
+            imgAlbumArtLarge.setVisibility(View.VISIBLE);
+        } else {
+            imgAlbumArtLarge.setVisibility(View.GONE);
         }
     }
 
@@ -513,48 +440,46 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             changeSongName(Constant.metadata);
 
             if (Constant.metadata == null || Constant.metadata.equals(radio.getRadio_genre())) {
-                img_album_art_large.setVisibility(View.GONE);
+                imgAlbumArtLarge.setVisibility(View.GONE);
             } else {
-                img_album_art_large.setVisibility(View.VISIBLE);
+                imgAlbumArtLarge.setVisibility(View.VISIBLE);
             }
 
-            txt_song_expand.setVisibility(View.VISIBLE);
-            img_timer.setVisibility(View.VISIBLE);
+            txtSongExpand.setVisibility(View.VISIBLE);
+            imgTimer.setVisibility(View.VISIBLE);
         } else {
-            txt_radio_music_song.setText("");
-            txt_song_expand.setText(radio.getRadio_name());
-            txt_song_expand.setVisibility(View.INVISIBLE);
-            img_timer.setVisibility(View.GONE);
+            txtRadioMusicSong.setText("");
+            txtSongExpand.setText(radio.getRadio_name());
+            txtSongExpand.setVisibility(View.INVISIBLE);
+            imgTimer.setVisibility(View.GONE);
         }
-        txt_radio_expand.setText(radio.getRadio_name());
+        txtRadioExpand.setText(radio.getRadio_name());
 
         if (!Constant.is_playing) {
-            txt_song_expand.setText(radio.getRadio_genre());
+            txtSongExpand.setText(radio.getRadio_genre());
         }
 
-      /*  Glide.with(this)
+       /* Glide.with(getApplicationContext())
                 .load(radio.getBackground_image_url().replace(" ", "%20"))
                 .placeholder(R.drawable.ic_thumbnail)
                 //.apply(RequestOptions.bitmapTransform(new BlurTransformation(20, 3)))
                 .diskCacheStrategy(DiskCacheStrategy.ALL)
-                .into(img_music_background);
+                .into(imgMusicBackground);
 
-        Glide.with(this)
+        Glide.with(getApplicationContext())
                 .load(radio.getRadio_image_url().replace(" ", "%20"))
                 .placeholder(R.drawable.ic_artwork)
-                .into(img_radio_large);*/
+                .into(imgRadioLarge);*/
     }
 
     public void changeSongName(String songName) {
         Constant.metadata = songName;
-        txt_song_expand.setText(songName);
+        txtSongExpand.setText(songName);
     }
 
     public void changeAlbumArt(String artworkUrl) {
         Constant.albumArt = artworkUrl;
-
-
-        Glide.with(this)
+        Glide.with(getApplicationContext())
                 .load(artworkUrl.replace(" ", "%20"))
                 .placeholder(android.R.color.transparent)
                 .thumbnail(0.3f)
@@ -562,17 +487,17 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 .listener(new RequestListener<Drawable>() {
                     @Override
                     public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
-                        img_album_art_large.setVisibility(View.GONE);
+                        imgAlbumArtLarge.setVisibility(View.GONE);
                         return false;
                     }
 
                     @Override
                     public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
-                        img_album_art_large.setVisibility(View.VISIBLE);
+                        imgAlbumArtLarge.setVisibility(View.VISIBLE);
                         return false;
                     }
                 })
-                .into(img_album_art_large);
+                .into(imgAlbumArtLarge);
     }
 
     public void setIfPlaying() {
@@ -635,7 +560,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         popupWindow.setHeight(WindowManager.LayoutParams.WRAP_CONTENT);
         popupWindow.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         popupWindow.setContentView(view);
-        popupWindow.showOnAnchor(img_volume, RelativePopupWindow.VerticalPosition.ABOVE, RelativePopupWindow.HorizontalPosition.CENTER);
+        popupWindow.showOnAnchor(imgVolume, RelativePopupWindow.VerticalPosition.ABOVE, RelativePopupWindow.HorizontalPosition.CENTER);
     }
 
     public void openTimeSelectDialog() {
@@ -680,23 +605,25 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }
 
             String totalTime = hours + ":" + minute;
-            long total_timer = tools.convertToMilliSeconds(totalTime) + System.currentTimeMillis();
+            long total_timer = utils.convertToMilliSeconds(totalTime) + System.currentTimeMillis();
 
             Random random = new Random();
             int id = random.nextInt(100);
 
             sharedPref.setSleepTime(true, total_timer, id);
 
-            Intent intent = new Intent(MainActivity.this, SleepTimeReceiver.class);
-            PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), id, intent, PendingIntent.FLAG_ONE_SHOT);
-            AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                assert alarmManager != null;
-                alarmManager.setExact(AlarmManager.RTC_WAKEUP, total_timer, pendingIntent);
+            int FLAG;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                FLAG = PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_ONE_SHOT;
             } else {
-                assert alarmManager != null;
-                alarmManager.set(AlarmManager.RTC_WAKEUP, total_timer, pendingIntent);
+                FLAG = PendingIntent.FLAG_ONE_SHOT;
             }
+
+            Intent intent = new Intent(MainActivity.this, SleepTimeReceiver.class);
+            PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), id, intent, FLAG);
+            AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+            assert alarmManager != null;
+            alarmManager.setExact(AlarmManager.RTC_WAKEUP, total_timer, pendingIntent);
         });
         alt_bld.setNegativeButton(getString(R.string.cancel), (dialog, which) -> {
 
@@ -719,8 +646,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         });
 
         builder.setPositiveButton(getString(R.string.stop), (dialog, which) -> {
+            int FLAG;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                FLAG = PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_ONE_SHOT;
+            } else {
+                FLAG = PendingIntent.FLAG_ONE_SHOT;
+            }
             Intent i = new Intent(MainActivity.this, SleepTimeReceiver.class);
-            PendingIntent pendingIntent = PendingIntent.getBroadcast(MainActivity.this, sharedPref.getSleepID(), i, PendingIntent.FLAG_ONE_SHOT);
+            PendingIntent pendingIntent = PendingIntent.getBroadcast(MainActivity.this, sharedPref.getSleepID(), i, FLAG);
             AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
             pendingIntent.cancel();
             assert alarmManager != null;
@@ -734,11 +667,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     private void updateTimer(final TextView textView, long time) {
-        long timeleft = time - System.currentTimeMillis();
-        if (timeleft > 0) {
-            @SuppressLint("DefaultLocale") String hms = String.format("%02d:%02d:%02d", TimeUnit.MILLISECONDS.toHours(timeleft),
-                    TimeUnit.MILLISECONDS.toMinutes(timeleft) % TimeUnit.HOURS.toMinutes(1),
-                    TimeUnit.MILLISECONDS.toSeconds(timeleft) % TimeUnit.MINUTES.toSeconds(1));
+        long timeLeft = time - System.currentTimeMillis();
+        if (timeLeft > 0) {
+            @SuppressLint("DefaultLocale") String hms = String.format("%02d:%02d:%02d", TimeUnit.MILLISECONDS.toHours(timeLeft),
+                    TimeUnit.MILLISECONDS.toMinutes(timeLeft) % TimeUnit.HOURS.toMinutes(1),
+                    TimeUnit.MILLISECONDS.toSeconds(timeLeft) % TimeUnit.MINUTES.toSeconds(1));
 
             textView.setText(hms);
             handler.postDelayed(() -> {
@@ -757,30 +690,30 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         } else if (count != 0) {
             getSupportFragmentManager().popBackStack();
             if (count == 1) {
-                Tools.darkStatusBar(this, true);
+                Utils.darkStatusBar(this, true);
             }
         } else {
-            lyt_exit.setVisibility(View.VISIBLE);
+            lytExit.setVisibility(View.VISIBLE);
             showExitDialog(true);
         }
     }
 
     public void showExitDialog(boolean exit) {
         if (exit) {
-            lyt_exit.setVisibility(View.VISIBLE);
+            lytExit.setVisibility(View.VISIBLE);
         } else {
-            lyt_exit.setVisibility(View.GONE);
+            lytExit.setVisibility(View.GONE);
         }
     }
 
     public void initExitDialog() {
 
-        lyt_exit = findViewById(R.id.lyt_exit);
-        lyt_dialog = findViewById(R.id.lyt_dialog);
+        lytExit = findViewById(R.id.lyt_exit);
+        lytDialog = findViewById(R.id.lyt_dialog);
 
-        lyt_exit.setOnClickListener(v -> {
+        lytExit.setOnClickListener(v -> {
         });
-        lyt_dialog.setOnClickListener(v -> {
+        lytDialog.setOnClickListener(v -> {
         });
 
         findViewById(R.id.txt_cancel).setOnClickListener(v -> new Handler(Looper.getMainLooper()).postDelayed(() -> showExitDialog(false), 300));
@@ -832,48 +765,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
     }
 
-    public void updateConsentStatus() {
-        if (BuildConfig.DEBUG) {
-            ConsentDebugSettings debugSettings = new ConsentDebugSettings.Builder(this)
-                    .setDebugGeography(ConsentDebugSettings.DebugGeography.DEBUG_GEOGRAPHY_NOT_EEA)
-                    .addTestDeviceHashedId("TEST-DEVICE-HASHED-ID")
-                    .build();
-            ConsentRequestParameters params = new ConsentRequestParameters.Builder().setConsentDebugSettings(debugSettings).build();
-            consentInformation = UserMessagingPlatform.getConsentInformation(this);
-            consentInformation.requestConsentInfoUpdate(this, params, () -> {
-                        if (consentInformation.isConsentFormAvailable()) {
-                            loadForm();
-                        }
-                    },
-                    formError -> {
-                    });
-        } else {
-            ConsentRequestParameters params = new ConsentRequestParameters.Builder().build();
-            consentInformation = UserMessagingPlatform.getConsentInformation(this);
-            consentInformation.requestConsentInfoUpdate(this, params, () -> {
-                        if (consentInformation.isConsentFormAvailable()) {
-                            loadForm();
-                        }
-                    },
-                    formError -> {
-                    });
-        }
-    }
-
-    public void loadForm() {
-        UserMessagingPlatform.loadConsentForm(this, consentForm -> {
-                    MainActivity.this.consentForm = consentForm;
-                    if (consentInformation.getConsentStatus() == ConsentInformation.ConsentStatus.REQUIRED) {
-                        consentForm.show(MainActivity.this, formError -> {
-                            loadForm();
-                        });
-                    }
-                },
-                formError -> {
-                }
-        );
-    }
-
     public void aboutDialog() {
         LayoutInflater layoutInflaterAndroid = LayoutInflater.from(MainActivity.this);
         View view = layoutInflaterAndroid.inflate(R.layout.custom_dialog_about, null);
@@ -907,6 +798,61 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @Override
     public AssetManager getAssets() {
         return getResources().getAssets();
+    }
+
+    private void inAppReview() {
+        if (sharedPref.getInAppReviewToken() < 3) {
+            sharedPref.updateInAppReviewToken(sharedPref.getInAppReviewToken() + 1);
+            Log.d(TAG, "in app update token");
+        } else {
+            ReviewManager manager = ReviewManagerFactory.create(this);
+            Task<ReviewInfo> request = manager.requestReviewFlow();
+            request.addOnCompleteListener(task -> {
+                if (task.isSuccessful()) {
+                    ReviewInfo reviewInfo = task.getResult();
+                    manager.launchReviewFlow(MainActivity.this, reviewInfo).addOnFailureListener(e -> {
+                    }).addOnCompleteListener(complete -> Log.d(TAG, "Success")
+                    ).addOnFailureListener(failure -> Log.d(TAG, "Rating Failed"));
+                }
+            }).addOnFailureListener(failure -> Log.d(TAG, "In-App Request Failed " + failure));
+            Log.d(TAG, "in app token complete, show in app review if available");
+        }
+        Log.d(TAG, "in app review token : " + sharedPref.getInAppReviewToken());
+    }
+
+    private void inAppUpdate() {
+        Task<AppUpdateInfo> appUpdateInfoTask = appUpdateManager.getAppUpdateInfo();
+        appUpdateInfoTask.addOnSuccessListener(appUpdateInfo -> {
+            if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE
+                    && appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.IMMEDIATE)) {
+                startUpdateFlow(appUpdateInfo);
+            } else if (appUpdateInfo.updateAvailability() == UpdateAvailability.DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS) {
+                startUpdateFlow(appUpdateInfo);
+            }
+        });
+    }
+
+    private void startUpdateFlow(AppUpdateInfo appUpdateInfo) {
+        try {
+            appUpdateManager.startUpdateFlowForResult(appUpdateInfo, AppUpdateType.IMMEDIATE, this, Constant.IMMEDIATE_APP_UPDATE_REQ_CODE);
+        } catch (IntentSender.SendIntentException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == Constant.IMMEDIATE_APP_UPDATE_REQ_CODE) {
+            if (resultCode == RESULT_CANCELED) {
+                Toast.makeText(getApplicationContext(), getString(R.string.msg_cancel_update), Toast.LENGTH_SHORT).show();
+            } else if (resultCode == RESULT_OK) {
+                Toast.makeText(getApplicationContext(), getString(R.string.msg_success_update), Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(getApplicationContext(), getString(R.string.msg_failed_update), Toast.LENGTH_SHORT).show();
+                inAppUpdate();
+            }
+        }
     }
 
 }

@@ -2,6 +2,10 @@ package com.app.AlofokeFm.models;
 
 import com.google.firebase.database.Exclude;
 
+/**
+ * Created by Reinold Carrasco
+ * on 2022-03-16
+ */
 public class Group {
 
     private String groupId;

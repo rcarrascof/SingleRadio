@@ -43,6 +43,9 @@
     <string name="failed_text">No internet connections found. Check your connection or try again later!</string>
     <string name="internet_not_connected">Internet not connected</string>
     <string name="error_loading_radio">Error loading radio or server currently down, please try it again later.</string>
+    <string name="msg_cancel_update">Update canceled</string>
+    <string name="msg_success_update">Update success!</string>
+    <string name="msg_failed_update">Update Failed!</string>
 
     <!--share-->
     <string name="share_content">I Would like to share this with you. Here You Can Download This Application from PlayStore </string>
