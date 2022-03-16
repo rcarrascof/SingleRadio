@@ -11,7 +11,7 @@ public class Config {
     //only used when remote json is enabled
     //generate your access key using the link below or check the documentation for more detailed instructions
     //https://services.solodroid.co.id/access-key/generate
-    public static final String ACCESS_KEY = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
+    public static final String ACCESS_KEY = "WVVoU01HTklUVFpNZVRsclkyMXNNbHBUTlc1aU1qbHVZa2RWZFZreU9YUk1NbHB3WWtkVmRscERPSGhhYlUxMFpHdE5NbUpJUWsxTk1WWkNWR3hhZGt4WFJrMVNhM1JDVFZkM2RGVnNWa2xOVjJocFQwUlJkbVJ0Ykd4a2Vqa3hZek5CT1dNeWFHaGpiV3gxV2pFNWFHTklRbk5oVjA1b1pFZHNkbUpyYkd0WU1rNTJZbE0xYUdOSVFYVlJWM2gyV20wNWNscFZXblE9";
 
     //auto play configuration
     public static final boolean ENABLE_AUTOPLAY = false;
