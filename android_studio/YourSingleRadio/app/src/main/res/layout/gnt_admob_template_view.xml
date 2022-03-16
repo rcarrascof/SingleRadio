@@ -45,7 +45,6 @@
                             android:layout_height="match_parent" />
 
                         <TextView
-                            android:id="@+id/ad_notification_view"
                             android:layout_width="@dimen/gnt_ad_indicator_width"
                             android:layout_height="@dimen/gnt_ad_indicator_height"
                             android:layout_margin="6dp"

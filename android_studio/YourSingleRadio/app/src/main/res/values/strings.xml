@@ -28,7 +28,7 @@
     </string>
 
     <!--about information-->
-    <string name="sub_about_app_copyright">Copyright © 2021 Solodroid Developer. \nAll right reserved</string>
+    <string name="sub_about_app_copyright">Copyright © 2022 RcXDev Developer. \nAll right reserved</string>
     <string name="sub_about_app_version">Version</string>
 
     <!--sleeping timer-->
@@ -60,5 +60,6 @@
     <string name="drawer_open">Open navigation drawer</string>
     <string name="drawer_close">Close navigation drawer</string>
     <string name="no_social_found">Whoops, no social available at this time</string>
+    <string name="chat">Chat</string>
 
 </resources>

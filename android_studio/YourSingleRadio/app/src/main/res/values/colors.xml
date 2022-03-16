@@ -21,5 +21,13 @@
     <color name="gnt_white">#FFFFFF</color>
     <color name="gnt_ad_yellow">#FBB828</color>
     <color name="gnt_gray">#808080</color>
+    <color name="colorLightGray">#ececec</color>
+    <color name="colorDarkGray">#b4b4b4</color>
+
+
+    <color name="colorGreenLight">#81C784</color>
+    <color name="colorPurpleLight">#BA68C8</color>
+    <color name="colorYellowLight">#FFD54F</color>
+
 
 </resources>

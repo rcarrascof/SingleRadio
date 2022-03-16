@@ -35,25 +35,25 @@
     }
   ],
   "socials": [
-    {
+   /* {
       "social_name": "Website",
       "social_icon": "https://image.flaticon.com/icons/png/512/61/61027.png",
       "social_url": "https://www.solodroid.net"
-    },
+    },*/
     {
       "social_name": "Facebook",
       "social_icon": "https://image.flaticon.com/icons/png/512/61/61045.png",
-      "social_url": "https://www.facebook.com/solodroid.net"
+      "social_url": "https://www.facebook.com/Estonoesradioshow1"
     },
     {
       "social_name": "Twitter",
       "social_icon": "https://image.flaticon.com/icons/png/512/60/60580.png",
-      "social_url": "https://twitter.com/solodroiddev"
+      "social_url": "https://twitter.com/estonoesradioTW"
     },
     {
       "social_name": "Instagram",
       "social_icon": "https://image.flaticon.com/icons/png/512/61/61164.png",
-      "social_url": "https://www.instagram.com/solodroid.developer"
+      "social_url": "https://www.instagram.com/estonoesradioshow/"
     }
   ]
 }
