@@ -1,12 +1,15 @@
 package com.app.AlofokeFm.utils;
 
 import static com.app.AlofokeFm.Config.LEGACY_GDPR;
+import static com.solodroid.ads.sdk.util.Constant.AD_STATUS_ON;
+import static com.solodroid.ads.sdk.util.Constant.IRONSOURCE;
 
 import android.app.Activity;
 
 import com.app.AlofokeFm.BuildConfig;
 import com.app.AlofokeFm.database.prefs.AdsPref;
 import com.app.AlofokeFm.database.prefs.SharedPref;
+import com.app.AlofokeFm.models.Ads;
 import com.solodroid.ads.sdk.format.AdNetwork;
 import com.solodroid.ads.sdk.format.BannerAd;
 import com.solodroid.ads.sdk.format.InterstitialAd;
@@ -45,10 +48,9 @@ public class AdsManager {
         adNetwork.setAdStatus(adsPref.getAdStatus())
                 .setAdNetwork(adsPref.getAdType())
                 .setBackupAdNetwork(adsPref.getBackupAds())
-                .setAdMobAppId(null)
-                .setStartappAppId(adsPref.getStartappAppID())
+                .setStartappAppId(adsPref.getStartappAppId())
                 .setUnityGameId(adsPref.getUnityGameId())
-                .setAppLovinSdkKey(null)
+                .setIronSourceAppKey(adsPref.getIronSourceAppKey())
                 .setDebug(BuildConfig.DEBUG)
                 .build();
     }
@@ -58,10 +60,12 @@ public class AdsManager {
                 .setAdNetwork(adsPref.getAdType())
                 .setBackupAdNetwork(adsPref.getBackupAds())
                 .setAdMobBannerId(adsPref.getAdMobBannerId())
+                .setGoogleAdManagerBannerId(adsPref.getAdManagerBannerId())
+                .setFanBannerId(adsPref.getFanBannerUnitId())
                 .setUnityBannerId(adsPref.getUnityBannerPlacementId())
-                .setAppLovinBannerId(adsPref.getAppLovinBannerId())
+                .setAppLovinBannerId(adsPref.getAppLovinBannerAdUnitId())
                 .setAppLovinBannerZoneId(adsPref.getAppLovinBannerZoneId())
-                .setDarkTheme(false)
+                .setIronSourceBannerId(adsPref.getIronSourceBannerId())
                 .setPlacementStatus(placement)
                 .setLegacyGDPR(LEGACY_GDPR)
                 .build();
@@ -72,9 +76,12 @@ public class AdsManager {
                 .setAdNetwork(adsPref.getAdType())
                 .setBackupAdNetwork(adsPref.getBackupAds())
                 .setAdMobInterstitialId(adsPref.getAdMobInterstitialId())
+                .setGoogleAdManagerInterstitialId(adsPref.getAdManagerInterstitialId())
+                .setFanInterstitialId(adsPref.getFanInterstitialUnitId())
                 .setUnityInterstitialId(adsPref.getUnityInterstitialPlacementId())
-                .setAppLovinInterstitialId(adsPref.getAppLovinInterstitialId())
+                .setAppLovinInterstitialId(adsPref.getAppLovinInterstitialAdUnitId())
                 .setAppLovinInterstitialZoneId(adsPref.getAppLovinInterstitialZoneId())
+                .setIronSourceInterstitialId(adsPref.getIronSourceInterstitialId())
                 .setInterval(interval)
                 .setPlacementStatus(placement)
                 .setLegacyGDPR(LEGACY_GDPR)
@@ -86,9 +93,10 @@ public class AdsManager {
                 .setAdNetwork(adsPref.getAdType())
                 .setBackupAdNetwork(adsPref.getBackupAds())
                 .setAdMobNativeId(adsPref.getAdMobNativeId())
+                .setAdManagerNativeId(adsPref.getAdManagerNativeId())
+                .setFanNativeId(adsPref.getFanNativeUnitId())
                 .setAppLovinNativeId(adsPref.getAppLovinNativeAdManualUnitId())
                 .setPlacementStatus(placement)
-                .setDarkTheme(false)
                 .setLegacyGDPR(LEGACY_GDPR)
                 .build();
     }
@@ -97,12 +105,57 @@ public class AdsManager {
         interstitialAd.show();
     }
 
+    public void destroyBannerAd() {
+        bannerAd.destroyAndDetachBanner();
+    }
+
+    public void resumeBannerAd(int placement) {
+        if (adsPref.getAdStatus().equals(AD_STATUS_ON) && !adsPref.getIronSourceBannerId().equals("0")) {
+            if (adsPref.getAdType().equals(IRONSOURCE) || adsPref.getBackupAds().equals(IRONSOURCE)) {
+                loadBannerAd(placement);
+            }
+        }
+    }
+
     public void updateConsentStatus() {
         if (LEGACY_GDPR) {
             legacyGDPR.updateLegacyGDPRConsentStatus(adsPref.getAdMobPublisherId(), sharedPref.getPrivacyPolicyUrl());
         } else {
             gdpr.updateGDPRConsentStatus();
         }
+    }
+
+    public void saveAds(AdsPref adsPref, Ads ads) {
+        adsPref.saveAds(
+                ads.ad_status.replace("on", "1"),
+                ads.ad_type,
+                ads.backup_ads,
+                ads.admob_publisher_id,
+                ads.admob_banner_unit_id,
+                ads.admob_interstitial_unit_id,
+                ads.admob_native_unit_id,
+                ads.admob_app_open_ad_unit_id,
+                ads.ad_manager_banner_unit_id,
+                ads.ad_manager_interstitial_unit_id,
+                ads.ad_manager_native_unit_id,
+                ads.ad_manager_app_open_ad_unit_id,
+                ads.fan_banner_unit_id,
+                ads.fan_interstitial_unit_id,
+                ads.fan_native_unit_id,
+                ads.startapp_app_id,
+                ads.unity_game_id,
+                ads.unity_banner_placement_id,
+                ads.unity_interstitial_placement_id,
+                ads.applovin_banner_ad_unit_id,
+                ads.applovin_interstitial_ad_unit_id,
+                ads.applovin_native_ad_manual_unit_id,
+                ads.applovin_banner_zone_id,
+                ads.applovin_interstitial_zone_id,
+                ads.ironsource_app_key,
+                ads.ironsource_banner_placement_name,
+                ads.ironsource_interstitial_placement_name,
+                ads.interstitial_ad_interval
+        );
     }
 
 }

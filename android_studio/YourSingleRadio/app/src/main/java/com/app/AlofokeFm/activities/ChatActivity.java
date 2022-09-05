@@ -5,6 +5,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -107,7 +108,17 @@ public class ChatActivity extends AppCompatActivity {
             }
         });
 */
-
+        editText.setOnKeyListener(new View.OnKeyListener() {
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                // If the event is a key-down event on the "enter" button
+                if ((event.getAction() == KeyEvent.ACTION_DOWN) &&
+                        (keyCode == KeyEvent.KEYCODE_ENTER)) {
+                  sendMessage(v);
+                    return true;
+                }
+                return false;
+            }
+        });
 
         myRef.addChildEventListener(new ChildEventListener() {
             @Override
@@ -121,6 +132,7 @@ public class ChatActivity extends AppCompatActivity {
                 msgs.add(message);
                 //notifyDataSetChanged(msgs);
                 messageAdapter.add(message);
+                messagesView.setSelection(messageAdapter.getCount() - 1);
 
 
             }
@@ -176,4 +188,6 @@ public class ChatActivity extends AppCompatActivity {
 
 
     }
+
+
 }

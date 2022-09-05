@@ -109,6 +109,36 @@ public class Utils {
         }
     }
 
+    public static String getUserAgent() {
+
+        StringBuilder result = new StringBuilder(64);
+        result.append("Dalvik/");
+        result.append(System.getProperty("java.vm.version"));
+        result.append(" (Linux; U; Android ");
+
+        String version = Build.VERSION.RELEASE;
+        result.append(version.length() > 0 ? version : "1.0");
+
+        if ("REL".equals(Build.VERSION.CODENAME)) {
+            String model = Build.MODEL;
+            if (model.length() > 0) {
+                result.append("; ");
+                result.append(model);
+            }
+        }
+
+        String id = Build.ID;
+
+        if (id.length() > 0) {
+            result.append(" Build/");
+            result.append(id);
+        }
+
+        result.append(")");
+        return result.toString();
+    }
+
+
     public void showToast(String msg) {
         Toast.makeText(context, msg, Toast.LENGTH_LONG).show();
     }
@@ -180,7 +210,7 @@ public class Utils {
             //Open a connection
             HttpURLConnection connection = (HttpURLConnection) urlCon
                     .openConnection();
-            connection.setRequestProperty("User-Agent", "Your Single Radio");
+            connection.setRequestProperty("User-Agent", "Alofoke FM");
             connection.setRequestMethod("GET");
             connection.setDoInput(true);
             connection.connect();
@@ -200,7 +230,7 @@ public class Utils {
                 // open the new connnection again
                 connection = (HttpURLConnection) new URL(newUrl).openConnection();
                 connection.setRequestProperty("Cookie", cookies);
-                connection.setRequestProperty("User-Agent", "Your Single Radio");
+                connection.setRequestProperty("User-Agent", "Alofoke FM");
                 connection.setRequestMethod("GET");
                 connection.setDoInput(true);
 

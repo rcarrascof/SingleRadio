@@ -124,11 +124,11 @@
             android:inputType="text" />
 
         <ImageView
-            android:onClick="sendMessage"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:enabled="false"
+            android:onClick="sendMessage"
             android:src="@drawable/outline_send_gray_24" />
 
     </LinearLayout>

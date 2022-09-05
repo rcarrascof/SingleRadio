@@ -16,8 +16,10 @@ public class Config {
     //auto play configuration
     public static final boolean ENABLE_AUTOPLAY = false;
 
-    //song metadata
-    public static final boolean ENABLE_SONG_METADATA = true;
+    //radio streaming timeout connection, in milliseconds
+    public static final boolean ENABLE_RADIO_TIMEOUT = true;
+    public static final int RADIO_TIMEOUT_CONNECTION = 10000;
+
 
     //album art metadata, if song metadata is disabled, album art will also disabled
     public static final boolean ENABLE_ALBUM_ART_METADATA = true;

@@ -15,25 +15,35 @@ public class AdsPref {
         editor = sharedPreferences.edit();
     }
 
-    public void saveAds(String ad_status, String ad_type, String backup_ads, String admob_publisher_id, String admob_banner_unit_id, String admob_interstitial_unit_id, String admob_native_unit_id, String admob_app_open_unit_id, String startapp_app_id, String unity_game_id, String unity_banner_placement_id, String unity_interstitial_placement_id, String applovin_banner_unit_id, String applovin_interstitial_unit_id, String applovin_native_ad_manual_unit_id, String applovin_banner_zone_id, String applovin_interstitial_zone_id, int interstitial_ad_interval) {
-        editor.putString("ad_status", ad_status);
-        editor.putString("ad_type", ad_type);
-        editor.putString("backup_ads", backup_ads);
-        editor.putString("admob_publisher_id", admob_publisher_id);
-        editor.putString("admob_banner_unit_id", admob_banner_unit_id);
-        editor.putString("admob_interstitial_unit_id", admob_interstitial_unit_id);
-        editor.putString("admob_native_unit_id", admob_native_unit_id);
-        editor.putString("admob_app_open_unit_id", admob_app_open_unit_id);
-        editor.putString("startapp_app_id", startapp_app_id);
-        editor.putString("unity_game_id", unity_game_id);
-        editor.putString("unity_banner_placement_id", unity_banner_placement_id);
-        editor.putString("unity_interstitial_placement_id", unity_interstitial_placement_id);
-        editor.putString("applovin_banner_unit_id", applovin_banner_unit_id);
-        editor.putString("applovin_interstitial_unit_id", applovin_interstitial_unit_id);
-        editor.putString("applovin_native_ad_manual_unit_id", applovin_native_ad_manual_unit_id);
-        editor.putString("applovin_banner_zone_id", applovin_banner_zone_id);
-        editor.putString("applovin_interstitial_zone_id", applovin_interstitial_zone_id);
-        editor.putInt("interstitial_ad_interval", interstitial_ad_interval);
+    public void saveAds(String adStatus, String adType, String backupAds, String adMobPublisherId, String adMobBannerId, String adMobInterstitialId, String adMobNativeId, String adMobAppOpenId, String adManagerBannerUnitId, String adManagerInterstitialUnitId, String adManagerNativeUnitId, String adManagerAppOpenAdUnitId, String fanBannerUnitId, String fanInterstitialUnitId, String fanNativeUnitId, String startAppId, String unityGameId, String unityBannerId, String unityInterstitialId, String appLovinBannerId, String appLovinInterstitialId, String applovinNativeAdManualUnitId, String applovinBannerZoneId, String applovinInterstitialZoneId, String ironSourceAppKey, String ironSourceBannerId, String ironSourceInterstitialId, int interstitialAdInterval) {
+        editor.putString("ad_status", adStatus);
+        editor.putString("ad_type", adType);
+        editor.putString("backup_ads", backupAds);
+        editor.putString("admob_publisher_id", adMobPublisherId);
+        editor.putString("admob_banner_unit_id", adMobBannerId);
+        editor.putString("admob_interstitial_unit_id", adMobInterstitialId);
+        editor.putString("admob_native_unit_id", adMobNativeId);
+        editor.putString("admob_app_open_ad_unit_id", adMobAppOpenId);
+        editor.putString("ad_manager_banner_unit_id", adManagerBannerUnitId);
+        editor.putString("ad_manager_interstitial_unit_id", adManagerInterstitialUnitId);
+        editor.putString("ad_manager_native_unit_id", adManagerNativeUnitId);
+        editor.putString("ad_manager_app_open_ad_unit_id", adManagerAppOpenAdUnitId);
+        editor.putString("fan_banner_unit_id", fanBannerUnitId);
+        editor.putString("fan_interstitial_unit_id", fanInterstitialUnitId);
+        editor.putString("fan_native_unit_id", fanNativeUnitId);
+        editor.putString("startapp_app_id", startAppId);
+        editor.putString("unity_game_id", unityGameId);
+        editor.putString("unity_banner_placement_id", unityBannerId);
+        editor.putString("unity_interstitial_placement_id", unityInterstitialId);
+        editor.putString("applovin_banner_ad_unit_id", appLovinBannerId);
+        editor.putString("applovin_interstitial_ad_unit_id", appLovinInterstitialId);
+        editor.putString("applovin_native_ad_manual_unit_id", applovinNativeAdManualUnitId);
+        editor.putString("applovin_banner_zone_id", applovinBannerZoneId);
+        editor.putString("applovin_interstitial_zone_id", applovinInterstitialZoneId);
+        editor.putString("ironsource_app_key", ironSourceAppKey);
+        editor.putString("ironsource_banner_id", ironSourceBannerId);
+        editor.putString("ironsource_interstitial_id", ironSourceInterstitialId);
+        editor.putInt("interstitial_ad_interval", interstitialAdInterval);
         editor.apply();
     }
 
@@ -69,15 +79,39 @@ public class AdsPref {
         return sharedPreferences.getString("admob_native_unit_id", "0");
     }
 
-    public String getAdMobAppOpenId() {
-        return sharedPreferences.getString("admob_app_open_unit_id", "0");
+    public String getAdMobAppOpenAdId() {
+        return sharedPreferences.getString("admob_app_open_ad_unit_id", "0");
+    }
+
+    public String getAdManagerBannerId() {
+        return sharedPreferences.getString("ad_manager_banner_unit_id", "0");
+    }
+
+    public String getAdManagerInterstitialId() {
+        return sharedPreferences.getString("ad_manager_interstitial_unit_id", "0");
+    }
+
+    public String getAdManagerNativeId() {
+        return sharedPreferences.getString("ad_manager_native_unit_id", "0");
+    }
+
+    public String getAdManagerAppOpenAdId() {
+        return sharedPreferences.getString("ad_manager_app_open_ad_unit_id", "0");
+    }
+
+    public String getFanBannerUnitId() {
+        return sharedPreferences.getString("fan_banner_unit_id", "0");
+    }
+
+    public String getFanInterstitialUnitId() {
+        return sharedPreferences.getString("fan_interstitial_unit_id", "0");
     }
 
     public String getFanNativeUnitId() {
         return sharedPreferences.getString("fan_native_unit_id", "0");
     }
 
-    public String getStartappAppID() {
+    public String getStartappAppId() {
         return sharedPreferences.getString("startapp_app_id", "0");
     }
 
@@ -93,16 +127,12 @@ public class AdsPref {
         return sharedPreferences.getString("unity_interstitial_placement_id", "video");
     }
 
-    public String getAppLovinBannerId() {
-        return sharedPreferences.getString("applovin_banner_unit_id", "0");
+    public String getAppLovinBannerAdUnitId() {
+        return sharedPreferences.getString("applovin_banner_ad_unit_id", "0");
     }
 
-    public String getAppLovinInterstitialId() {
-        return sharedPreferences.getString("applovin_interstitial_unit_id", "0");
-    }
-
-    public String getAppLovinNativeAdManualUnitId() {
-        return sharedPreferences.getString("applovin_native_ad_manual_unit_id", "0");
+    public String getAppLovinInterstitialAdUnitId() {
+        return sharedPreferences.getString("applovin_interstitial_ad_unit_id", "0");
     }
 
     public String getAppLovinBannerZoneId() {
@@ -111,6 +141,22 @@ public class AdsPref {
 
     public String getAppLovinInterstitialZoneId() {
         return sharedPreferences.getString("applovin_interstitial_zone_id", "0");
+    }
+
+    public String getAppLovinNativeAdManualUnitId() {
+        return sharedPreferences.getString("applovin_native_ad_manual_unit_id", "0");
+    }
+
+    public String getIronSourceAppKey() {
+        return sharedPreferences.getString("ironsource_app_key", "0");
+    }
+
+    public String getIronSourceBannerId() {
+        return sharedPreferences.getString("ironsource_banner_id", "0");
+    }
+
+    public String getIronSourceInterstitialId() {
+        return sharedPreferences.getString("ironsource_interstitial_id", "0");
     }
 
     public int getInterstitialAdInterval() {

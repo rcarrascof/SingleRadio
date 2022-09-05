@@ -1,18 +1,28 @@
 package com.app.AlofokeFm.activities;
 
 import static com.app.AlofokeFm.utils.Constant.LOCALHOST_ADDRESS;
+import static com.solodroid.ads.sdk.util.Constant.ADMOB;
+import static com.solodroid.ads.sdk.util.Constant.AD_STATUS_ON;
+import static com.solodroid.ads.sdk.util.Constant.GOOGLE_AD_MANAGER;
 
 import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.lifecycle.Lifecycle;
+import androidx.lifecycle.LifecycleObserver;
+import androidx.lifecycle.OnLifecycleEvent;
+import androidx.lifecycle.ProcessLifecycleOwner;
 import androidx.multidex.MultiDex;
 
 import com.app.AlofokeFm.Config;
 import com.app.AlofokeFm.callbacks.CallbackConfig;
+import com.app.AlofokeFm.database.prefs.AdsPref;
 import com.app.AlofokeFm.database.prefs.SharedPref;
 import com.app.AlofokeFm.models.Settings;
 import com.app.AlofokeFm.rests.RestAdapter;
@@ -21,6 +31,9 @@ import com.google.android.gms.ads.MobileAds;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.onesignal.OneSignal;
+import com.solodroid.ads.sdk.format.AppOpenAdManager;
+import com.solodroid.ads.sdk.format.AppOpenAdMob;
+import com.solodroid.ads.sdk.util.OnShowAdCompleteListener;
 import com.solodroid.ads.sdk.util.Tools;
 
 import org.json.JSONArray;
@@ -35,11 +48,9 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class MyApplication extends Application {
+public class MyApplication extends Application implements Application.ActivityLifecycleCallbacks, LifecycleObserver {
 
     public static final String TAG = "MyApplication";
-    private static MyApplication mInstance;
-    private AppOpenAdManager appOpenAdManager;
     String message = "";
     String big_picture = "";
     String title = "";
@@ -51,21 +62,31 @@ public class MyApplication extends Application {
     Settings settings;
     SharedPref sharedPref;
     Activity activity;
+    AdsPref adsPref;
+    private AppOpenAdMob appOpenAdMob;
+    private AppOpenAdManager appOpenAdManager;
+    Activity currentActivity;
 
     public MyApplication() {
-        mInstance = this;
-    }
 
+    }
     @Override
     public void onCreate() {
         super.onCreate();
-        mInstance = this;
+        this.registerActivityLifecycleCallbacks(this);
         sharedPref = new SharedPref(this);
+        adsPref = new AdsPref(this);
+        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
         MobileAds.initialize(this, initializationStatus -> {
         });
-        appOpenAdManager = new AppOpenAdManager.Builder(this).build();
-        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
+        ProcessLifecycleOwner.get().getLifecycle().addObserver(this);
+        appOpenAdMob = new AppOpenAdMob();
+        appOpenAdManager = new AppOpenAdManager();
 
+        initNotification();
+    }
+
+    private void initNotification() {
         OneSignal.disablePush(false);
         Log.d(TAG, "OneSignal Notification is enabled");
 
@@ -102,8 +123,8 @@ public class MyApplication extends Application {
                 });
 
         OneSignal.unsubscribeWhenNotificationsAreDisabled(true);
-
     }
+
 
     private void requestConfig() {
         String data = Tools.decode(Config.ACCESS_KEY);
@@ -177,8 +198,96 @@ public class MyApplication extends Application {
         MultiDex.install(this);
     }
 
-    public static synchronized MyApplication getInstance() {
-        return mInstance;
+    @OnLifecycleEvent(Lifecycle.Event.ON_START)
+    protected void onMoveToForeground() {
+        // Show the ad (if available) when the app moves to foreground.
+        if (adsPref.getAdStatus().equals(AD_STATUS_ON)) {
+            switch (adsPref.getAdType()) {
+                case ADMOB:
+                    if (!adsPref.getAdMobAppOpenAdId().equals("0")) {
+                        if (!currentActivity.getIntent().hasExtra("unique_id")) {
+                            appOpenAdMob.showAdIfAvailable(currentActivity, adsPref.getAdMobAppOpenAdId());
+                        }
+                    }
+                    break;
+                case GOOGLE_AD_MANAGER:
+                    if (!adsPref.getAdManagerAppOpenAdId().equals("0")) {
+                        if (!currentActivity.getIntent().hasExtra("unique_id")) {
+                            appOpenAdManager.showAdIfAvailable(currentActivity, adsPref.getAdManagerAppOpenAdId());
+                        }
+                    }
+                    break;
+            }
+        }
     }
 
+    public void showAdIfAvailable(@NonNull Activity activity, @NonNull OnShowAdCompleteListener onShowAdCompleteListener) {
+        // We wrap the showAdIfAvailable to enforce that other classes only interact with MyApplication class
+        if (adsPref.getAdStatus().equals(AD_STATUS_ON)) {
+            switch (adsPref.getAdType()) {
+                case ADMOB:
+                    if (!adsPref.getAdMobAppOpenAdId().equals("0")) {
+                        appOpenAdMob.showAdIfAvailable(activity, adsPref.getAdMobAppOpenAdId(), onShowAdCompleteListener);
+                    }
+                    break;
+                case GOOGLE_AD_MANAGER:
+                    if (!adsPref.getAdManagerAppOpenAdId().equals("0")) {
+                        appOpenAdManager.showAdIfAvailable(activity, adsPref.getAdManagerAppOpenAdId(), onShowAdCompleteListener);
+                    }
+                    break;
+            }
+        }
+    }
+
+    @Override
+    public void onActivityCreated(@NonNull Activity activity, @Nullable Bundle bundle) {
+
+    }
+
+    @Override
+    public void onActivityStarted(@NonNull Activity activity) {
+        if (adsPref.getAdStatus().equals(AD_STATUS_ON)) {
+            switch (adsPref.getAdType()) {
+                case ADMOB:
+                    if (!adsPref.getAdMobAppOpenAdId().equals("0")) {
+                        if (!appOpenAdMob.isShowingAd) {
+                            currentActivity = activity;
+                        }
+                    }
+                    break;
+                case GOOGLE_AD_MANAGER:
+                    if (!adsPref.getAdManagerAppOpenAdId().equals("0")) {
+                        if (!appOpenAdManager.isShowingAd) {
+                            currentActivity = activity;
+                        }
+                    }
+                    break;
+            }
+        }
+    }
+
+    @Override
+    public void onActivityResumed(@NonNull Activity activity) {
+
+    }
+
+    @Override
+    public void onActivityPaused(@NonNull Activity activity) {
+
+    }
+
+    @Override
+    public void onActivityStopped(@NonNull Activity activity) {
+
+    }
+
+    @Override
+    public void onActivitySaveInstanceState(@NonNull Activity activity, @NonNull Bundle bundle) {
+
+    }
+
+    @Override
+    public void onActivityDestroyed(@NonNull Activity activity) {
+
+    }
 }

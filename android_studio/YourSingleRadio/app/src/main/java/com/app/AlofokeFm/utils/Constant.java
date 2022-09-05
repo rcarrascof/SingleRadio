@@ -1,7 +1,8 @@
 package com.app.AlofokeFm.utils;
 
 import com.app.AlofokeFm.models.Radio;
-import com.google.android.exoplayer2.ExoPlayer;
+import com.vhall.android.exoplayer2.ExoPlayer;
+import com.vhall.android.exoplayer2.SimpleExoPlayer;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -19,14 +20,14 @@ public class Constant implements Serializable {
 
     public static String metadata;
     public static String albumArt;
-    public static ExoPlayer exoPlayer;
+    public static SimpleExoPlayer exoPlayer;
     public static Boolean is_playing = false;
     public static Boolean radio_type = true;
     public static Boolean is_app_open = false;
     public static ArrayList<Radio> item_radio = new ArrayList<>();
     public static int position = 0;
 
-    public static final String LOCALHOST_ADDRESS = "http://10.0.2.2";
+    public static final String LOCALHOST_ADDRESS = "https://drive.google.com/file/d/1vgUP-0c2pkDjff_59bSIX6O0KVDx9veN/view?usp=sharing";
 
     public static final int BANNER_AD = 1;
     public static final int INTERSTITIAL_AD = 1;

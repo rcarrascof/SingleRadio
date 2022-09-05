@@ -206,8 +206,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         fabPlayExpand.setOnClickListener(view -> {
             if (!utils.isNetworkAvailable()) {
                 Toast.makeText(MainActivity.this, getResources().getString(R.string.internet_not_connected), Toast.LENGTH_SHORT).show();
-            } else if (txtSongExpand.getText().equals(getString(R.string.app_name))) {
-                Toast.makeText(MainActivity.this, getResources().getString(R.string.no_radio_selected), Toast.LENGTH_SHORT).show();
             } else {
                 Radio radio = radios.get(0);
                 final Intent intent = new Intent(MainActivity.this, RadioPlayerService.class);
@@ -216,17 +214,17 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     Radio playerCurrentRadio = RadioPlayerService.getInstance().getPlayingRadioStation();
                     if (playerCurrentRadio != null) {
                         if (radio.getRadio_id() != RadioPlayerService.getInstance().getPlayingRadioStation().getRadio_id()) {
-                            RadioPlayerService.getInstance().initialize(MainActivity.this, radio);
+                            RadioPlayerService.getInstance().initializeRadio(MainActivity.this, radio);
                             intent.setAction(RadioPlayerService.ACTION_PLAY);
                         } else {
                             intent.setAction(RadioPlayerService.ACTION_TOGGLE);
                         }
                     } else {
-                        RadioPlayerService.getInstance().initialize(MainActivity.this, radio);
+                        RadioPlayerService.getInstance().initializeRadio(MainActivity.this, radio);
                         intent.setAction(RadioPlayerService.ACTION_PLAY);
                     }
                 } else {
-                    RadioPlayerService.createInstance().initialize(MainActivity.this, radio);
+                    RadioPlayerService.createInstance().initializeRadio(MainActivity.this, radio);
                     intent.setAction(RadioPlayerService.ACTION_PLAY);
                 }
                 startService(intent);
@@ -238,7 +236,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }
         });
 
-        if (Config.ENABLE_AUTOPLAY) {
+        if (sharedPref.getAutoPlay().equals("true")) {
             if (utils.isNetworkAvailable()) {
                 new Handler(Looper.getMainLooper()).postDelayed(() -> fabPlayExpand.performClick(), Constant.DELAY_PERFORM_CLICK);
             }
@@ -785,14 +783,17 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     @Override
     public void onResume() {
-        initComponent();
         super.onResume();
+        initComponent();
+        adsManager.resumeBannerAd(1);
+
     }
 
     @Override
     protected void onDestroy() {
-        Constant.is_app_open = false;
         super.onDestroy();
+        Constant.is_app_open = false;
+        adsManager.destroyBannerAd();
     }
 
     @Override

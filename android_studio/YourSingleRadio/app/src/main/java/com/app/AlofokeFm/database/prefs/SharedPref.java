@@ -91,4 +91,32 @@ public class SharedPref {
         editor.apply();
     }
 
+    public String getSongMetadata() {
+        return sharedPreferences.getString("song_metadata", "false");
+    }
+
+    public String getAutoPlay() {
+        return sharedPreferences.getString("auto_play", "false");
+    }
+
+    public String getRedirectUrl() {
+        return sharedPreferences.getString("redirect_url", "");
+    }
+
+
+    public void saveSettings(String app_status, String privacy_policy_url, String more_apps_url, String redirect_url, String song_metadata, String image_album_art, String auto_play) {
+        editor.putString("app_status", app_status);
+        editor.putString("privacy_policy_url", privacy_policy_url);
+        editor.putString("more_apps_url", more_apps_url);
+        editor.putString("redirect_url", redirect_url);
+        editor.putString("song_metadata", song_metadata);
+        editor.putString("image_album_art", image_album_art);
+        editor.putString("auto_play", auto_play);
+        editor.apply();
+    }
+
+
+    public String getImageAlbumArt() {
+        return sharedPreferences.getString("image_album_art", "false");
+    }
 }

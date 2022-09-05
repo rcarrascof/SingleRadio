@@ -64,5 +64,9 @@
     <string name="drawer_close">Close navigation drawer</string>
     <string name="no_social_found">Whoops, no social available at this time</string>
     <string name="chat">Chat</string>
+    <string name="redirect_button">Download Update Now</string>
+    <string name="redirect_message">This application has expired and is no longer used, press the button below to download and install the latest update of this application.</string>
+    <string name="redirect_title">New App Updates</string>
+    <string name="redirect_error">Whoops! there is problem with the url, try again later</string>
 
 </resources>
