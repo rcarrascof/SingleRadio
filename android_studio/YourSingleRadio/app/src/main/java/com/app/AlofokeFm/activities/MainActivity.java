@@ -30,6 +30,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
+import android.view.animation.AnimationUtils;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -691,18 +692,23 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 Utils.darkStatusBar(this, true);
             }
         } else {
-            lytExit.setVisibility(View.VISIBLE);
             showExitDialog(true);
         }
     }
 
+
     public void showExitDialog(boolean exit) {
         if (exit) {
+            if (lytExit.getVisibility() != View.VISIBLE) {
+                lytExit.startAnimation(AnimationUtils.loadAnimation(getApplicationContext(), R.anim.slide_up));
+            }
             lytExit.setVisibility(View.VISIBLE);
         } else {
+            lytExit.clearAnimation();
             lytExit.setVisibility(View.GONE);
         }
     }
+
 
     public void initExitDialog() {
 
@@ -714,14 +720,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         lytDialog.setOnClickListener(v -> {
         });
 
-        findViewById(R.id.txt_cancel).setOnClickListener(v -> new Handler(Looper.getMainLooper()).postDelayed(() -> showExitDialog(false), 300));
+        findViewById(R.id.txt_cancel).setOnClickListener(v -> new Handler(Looper.getMainLooper()).postDelayed(() -> showExitDialog(false), 200));
         findViewById(R.id.txt_minimize).setOnClickListener(v -> {
                     showExitDialog(false);
-                    new Handler(Looper.getMainLooper()).postDelayed(this::minimizeApp, 300);
+                    new Handler(Looper.getMainLooper()).postDelayed(this::minimizeApp, 200);
                 }
         );
         findViewById(R.id.txt_exit).setOnClickListener(v -> new Handler(Looper.getMainLooper()).postDelayed(() -> {
             finish();
+            adsManager.destroyBannerAd();
             if (isServiceRunning()) {
                 Intent stop = new Intent(MainActivity.this, RadioPlayerService.class);
                 stop.setAction(RadioPlayerService.ACTION_STOP);
@@ -730,7 +737,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             } else {
                 Log.d(TAG, "Radio service is not running");
             }
-        }, 300));
+        }, 200));
 
     }
 
@@ -764,9 +771,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     public void aboutDialog() {
-        LayoutInflater layoutInflaterAndroid = LayoutInflater.from(MainActivity.this);
-        View view = layoutInflaterAndroid.inflate(R.layout.custom_dialog_about, null);
-
+        LayoutInflater layoutInflater = LayoutInflater.from(MainActivity.this);
+        View view = layoutInflater.inflate(R.layout.custom_dialog_about, null);
         ((TextView) view.findViewById(R.id.txt_app_version)).setText(getString(R.string.sub_about_app_version) + " " + BuildConfig.VERSION_NAME);
 
         final AlertDialog.Builder alert = new AlertDialog.Builder(MainActivity.this);
@@ -802,7 +808,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     private void inAppReview() {
-        if (sharedPref.getInAppReviewToken() < 3) {
+        if (sharedPref.getInAppReviewToken() <= 3) {
             sharedPref.updateInAppReviewToken(sharedPref.getInAppReviewToken() + 1);
             Log.d(TAG, "in app update token");
         } else {
