@@ -16,7 +16,7 @@
     <string name="drawer_about">About</string>
 
     <!--permission agreement-->
-    <string name="permission_title">Thanks for installing Your Radio App</string>
+    <string name="permission_title">Thanks for installing Alofoke FM App</string>
     <string name="btn_allow_permissions">Allow permissions now</string>
     <string name="btn_later">I will do it later</string>
     <string name="permission_message">

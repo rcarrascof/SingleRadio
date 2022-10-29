@@ -3,6 +3,7 @@ package com.app.AlofokeFm.models;
 import java.io.Serializable;
 
 public class Settings implements Serializable {
+
     public String app_status = "";
     public String onesignal_app_id = "";
     public String fcm_notification_topic = "";

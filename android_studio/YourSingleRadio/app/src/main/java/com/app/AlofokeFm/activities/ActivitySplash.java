@@ -32,8 +32,6 @@ import com.app.AlofokeFm.models.Settings;
 import com.app.AlofokeFm.rests.RestAdapter;
 import com.app.AlofokeFm.utils.AdsManager;
 import com.app.AlofokeFm.utils.Utils;
-import com.google.android.gms.ads.FullScreenContentCallback;
-import com.solodroid.ads.sdk.format.AppOpenAdManager;
 import com.solodroid.ads.sdk.util.Tools;
 
 import org.json.JSONArray;
@@ -54,21 +52,16 @@ import retrofit2.Response;
 public class ActivitySplash extends AppCompatActivity {
 
     public static final String TAG = "ActivitySplash";
-    AppOpenAdManager appOpenAdManager;
-    private boolean isAdShown = false;
-    private boolean isAdDismissed = false;
-    private boolean isLoadCompleted = false;
     ProgressBar progressBar;
     AdsPref adsPref;
     SharedPref sharedPref;
+    AdsManager adsManager;
     Call<CallbackConfig> callbackCall = null;
     Radio radio;
     Settings settings;
     Ads ads;
     private DAO db;
     long id = System.currentTimeMillis();
-    AdsManager adsManager;
-
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -76,6 +69,7 @@ public class ActivitySplash extends AppCompatActivity {
         setContentView(R.layout.activity_splash);
         db = AppDatabase.getDb(this).get();
         adsManager = new AdsManager(this);
+        adsManager.initializeAd();
         sharedPref = new SharedPref(this);
         adsPref = new AdsPref(this);
         if (adsPref.getAdStatus().equals(AD_STATUS_ON)) {
@@ -139,7 +133,7 @@ public class ActivitySplash extends AppCompatActivity {
                         .setCancelable(false)
                         .show();
             }
-            Log.d(TAG, "Start request config");
+            Log.d(TAG, "Start request config from url : " + remoteUrl);
         }
     }
 
@@ -173,6 +167,7 @@ public class ActivitySplash extends AppCompatActivity {
 
         });
     }
+
     private void displayApiResults(CallbackConfig resp) {
         if (resp != null) {
 
@@ -193,6 +188,8 @@ public class ActivitySplash extends AppCompatActivity {
                         settings.redirect_url,
                         radio.song_metadata,
                         radio.image_album_art,
+                        radio.image_album_art_dynamic_background,
+                        radio.blur_radio_background,
                         radio.auto_play
                 );
                 adsManager.saveAds(adsPref, ads);
@@ -233,8 +230,10 @@ public class ActivitySplash extends AppCompatActivity {
             String radio_url = radio.getString("radio_url");
             String radio_image_url = radio.getString("radio_image_url");
             String background_image_url = radio.getString("background_image_url");
+            String blur_radio_background = radio.getString("blur_radio_background");
             String song_metadata = radio.getString("song_metadata");
             String image_album_art = radio.getString("image_album_art");
+            String image_album_art_dynamic_background = radio.getString("image_album_art_dynamic_background");
             String auto_play = radio.getString("auto_play");
 
             String app_status = setting.getString("app_status");
@@ -248,7 +247,6 @@ public class ActivitySplash extends AppCompatActivity {
             String ad_type = ad.getString("ad_type");
             String backup_ads = ad.getString("backup_ads");
             String admob_publisher_id = ad.getString("admob_publisher_id");
-            String admob_app_id = ad.getString("admob_app_id");
             String admob_banner_unit_id = ad.getString("admob_banner_unit_id");
             String admob_interstitial_unit_id = ad.getString("admob_interstitial_unit_id");
             String admob_native_unit_id = ad.getString("admob_native_unit_id");
@@ -281,6 +279,8 @@ public class ActivitySplash extends AppCompatActivity {
                     redirect_url,
                     song_metadata,
                     image_album_art,
+                    image_album_art_dynamic_background,
+                    blur_radio_background,
                     auto_play
             );
 
@@ -337,7 +337,13 @@ public class ActivitySplash extends AppCompatActivity {
         }
     }
 
-
+    private void startMainActivity() {
+        new Handler().postDelayed(() -> {
+            Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+            startActivity(intent);
+            finish();
+        }, Config.SPLASH_DURATION);
+    }
 
     private void readSocial() {
         try {
@@ -374,14 +380,6 @@ public class ActivitySplash extends AppCompatActivity {
             return json;
         }
         return json;
-    }
-
-    private void startMainActivity() {
-        new Handler().postDelayed(() -> {
-            Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-            startActivity(intent);
-            finish();
-        }, Config.SPLASH_DURATION);
     }
 
 }

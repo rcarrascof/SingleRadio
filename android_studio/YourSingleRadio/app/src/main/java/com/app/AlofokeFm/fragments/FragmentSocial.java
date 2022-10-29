@@ -3,7 +3,9 @@ package com.app.AlofokeFm.fragments;
 import static com.app.AlofokeFm.utils.Constant.LOCALHOST_ADDRESS;
 
 import android.app.Dialog;
+import android.content.Context;
 import android.content.Intent;
+import android.net.MailTo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -25,6 +27,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.app.AlofokeFm.Config;
 import com.app.AlofokeFm.R;
+import com.app.AlofokeFm.activities.MainActivity;
 import com.app.AlofokeFm.adapters.AdapterSocial;
 import com.app.AlofokeFm.callbacks.CallbackConfig;
 import com.app.AlofokeFm.database.dao.AppDatabase;
@@ -54,6 +57,13 @@ public class FragmentSocial extends DialogFragment {
     DAO db;
     View rootView;
     RelativeLayout parentView;
+    MainActivity activity;
+
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        activity = (MainActivity) context;
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -100,21 +110,47 @@ public class FragmentSocial extends DialogFragment {
                 Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(obj.social_url));
                 startActivity(intent);
             } else {
+                urlHandler(obj.social_name, obj.social_url);
+            }
+        });
+    }
+
+    private void urlHandler(String title, String url) {
+        if (url != null && (url.startsWith("http://") || url.startsWith("https://"))) {
+            if (url.contains("mailto:")) {
+                MailTo mailTo = MailTo.parse(url);
+                Utils.startEmailActivity(activity, mailTo.getTo(), mailTo.getSubject(), mailTo.getBody());
+            } else if (url.contains("tel:")) {
+                Utils.startCallActivity(activity, url);
+            } else if (url.contains("sms:")) {
+                Utils.startSmsActivity(activity, url);
+            } else if (url.contains("geo:")) {
+                Utils.startMapSearchActivity(activity, url);
+            } else if (url.contains("instagram.com")) {
+                Utils.startWebActivity(activity, url);
+            } else if (url.contains("facebook.com") || url.contains("fb://")) {
+                Utils.startWebActivity(activity, url);
+            } else if (url.contains("twitter.com") || url.contains("twitter://")) {
+                Utils.startWebActivity(activity, url);
+            } else if (url.contains("api.whatsapp.com") || url.contains("whatsapp://")) {
+                Utils.startWebActivity(activity, url);
+            } else if (url.contains("maps.google.com")) {
+                Utils.startWebActivity(activity, url);
+            } else {
                 FragmentWebView fragmentWebView = new FragmentWebView();
                 Bundle args = new Bundle();
-                args.putString("title", obj.social_name);
-                args.putString("url", obj.social_url);
+                args.putString("title", title);
+                args.putString("url", url);
                 fragmentWebView.setArguments(args);
-
                 FragmentManager fragmentManager = getFragmentManager();
                 assert fragmentManager != null;
                 FragmentTransaction transaction = fragmentManager.beginTransaction()
-                        .setCustomAnimations(R.anim.slide_in, R.anim.fade_out, R.anim.fade_in, R.anim.slide_out);
+                        .setCustomAnimations(R.anim.slide_up, 0, 0, R.anim.slide_down);
                 transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
                 transaction.add(android.R.id.content, fragmentWebView).addToBackStack("page");
                 transaction.commit();
             }
-        });
+        }
     }
 
     private void loadDataFromDatabase(final List<SocialEntity> socials) {

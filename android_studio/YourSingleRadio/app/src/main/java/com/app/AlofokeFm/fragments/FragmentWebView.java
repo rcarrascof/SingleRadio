@@ -2,6 +2,7 @@ package com.app.AlofokeFm.fragments;
 
 import android.annotation.SuppressLint;
 import android.app.Dialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -9,6 +10,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -27,12 +29,14 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
 
 import com.app.AlofokeFm.R;
+import com.app.AlofokeFm.activities.MainActivity;
 import com.app.AlofokeFm.utils.Utils;
 
 import java.util.Objects;
 
 public class FragmentWebView extends DialogFragment {
 
+    public static final String TAG = "Rawr";
     View rootView;
     WebView webView;
     ProgressBar progressBar;
@@ -41,6 +45,13 @@ public class FragmentWebView extends DialogFragment {
     String strUrl;
     String strTitle;
     TextView dialogTitle;
+    MainActivity activity;
+
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        activity = (MainActivity) context;
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -60,13 +71,11 @@ public class FragmentWebView extends DialogFragment {
         dialogTitle.setText(strTitle);
 
         (rootView.findViewById(R.id.button_close)).setOnClickListener(v -> new Handler(Looper.getMainLooper()).postDelayed(() -> {
-            if (getActivity() != null) {
-                int count = getActivity().getSupportFragmentManager().getBackStackEntryCount();
-                if (count != 0) {
-                    getActivity().getSupportFragmentManager().popBackStack();
-                    if (count == 1) {
-                        Utils.darkStatusBar(getActivity(), true);
-                    }
+            int count = activity.getSupportFragmentManager().getBackStackEntryCount();
+            if (count != 0) {
+                activity.getSupportFragmentManager().popBackStack();
+                if (count == 1) {
+                    Utils.darkStatusBar(activity, true);
                 }
             }
             dismiss();
@@ -127,10 +136,7 @@ public class FragmentWebView extends DialogFragment {
 
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
-
-            if (url != null && (url.startsWith("http://") || url.startsWith("https://"))) {
-                view.loadUrl(url);
-            }
+            view.loadUrl(url);
 
             actionHandler("mailto:", Intent.ACTION_SENDTO, url);
             actionHandler("sms:", Intent.ACTION_SENDTO, url);
@@ -138,9 +144,12 @@ public class FragmentWebView extends DialogFragment {
 
             socialHandler(url, "intent://instagram", "com.instagram.android");
             socialHandler(url, "instagram://", "com.instagram.android");
+            socialHandler(url, "instagram.com", "com.instagram.android");
             socialHandler(url, "twitter://", "com.twitter.android");
-            socialHandler(url, "https://maps.google.com", "com.google.android.apps.maps");
-            socialHandler(url, "https://api.whatsapp.com", "com.whatsapp");
+            socialHandler(url, "twitter.com", "com.twitter.android");
+            socialHandler(url, "facebook.com", "com.facebook.katana");
+            socialHandler(url, "maps.google.com", "com.google.android.apps.maps");
+            socialHandler(url, "api.whatsapp.com", "com.whatsapp");
             socialHandler(url, "https://play.google.com/store/apps/details?id=", null);
 
             return true;
@@ -160,7 +169,7 @@ public class FragmentWebView extends DialogFragment {
         @Override
         public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
             progressBar.setVisibility(View.GONE);
-            Toast.makeText(getActivity(), getResources().getString(R.string.failed_text), Toast.LENGTH_LONG).show();
+            Toast.makeText(activity, getResources().getString(R.string.failed_text), Toast.LENGTH_LONG).show();
             lytFailed.setVisibility(View.VISIBLE);
         }
     }
@@ -173,8 +182,8 @@ public class FragmentWebView extends DialogFragment {
     }
 
     public void socialHandler(String url, String social_url, String package_name) {
-        PackageManager packageManager = Objects.requireNonNull(getActivity()).getPackageManager();
-        if (url != null && url.startsWith(social_url)) {
+        PackageManager packageManager = activity.getPackageManager();
+        if (url != null && url.contains(social_url)) {
             Intent intent = new Intent(Intent.ACTION_VIEW);
             try {
                 intent.setPackage(package_name);
@@ -184,6 +193,7 @@ public class FragmentWebView extends DialogFragment {
                 }
             } catch (Exception e) {
                 e.printStackTrace();
+                Log.d(TAG, "error : " + e.getMessage());
             }
         }
     }

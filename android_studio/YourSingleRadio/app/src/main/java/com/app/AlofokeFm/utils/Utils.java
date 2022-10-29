@@ -3,9 +3,11 @@ package com.app.AlofokeFm.utils;
 import static com.app.AlofokeFm.utils.Constant.PERMISSIONS_REQUEST;
 
 import android.app.Activity;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -14,9 +16,15 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.renderscript.Allocation;
+import android.renderscript.Element;
+import android.renderscript.RenderScript;
+import android.renderscript.ScriptIntrinsicBlur;
 import android.util.Log;
+import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.animation.AnimationUtils;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -42,6 +50,7 @@ import java.util.regex.Pattern;
 
 public class Utils {
 
+    public static final String TAG = "Utils";
     Context context;
     SharedPref sharedPref;
 
@@ -100,7 +109,8 @@ public class Utils {
                     fragmentWebView.setArguments(args);
 
                     FragmentManager fragmentManager = context.getSupportFragmentManager();
-                    FragmentTransaction transaction = fragmentManager.beginTransaction();
+                    FragmentTransaction transaction = fragmentManager.beginTransaction()
+                            .setCustomAnimations(R.anim.slide_up, 0, 0, R.anim.slide_down);
                     transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
                     transaction.add(android.R.id.content, fragmentWebView).addToBackStack("page");
                     transaction.commit();
@@ -108,36 +118,6 @@ public class Utils {
             }
         }
     }
-
-    public static String getUserAgent() {
-
-        StringBuilder result = new StringBuilder(64);
-        result.append("Dalvik/");
-        result.append(System.getProperty("java.vm.version"));
-        result.append(" (Linux; U; Android ");
-
-        String version = Build.VERSION.RELEASE;
-        result.append(version.length() > 0 ? version : "1.0");
-
-        if ("REL".equals(Build.VERSION.CODENAME)) {
-            String model = Build.MODEL;
-            if (model.length() > 0) {
-                result.append("; ");
-                result.append(model);
-            }
-        }
-
-        String id = Build.ID;
-
-        if (id.length() > 0) {
-            result.append(" Build/");
-            result.append(id);
-        }
-
-        result.append(")");
-        return result.toString();
-    }
-
 
     public void showToast(String msg) {
         Toast.makeText(context, msg, Toast.LENGTH_LONG).show();
@@ -198,6 +178,35 @@ public class Utils {
         }
     }
 
+    public static String getUserAgent() {
+
+        StringBuilder result = new StringBuilder(64);
+        result.append("Dalvik/");
+        result.append(System.getProperty("java.vm.version"));
+        result.append(" (Linux; U; Android ");
+
+        String version = Build.VERSION.RELEASE;
+        result.append(version.length() > 0 ? version : "1.0");
+
+        if ("REL".equals(Build.VERSION.CODENAME)) {
+            String model = Build.MODEL;
+            if (model.length() > 0) {
+                result.append("; ");
+                result.append(model);
+            }
+        }
+
+        String id = Build.ID;
+
+        if (id.length() > 0) {
+            result.append(" Build/");
+            result.append(id);
+        }
+
+        result.append(")");
+        return result.toString();
+    }
+
     //Get response from an URL request (GET)
     public static String getDataFromUrl(String url) {
         // Making HTTP request
@@ -210,7 +219,7 @@ public class Utils {
             //Open a connection
             HttpURLConnection connection = (HttpURLConnection) urlCon
                     .openConnection();
-            connection.setRequestProperty("User-Agent", "Alofoke FM");
+            connection.setRequestProperty("User-Agent", "Your Single Radio");
             connection.setRequestMethod("GET");
             connection.setDoInput(true);
             connection.connect();
@@ -230,7 +239,7 @@ public class Utils {
                 // open the new connnection again
                 connection = (HttpURLConnection) new URL(newUrl).openConnection();
                 connection.setRequestProperty("Cookie", cookies);
-                connection.setRequestProperty("User-Agent", "Alofoke FM");
+                connection.setRequestProperty("User-Agent", "Your Single Radio");
                 connection.setRequestMethod("GET");
                 connection.setDoInput(true);
 
@@ -280,6 +289,137 @@ public class Utils {
             return null;
         }
         return json;
+    }
+
+    public static void startWebActivity(Context context, String url) {
+        try {
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+            context.startActivity(intent);
+        } catch (ActivityNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @SuppressWarnings("StringBufferReplaceableByString")
+    public static void startEmailActivity(Context context, String email, String subject, String text) {
+        try {
+            StringBuilder builder = new StringBuilder();
+            builder.append("mailto:");
+            builder.append(email);
+            Intent intent = new Intent(Intent.ACTION_SENDTO, Uri.parse(builder.toString()));
+            intent.putExtra(Intent.EXTRA_SUBJECT, subject);
+            intent.putExtra(Intent.EXTRA_TEXT, text);
+            context.startActivity(intent);
+        } catch (ActivityNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void startCallActivity(Context context, String url) {
+        try {
+            Intent intent = new Intent(Intent.ACTION_DIAL, Uri.parse(url));
+            context.startActivity(intent);
+        } catch (ActivityNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void startSmsActivity(Context context, String url) {
+        try {
+            Intent intent = new Intent(Intent.ACTION_SENDTO, Uri.parse(url));
+            context.startActivity(intent);
+        } catch (ActivityNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void startMapSearchActivity(Context context, String url) {
+        try {
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+            context.startActivity(intent);
+        } catch (ActivityNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void startIntentChooserActivity(Context context, String url) {
+        try {
+            String[] results = url.split("target=");
+            String type = results[1];
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+            intent.setDataAndType(Uri.parse(url), type + "/*");
+            context.startActivity(Intent.createChooser(intent, "Complete action using"));
+        } catch (ActivityNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void startExternalApplication(Context context, String url) {
+        try {
+            String[] results = url.split("package=");
+            String packageName = results[1];
+            boolean isAppInstalled = appInstalledOrNot(context, packageName);
+            if (isAppInstalled) {
+                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                intent.setPackage(packageName);
+                intent.setData(Uri.parse(url));
+                context.startActivity(intent);
+                Log.i(TAG, "Application is already installed.");
+            } else {
+                context.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=" + packageName)));
+                Log.i(TAG, "Application is not currently installed.");
+            }
+        } catch (ActivityNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static boolean appInstalledOrNot(Context context, String uri) {
+        PackageManager pm = context.getPackageManager();
+        try {
+            pm.getPackageInfo(uri, PackageManager.GET_ACTIVITIES);
+            return true;
+        } catch (PackageManager.NameNotFoundException e) {
+            Log.d(TAG, "NameNotFoundException");
+        }
+        return false;
+    }
+
+    public static void slideUp(Context context, View view) {
+        view.startAnimation(AnimationUtils.loadAnimation(context, R.anim.slide_up));
+        view.setVisibility(View.VISIBLE);
+    }
+
+    public static void slideDown(Context context, View view) {
+        //view.startAnimation(AnimationUtils.loadAnimation(context, R.anim.slide_down));
+        view.setVisibility(View.GONE);
+        view.clearAnimation();
+    }
+
+    private static final double BITMAP_SCALE = 0.8;
+    private static final float BLUR_RADIUS = 15;
+
+    public static Bitmap blurImage(Activity activity, Bitmap bitmap) {
+        try {
+            RenderScript rsScript = RenderScript.create(activity);
+            Allocation allocation = Allocation.createFromBitmap(rsScript, bitmap);
+
+            ScriptIntrinsicBlur blur = ScriptIntrinsicBlur.create(rsScript, Element.U8_4(rsScript));
+            blur.setRadius(BLUR_RADIUS);
+            blur.setInput(allocation);
+
+            Bitmap result = Bitmap.createBitmap((int) (bitmap.getWidth() * BITMAP_SCALE), (int) (bitmap.getHeight() * BITMAP_SCALE), Bitmap.Config.ARGB_8888);
+            Allocation outAlloc = Allocation.createFromBitmap(rsScript, result);
+
+            blur.forEach(outAlloc);
+            outAlloc.copyTo(result);
+
+            rsScript.destroy();
+            return result;
+        } catch (Exception e) {
+            return bitmap;
+        }
+
     }
 
 }

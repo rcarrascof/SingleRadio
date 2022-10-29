@@ -10,8 +10,10 @@ public class Radio implements Serializable {
     public String radio_url = "";
     public String radio_image_url = "https://yt3.ggpht.com/ytc/AKedOLQejjicjkEJ1oXP96beCSIr3qWhy4-BwXiAcY-lag=s900-c-k-c0x00ffffff-no-rj";
     public String background_image_url = "";
+    public String blur_radio_background = "";
     public String song_metadata = "";
     public String image_album_art = "";
+    public String image_album_art_dynamic_background = "";
     public String auto_play = "";
 
     public Radio() {

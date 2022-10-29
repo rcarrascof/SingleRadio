@@ -64,22 +64,53 @@ public class SharedPref {
         return sharedPreferences.getBoolean(IS_FIRST_TIME_LAUNCH, true);
     }
 
-    public void setPrivacyPolicyUrl(String privacy_policy_url) {
+    public void saveSettings(String app_status, String privacy_policy_url, String more_apps_url, String redirect_url, String song_metadata, String image_album_art, String image_album_art_dynamic_background, String blur_radio_background, String auto_play) {
+        editor.putString("app_status", app_status);
         editor.putString("privacy_policy_url", privacy_policy_url);
+        editor.putString("more_apps_url", more_apps_url);
+        editor.putString("redirect_url", redirect_url);
+        editor.putString("song_metadata", song_metadata);
+        editor.putString("image_album_art", image_album_art);
+        editor.putString("image_album_art_dynamic_background", image_album_art_dynamic_background);
+        editor.putString("blur_radio_background", blur_radio_background);
+        editor.putString("auto_play", auto_play);
         editor.apply();
+    }
+
+    public String getAppStatus() {
+        return sharedPreferences.getString("app_status", "");
     }
 
     public String getPrivacyPolicyUrl() {
-        return sharedPreferences.getString("privacy_policy_url", "");
-    }
-
-    public void setMoreAppsUrl(String more_apps_url) {
-        editor.putString("more_apps_url", more_apps_url);
-        editor.apply();
+        return sharedPreferences.getString("privacy_policy_url", "https://sites.google.com/view/your-single-radio");
     }
 
     public String getMoreAppsUrl() {
         return sharedPreferences.getString("more_apps_url", "");
+    }
+
+    public String getRedirectUrl() {
+        return sharedPreferences.getString("redirect_url", "");
+    }
+
+    public String getSongMetadata() {
+        return sharedPreferences.getString("song_metadata", "false");
+    }
+
+    public String getImageAlbumArt() {
+        return sharedPreferences.getString("image_album_art", "false");
+    }
+
+    public String getDynamicAlbumArtBackground() {
+        return sharedPreferences.getString("image_album_art_dynamic_background", "false");
+    }
+
+    public String getBlurRadioBackground() {
+        return sharedPreferences.getString("blur_radio_background", "false");
+    }
+
+    public String getAutoPlay() {
+        return sharedPreferences.getString("auto_play", "false");
     }
 
     public Integer getInAppReviewToken() {
@@ -91,32 +122,4 @@ public class SharedPref {
         editor.apply();
     }
 
-    public String getSongMetadata() {
-        return sharedPreferences.getString("song_metadata", "false");
-    }
-
-    public String getAutoPlay() {
-        return sharedPreferences.getString("auto_play", "false");
-    }
-
-    public String getRedirectUrl() {
-        return sharedPreferences.getString("redirect_url", "");
-    }
-
-
-    public void saveSettings(String app_status, String privacy_policy_url, String more_apps_url, String redirect_url, String song_metadata, String image_album_art, String auto_play) {
-        editor.putString("app_status", app_status);
-        editor.putString("privacy_policy_url", privacy_policy_url);
-        editor.putString("more_apps_url", more_apps_url);
-        editor.putString("redirect_url", redirect_url);
-        editor.putString("song_metadata", song_metadata);
-        editor.putString("image_album_art", image_album_art);
-        editor.putString("auto_play", auto_play);
-        editor.apply();
-    }
-
-
-    public String getImageAlbumArt() {
-        return sharedPreferences.getString("image_album_art", "false");
-    }
 }

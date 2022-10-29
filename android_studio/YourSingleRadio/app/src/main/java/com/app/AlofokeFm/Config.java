@@ -13,22 +13,15 @@ public class Config {
     //https://services.solodroid.co.id/access-key/generate
     public static final String ACCESS_KEY = "WVVoU01HTklUVFpNZVRsclkyMXNNbHBUTlc1aU1qbHVZa2RWZFZreU9YUk1NbHB3WWtkVmRscERPSGhhYlUxMFpHdE5NbUpJUWsxTk1WWkNWR3hhZGt4WFJrMVNhM1JDVFZkM2RGVnNWa2xOVjJocFQwUlJkbVJ0Ykd4a2Vqa3hZek5CT1dNeWFHaGpiV3gxV2pFNWFHTklRbk5oVjA1b1pFZHNkbUpyYkd0WU1rNTJZbE0xYUdOSVFYVlJWM2gyV20wNWNscFZXblE9";
 
-    //auto play configuration
-    public static final boolean ENABLE_AUTOPLAY = false;
-
     //radio streaming timeout connection, in milliseconds
     public static final boolean ENABLE_RADIO_TIMEOUT = true;
     public static final int RADIO_TIMEOUT_CONNECTION = 10000;
-
-
-    //album art metadata, if song metadata is disabled, album art will also disabled
-    public static final boolean ENABLE_ALBUM_ART_METADATA = true;
 
     //display album art metadata with parameter : Constant.CIRCLE or Constant.SQUARE
     public static final boolean CIRCULAR_RADIO_IMAGE_ALBUM_ART = Constant.CIRCLE;
 
     //radio will stop when receiving a phone call and will resume when the call ends
-    public static final boolean RESUME_RADIO_ON_PHONE_CALL = true;
+    public static final boolean RESUME_RADIO_ON_PHONE_CALL = false;
 
     //splash screen duration in millisecond
     public static final int SPLASH_DURATION = 1000;

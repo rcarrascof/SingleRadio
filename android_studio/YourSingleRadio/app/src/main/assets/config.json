@@ -5,11 +5,12 @@
       "radio_genre": "Urbana",
       "radio_url": "https://radio5.domint.net:8222/stream",
       "radio_image_url": "https://yt3.ggpht.com/ytc/AKedOLQejjicjkEJ1oXP96beCSIr3qWhy4-BwXiAcY-lag=s900-c-k-c0x00ffffff-no-rj",
-      "background_image_url": "https://i.ibb.co/XXNDXj7/radio-background.jpg",
+      "background_image_url": "https://www.diariodigital.com.do/wp-content/uploads/2021/09/Alofoke.jpg",
+      "blur_radio_background": "true",
       "song_metadata": "true",
       "image_album_art": "true",
+      "image_album_art_dynamic_background": "true",
       "auto_play": "false"
-
     }
   ],
   "settings": [
@@ -27,12 +28,11 @@
       "ad_status": "1",
       "ad_type": "admob",
       "backup_ads": "none",
-      "admob_app_id": "ca-app-pub-5031389661702499~3280294526",
       "admob_publisher_id": "pub-3940256099942544",
-      "admob_banner_unit_id": "ca-app-pub-5031389661702499/2705579456",
-      "admob_interstitial_unit_id": "ca-app-pub-5031389661702499/8709032402",
-      "admob_native_unit_id": "ca-app-pub-5031389661702499/3443946056",
-      "admob_app_open_ad_unit_id": "ca-app-pub-5031389661702499/5746992999",
+      "admob_banner_unit_id": "ca-app-pub-3940256099942544/6300978111",
+      "admob_interstitial_unit_id": "ca-app-pub-3940256099942544/1033173712",
+      "admob_native_unit_id": "ca-app-pub-3940256099942544/2247696110",
+      "admob_app_open_ad_unit_id": "ca-app-pub-3940256099942544/3419835294",
       "ad_manager_banner_unit_id": "/6499/example/banner",
       "ad_manager_interstitial_unit_id": "/6499/example/interstitial",
       "ad_manager_native_unit_id": "/6499/example/native",
@@ -40,7 +40,6 @@
       "fan_banner_unit_id": "IMG_16_9_APP_INSTALL#1102290040176998_1102321626840506",
       "fan_interstitial_unit_id": "IMG_16_9_APP_INSTALL#1102290040176998_1103218190084183",
       "fan_native_unit_id": "IMG_16_9_APP_INSTALL#1102290040176998_1142394442833224",
-
       "startapp_app_id": "0",
       "unity_game_id": "4089993",
       "unity_banner_placement_id": "banner",
@@ -50,7 +49,7 @@
       "applovin_native_ad_manual_unit_id": "0",
       "applovin_banner_zone_id": "0",
       "applovin_interstitial_zone_id": "0",
-      "ironsource_app_key": "3c40db9d6c56d45ce5f7eba51974290f0b15a5948aa6fc37",
+      "ironsource_app_key": "85460dcd",
       "ironsource_banner_placement_name": "DefaultBanner",
       "ironsource_interstitial_placement_name": "DefaultInterstitial",
       "interstitial_ad_interval": 2
@@ -58,19 +57,24 @@
   ],
   "socials": [
     {
+      "social_name": "Website",
+      "social_icon": "https://i.ibb.co/mtBqztD/globe.png",
+      "social_url": "https://www.solodroid.net"
+    },
+    {
       "social_name": "Facebook",
       "social_icon": "https://i.ibb.co/hfjH7LL/facebook.png",
-      "social_url": "https://www.facebook.com/Estonoesradioshow1"
+      "social_url": "https://www.facebook.com/solodroid.net"
     },
     {
       "social_name": "Twitter",
       "social_icon": "https://i.ibb.co/dDZYx1P/twitter.png",
-      "social_url": "https://twitter.com/estonoesradioTW"
+      "social_url": "https://twitter.com/solodroiddev"
     },
     {
       "social_name": "Instagram",
       "social_icon": "https://i.ibb.co/82ykbnp/instagram.png",
-      "social_url": "https://www.instagram.com/estonoesradioshow/"
+      "social_url": "https://www.instagram.com/solodroid.developer"
     }
   ]
 }

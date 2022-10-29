@@ -14,6 +14,7 @@ import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.ColorDrawable;
@@ -76,7 +77,10 @@ import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.CustomTarget;
 import com.bumptech.glide.request.target.Target;
+import com.bumptech.glide.request.transition.Transition;
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.play.core.appupdate.AppUpdateInfo;
@@ -112,9 +116,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     RoundedImageView imgRadioLarge;
     RoundedImageView imgAlbumArtLarge;
     ImageView imgMusicBackground;
+    ImageView imgMusicBackgroundAlbumArt;
     ImageButton imgVolume;
     ImageButton imgTimer;
-    FloatingActionButton fabPlayExpand;
+    MaterialButton fabPlayExpand;
     TextView txtRadioExpand, txtRadioMusicSong, txtSongExpand;
     SharedPref sharedPref;
     Handler handler = new Handler();
@@ -250,6 +255,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         fragmentManager = getSupportFragmentManager();
 
         imgMusicBackground = findViewById(R.id.img_music_background);
+        imgMusicBackgroundAlbumArt = findViewById(R.id.img_music_background_album_art);
 
         equalizerView = findViewById(R.id.equalizer_view);
         progressBar = findViewById(R.id.progress_bar);
@@ -270,6 +276,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         fabPlayExpand = findViewById(R.id.fab_play);
         txtRadioExpand = findViewById(R.id.txt_radio_name_expand);
         txtSongExpand = findViewById(R.id.txt_metadata_expand);
+        txtSongExpand.setSelected(true);
 
         if (!utils.isNetworkAvailable()) {
             txtRadioExpand.setText(getResources().getString(R.string.app_name));
@@ -413,24 +420,27 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             Radio radio = RadioPlayerService.getInstance().getPlayingRadioStation();
             if (radio != null) {
                 changeText(radio);
-                fabPlayExpand.setImageDrawable(ContextCompat.getDrawable(MainActivity.this, R.drawable.ic_pause_white));
+                fabPlayExpand.setIcon(ContextCompat.getDrawable(MainActivity.this, R.drawable.ic_button_pause));
                 equalizerView.animateBars();
             }
         } else {
             if (Constant.item_radio.size() > 0) {
                 changeText(Constant.item_radio.get(Constant.position));
             }
-            fabPlayExpand.setImageDrawable(ContextCompat.getDrawable(MainActivity.this, R.drawable.ic_play_arrow_white));
+            fabPlayExpand.setIcon(ContextCompat.getDrawable(MainActivity.this, R.drawable.ic_button_play));
             equalizerView.stopBars();
             imgAlbumArtLarge.setVisibility(View.GONE);
+            imgMusicBackgroundAlbumArt.setVisibility(View.GONE);
         }
     }
 
     public void showImageAlbumArt(boolean show) {
         if (show) {
             imgAlbumArtLarge.setVisibility(View.VISIBLE);
+            imgMusicBackgroundAlbumArt.setVisibility(View.VISIBLE);
         } else {
             imgAlbumArtLarge.setVisibility(View.GONE);
+            imgMusicBackgroundAlbumArt.setVisibility(View.GONE);
         }
     }
 
@@ -440,8 +450,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
             if (Constant.metadata == null || Constant.metadata.equals(radio.getRadio_genre())) {
                 imgAlbumArtLarge.setVisibility(View.GONE);
+                //imgMusicBackgroundAlbumArt.setVisibility(View.GONE);
             } else {
                 imgAlbumArtLarge.setVisibility(View.VISIBLE);
+                //imgMusicBackgroundAlbumArt.setVisibility(View.VISIBLE);
             }
 
             txtSongExpand.setVisibility(View.VISIBLE);
@@ -458,12 +470,30 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             txtSongExpand.setText(radio.getRadio_genre());
         }
 
-       /* Glide.with(getApplicationContext())
-                .load(radio.getBackground_image_url().replace(" ", "%20"))
-                .placeholder(R.drawable.ic_thumbnail)
-                //.apply(RequestOptions.bitmapTransform(new BlurTransformation(20, 3)))
-                .diskCacheStrategy(DiskCacheStrategy.ALL)
-                .into(imgMusicBackground);
+        if (sharedPref.getBlurRadioBackground().equals("true")) {
+            Glide.with(getApplicationContext())
+                    .asBitmap()
+                    .load(radio.getBackground_image_url().replace(" ", "%20"))
+                    .placeholder(R.drawable.ic_thumbnail)
+                    .into(new CustomTarget<Bitmap>() {
+                        @Override
+                        public void onResourceReady(@NonNull Bitmap bitmap, @Nullable Transition<? super Bitmap> transition) {
+                            Bitmap blurImage = Utils.blurImage(MainActivity.this, bitmap);
+                            imgMusicBackground.setImageBitmap(blurImage);
+                        }
+
+                        @Override
+                        public void onLoadCleared(@Nullable Drawable placeholder) {
+
+                        }
+                    });
+        }/* else {
+            Glide.with(getApplicationContext())
+                    .load(radio.getBackground_image_url().replace(" ", "%20"))
+                    .placeholder(R.drawable.ic_thumbnail)
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .into(imgMusicBackground);
+        }
 
         Glide.with(getApplicationContext())
                 .load(radio.getRadio_image_url().replace(" ", "%20"))
@@ -476,6 +506,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         txtSongExpand.setText(songName);
     }
 
+    //Rawr
     public void changeAlbumArt(String artworkUrl) {
         Constant.albumArt = artworkUrl;
         Glide.with(getApplicationContext())
@@ -497,17 +528,72 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     }
                 })
                 .into(imgAlbumArtLarge);
+
+        if (sharedPref.getDynamicAlbumArtBackground().equals("true")) {
+            if (sharedPref.getBlurRadioBackground().equals("true")) {
+                Glide.with(getApplicationContext())
+                        .asBitmap()
+                        .load(artworkUrl.replace(" ", "%20"))
+                        .placeholder(android.R.color.transparent)
+                        .thumbnail(0.3f)
+                        .diskCacheStrategy(DiskCacheStrategy.ALL)
+                        .listener(new RequestListener<Bitmap>() {
+                            @Override
+                            public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Bitmap> target, boolean isFirstResource) {
+                                imgMusicBackgroundAlbumArt.setVisibility(View.GONE);
+                                return false;
+                            }
+
+                            @Override
+                            public boolean onResourceReady(Bitmap resource, Object model, Target<Bitmap> target, DataSource dataSource, boolean isFirstResource) {
+                                imgMusicBackgroundAlbumArt.setVisibility(View.VISIBLE);
+                                return false;
+                            }
+                        })
+                        .into(new CustomTarget<Bitmap>() {
+                            @Override
+                            public void onResourceReady(@NonNull Bitmap bitmap, @Nullable Transition<? super Bitmap> transition) {
+                                Bitmap blurImage = Utils.blurImage(MainActivity.this, bitmap);
+                                imgMusicBackgroundAlbumArt.setImageBitmap(blurImage);
+                            }
+
+                            @Override
+                            public void onLoadCleared(@Nullable Drawable placeholder) {
+
+                            }
+                        });
+            } else {
+                Glide.with(getApplicationContext())
+                        .load(artworkUrl.replace(" ", "%20"))
+                        .placeholder(android.R.color.transparent)
+                        .thumbnail(0.3f)
+                        .diskCacheStrategy(DiskCacheStrategy.ALL)
+                        .listener(new RequestListener<Drawable>() {
+                            @Override
+                            public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+                                imgMusicBackgroundAlbumArt.setVisibility(View.GONE);
+                                return false;
+                            }
+
+                            @Override
+                            public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+                                imgMusicBackgroundAlbumArt.setVisibility(View.VISIBLE);
+                                return false;
+                            }
+                        })
+                        .into(imgMusicBackgroundAlbumArt);
+            }
+        }
     }
 
     public void setIfPlaying() {
         if (RadioPlayerService.getInstance() != null) {
-            RadioPlayerService.initNewContext(MainActivity.this);
+            RadioPlayerService.initialize(MainActivity.this);
             changePlayPause(RadioPlayerService.getInstance().isPlaying());
         } else {
             changePlayPause(false);
         }
     }
-
 
     public void setBuffer(Boolean flag) {
         if (flag) {
@@ -696,7 +782,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
     }
 
-
     public void showExitDialog(boolean exit) {
         if (exit) {
             if (lytExit.getVisibility() != View.VISIBLE) {
@@ -708,7 +793,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             lytExit.setVisibility(View.GONE);
         }
     }
-
 
     public void initExitDialog() {
 
@@ -792,7 +876,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         super.onResume();
         initComponent();
         adsManager.resumeBannerAd(1);
-
     }
 
     @Override

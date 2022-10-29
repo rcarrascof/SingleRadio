@@ -27,7 +27,6 @@ import com.app.AlofokeFm.database.prefs.SharedPref;
 import com.app.AlofokeFm.models.Settings;
 import com.app.AlofokeFm.rests.RestAdapter;
 import com.app.AlofokeFm.utils.Utils;
-import com.google.android.gms.ads.MobileAds;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.onesignal.OneSignal;
@@ -61,7 +60,6 @@ public class MyApplication extends Application implements Application.ActivityLi
     Call<CallbackConfig> callbackCall = null;
     Settings settings;
     SharedPref sharedPref;
-    Activity activity;
     AdsPref adsPref;
     private AppOpenAdMob appOpenAdMob;
     private AppOpenAdManager appOpenAdManager;
@@ -70,6 +68,7 @@ public class MyApplication extends Application implements Application.ActivityLi
     public MyApplication() {
 
     }
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -77,8 +76,6 @@ public class MyApplication extends Application implements Application.ActivityLi
         sharedPref = new SharedPref(this);
         adsPref = new AdsPref(this);
         mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
-        MobileAds.initialize(this, initializationStatus -> {
-        });
         ProcessLifecycleOwner.get().getLifecycle().addObserver(this);
         appOpenAdMob = new AppOpenAdMob();
         appOpenAdManager = new AppOpenAdManager();
@@ -125,12 +122,14 @@ public class MyApplication extends Application implements Application.ActivityLi
         OneSignal.unsubscribeWhenNotificationsAreDisabled(true);
     }
 
-
+    @SuppressWarnings("ConstantConditions")
     private void requestConfig() {
-        String data = Tools.decode(Config.ACCESS_KEY);
-        String[] results = data.split("_applicationId_");
-        String remoteUrl = results[0].replace("http://localhost", LOCALHOST_ADDRESS);
-        requestAPI(remoteUrl);
+        if (!Config.ACCESS_KEY.equals("XXXXX")) {
+            String data = Tools.decode(Config.ACCESS_KEY);
+            String[] results = data.split("_applicationId_");
+            String remoteUrl = results[0].replace("http://localhost", LOCALHOST_ADDRESS);
+            requestAPI(remoteUrl);
+        }
     }
 
     private void requestAPI(String remoteUrl) {
@@ -188,10 +187,6 @@ public class MyApplication extends Application implements Application.ActivityLi
         }
     }
 
-    public AppOpenAdManager getAppOpenAdManager() {
-        return this.appOpenAdManager;
-    }
-
     @Override
     protected void attachBaseContext(Context base) {
         super.attachBaseContext(base);
@@ -221,27 +216,8 @@ public class MyApplication extends Application implements Application.ActivityLi
         }
     }
 
-    public void showAdIfAvailable(@NonNull Activity activity, @NonNull OnShowAdCompleteListener onShowAdCompleteListener) {
-        // We wrap the showAdIfAvailable to enforce that other classes only interact with MyApplication class
-        if (adsPref.getAdStatus().equals(AD_STATUS_ON)) {
-            switch (adsPref.getAdType()) {
-                case ADMOB:
-                    if (!adsPref.getAdMobAppOpenAdId().equals("0")) {
-                        appOpenAdMob.showAdIfAvailable(activity, adsPref.getAdMobAppOpenAdId(), onShowAdCompleteListener);
-                    }
-                    break;
-                case GOOGLE_AD_MANAGER:
-                    if (!adsPref.getAdManagerAppOpenAdId().equals("0")) {
-                        appOpenAdManager.showAdIfAvailable(activity, adsPref.getAdManagerAppOpenAdId(), onShowAdCompleteListener);
-                    }
-                    break;
-            }
-        }
-    }
-
     @Override
-    public void onActivityCreated(@NonNull Activity activity, @Nullable Bundle bundle) {
-
+    public void onActivityCreated(@NonNull Activity activity, @Nullable Bundle savedInstanceState) {
     }
 
     @Override
@@ -268,26 +244,40 @@ public class MyApplication extends Application implements Application.ActivityLi
 
     @Override
     public void onActivityResumed(@NonNull Activity activity) {
-
     }
 
     @Override
     public void onActivityPaused(@NonNull Activity activity) {
-
     }
 
     @Override
     public void onActivityStopped(@NonNull Activity activity) {
-
     }
 
     @Override
-    public void onActivitySaveInstanceState(@NonNull Activity activity, @NonNull Bundle bundle) {
-
+    public void onActivitySaveInstanceState(@NonNull Activity activity, @NonNull Bundle outState) {
     }
 
     @Override
     public void onActivityDestroyed(@NonNull Activity activity) {
-
     }
+
+    public void showAdIfAvailable(@NonNull Activity activity, @NonNull OnShowAdCompleteListener onShowAdCompleteListener) {
+        // We wrap the showAdIfAvailable to enforce that other classes only interact with MyApplication class
+        if (adsPref.getAdStatus().equals(AD_STATUS_ON)) {
+            switch (adsPref.getAdType()) {
+                case ADMOB:
+                    if (!adsPref.getAdMobAppOpenAdId().equals("0")) {
+                        appOpenAdMob.showAdIfAvailable(activity, adsPref.getAdMobAppOpenAdId(), onShowAdCompleteListener);
+                    }
+                    break;
+                case GOOGLE_AD_MANAGER:
+                    if (!adsPref.getAdManagerAppOpenAdId().equals("0")) {
+                        appOpenAdManager.showAdIfAvailable(activity, adsPref.getAdManagerAppOpenAdId(), onShowAdCompleteListener);
+                    }
+                    break;
+            }
+        }
+    }
+
 }
