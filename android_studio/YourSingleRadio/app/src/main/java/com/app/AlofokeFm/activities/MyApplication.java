@@ -124,7 +124,7 @@ public class MyApplication extends Application implements Application.ActivityLi
 
     @SuppressWarnings("ConstantConditions")
     private void requestConfig() {
-        if (!Config.ACCESS_KEY.equals("XXXXX")) {
+        if (!Config.ACCESS_KEY.contains("XXXXX")) {
             String data = Tools.decode(Config.ACCESS_KEY);
             String[] results = data.split("_applicationId_");
             String remoteUrl = results[0].replace("http://localhost", LOCALHOST_ADDRESS);

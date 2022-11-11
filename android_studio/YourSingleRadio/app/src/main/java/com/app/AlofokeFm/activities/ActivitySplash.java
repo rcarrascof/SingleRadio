@@ -175,24 +175,25 @@ public class ActivitySplash extends AppCompatActivity {
             settings = resp.settings.get(0);
             ads = resp.ads.get(0);
 
+            sharedPref.saveSettings(
+                    settings.app_status,
+                    settings.privacy_policy_url,
+                    settings.more_apps_url,
+                    settings.redirect_url,
+                    radio.song_metadata,
+                    radio.image_album_art,
+                    radio.image_album_art_dynamic_background,
+                    radio.blur_radio_background,
+                    radio.auto_play
+            );
+            adsManager.saveAds(adsPref, ads);
+
             if (settings.app_status.equals("0")) {
                 Intent intent = new Intent(getApplicationContext(), ActivityRedirect.class);
                 startActivity(intent);
                 finish();
                 Log.d(TAG, "App status is inactive, open redirect activity");
             } else {
-                sharedPref.saveSettings(
-                        settings.app_status,
-                        settings.privacy_policy_url,
-                        settings.more_apps_url,
-                        settings.redirect_url,
-                        radio.song_metadata,
-                        radio.image_album_art,
-                        radio.image_album_art_dynamic_background,
-                        radio.blur_radio_background,
-                        radio.auto_play
-                );
-                adsManager.saveAds(adsPref, ads);
                 db.deleteAllRadio();
                 new Handler().postDelayed(() -> {
                     db.insertRadio(

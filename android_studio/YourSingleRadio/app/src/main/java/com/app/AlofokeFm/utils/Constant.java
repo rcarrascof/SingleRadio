@@ -27,7 +27,7 @@ public class Constant implements Serializable {
     public static ArrayList<Radio> item_radio = new ArrayList<>();
     public static int position = 0;
 
-    public static final String LOCALHOST_ADDRESS = "https://drive.google.com/file/d/1vgUP-0c2pkDjff_59bSIX6O0KVDx9veN/view?usp=sharing";
+    public static final String LOCALHOST_ADDRESS = "https://drive.google.com/file/d/1vgUP-0c2pkDjff_59bSIX6O0KVDx9veN/view?usp=share_link";
 
     public static final int BANNER_AD = 1;
     public static final int INTERSTITIAL_AD = 1;

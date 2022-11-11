@@ -3,6 +3,7 @@ package com.app.AlofokeFm.activities;
 import static com.app.AlofokeFm.utils.Constant.BANNER_AD;
 import static com.app.AlofokeFm.utils.Constant.INTERSTITIAL_AD;
 import static com.app.AlofokeFm.utils.Constant.NATIVE_AD;
+import static com.solodroid.ads.sdk.util.Constant.AD_STATUS_ON;
 
 import android.annotation.SuppressLint;
 import android.app.ActivityManager;
@@ -101,7 +102,6 @@ import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import es.claucookie.miniequalizerlibrary.EqualizerView;
-
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
     private static final String TAG = "MainActivity";
@@ -129,8 +129,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     AdsPref adsPref;
     private DAO db;
     AdsManager adsManager;
-    LinearLayout lytExit;
-    View lytDialog;
     List<RadioEntity> radioEntities;
     ArrayList<Radio> radios;
     private AppUpdateManager appUpdateManager;
@@ -182,7 +180,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 .commit();
 
         initComponent();
-        initExitDialog();
         Utils.notificationHandler(this, getIntent());
         loadConfig();
 
@@ -317,7 +314,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             FragmentManager fragmentManager = getSupportFragmentManager();
             FragmentSocial fragmentSocial = new FragmentSocial();
             FragmentTransaction transaction = fragmentManager.beginTransaction()
-                    .setCustomAnimations(R.anim.slide_in, R.anim.fade_out, R.anim.fade_in, R.anim.slide_out);
+                    .setCustomAnimations(R.anim.slide_up, 0, 0, R.anim.slide_down);
             transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
             transaction.add(android.R.id.content, fragmentSocial).addToBackStack("social");
             transaction.commit();
@@ -330,7 +327,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             final String package_name = BuildConfig.APPLICATION_ID;
             try {
                 startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + package_name)));
-            } catch (ActivityNotFoundException anfe) {
+            } catch (ActivityNotFoundException e) {
                 startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://play.google.com/store/apps/details?id=" + package_name)));
             }
             drawerLayout.closeDrawer(GravityCompat.START);
@@ -358,7 +355,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
             FragmentManager fragmentManager = getSupportFragmentManager();
             FragmentTransaction transaction = fragmentManager.beginTransaction()
-                    .setCustomAnimations(R.anim.slide_in, R.anim.fade_out, R.anim.fade_in, R.anim.slide_out);
+                    .setCustomAnimations(R.anim.slide_up, 0, 0, R.anim.slide_down);
             transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
             transaction.add(android.R.id.content, fragmentWebView).addToBackStack("page");
             transaction.commit();
@@ -487,7 +484,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
                         }
                     });
-        }/* else {
+        } /*else {
             Glide.with(getApplicationContext())
                     .load(radio.getBackground_image_url().replace(" ", "%20"))
                     .placeholder(R.drawable.ic_thumbnail)
@@ -506,7 +503,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         txtSongExpand.setText(songName);
     }
 
-    //Rawr
     public void changeAlbumArt(String artworkUrl) {
         Constant.albumArt = artworkUrl;
         Glide.with(getApplicationContext())
@@ -594,6 +590,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             changePlayPause(false);
         }
     }
+
 
     public void setBuffer(Boolean flag) {
         if (flag) {
@@ -778,52 +775,112 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 Utils.darkStatusBar(this, true);
             }
         } else {
-            showExitDialog(true);
+            showExitDialog();
         }
     }
 
-    public void showExitDialog(boolean exit) {
-        if (exit) {
-            if (lytExit.getVisibility() != View.VISIBLE) {
-                lytExit.startAnimation(AnimationUtils.loadAnimation(getApplicationContext(), R.anim.slide_up));
-            }
-            lytExit.setVisibility(View.VISIBLE);
-        } else {
-            lytExit.clearAnimation();
-            lytExit.setVisibility(View.GONE);
-        }
-    }
+    public void showExitDialog() {
 
-    public void initExitDialog() {
+        if (adsPref.getAdStatus().equals(AD_STATUS_ON)) {
+            LayoutInflater inflater = LayoutInflater.from(this);
+            View view = inflater.inflate(R.layout.custom_dialog_exit, null);
 
-        lytExit = findViewById(R.id.lyt_exit);
-        lytDialog = findViewById(R.id.lyt_dialog);
+            adsManager.loadNativeAdView(view, 1);
 
-        lytExit.setOnClickListener(v -> {
-        });
-        lytDialog.setOnClickListener(v -> {
-        });
-
-        findViewById(R.id.txt_cancel).setOnClickListener(v -> new Handler(Looper.getMainLooper()).postDelayed(() -> showExitDialog(false), 200));
-        findViewById(R.id.txt_minimize).setOnClickListener(v -> {
-                    showExitDialog(false);
-                    new Handler(Looper.getMainLooper()).postDelayed(this::minimizeApp, 200);
+            final AlertDialog.Builder dialog;
+            dialog = new AlertDialog.Builder(this);
+            dialog.setView(view);
+            dialog.setCancelable(false);
+            dialog.setPositiveButton(getResources().getString(R.string.dialog_option_quit), (dialogInterface, i) -> {
+                finish();
+                adsManager.destroyBannerAd();
+                if (isServiceRunning()) {
+                    Intent stop = new Intent(this, RadioPlayerService.class);
+                    stop.setAction(RadioPlayerService.ACTION_STOP);
+                    startService(stop);
+                    Log.d("RADIO_SERVICE", "Service Running");
+                } else {
+                    Log.d("RADIO_SERVICE", "Service Not Running");
                 }
-        );
-        findViewById(R.id.txt_exit).setOnClickListener(v -> new Handler(Looper.getMainLooper()).postDelayed(() -> {
-            finish();
-            adsManager.destroyBannerAd();
-            if (isServiceRunning()) {
-                Intent stop = new Intent(MainActivity.this, RadioPlayerService.class);
-                stop.setAction(RadioPlayerService.ACTION_STOP);
-                startService(stop);
-                Log.d(TAG, "Radio service is running");
-            } else {
-                Log.d(TAG, "Radio service is not running");
-            }
-        }, 200));
+            });
+
+            dialog.setNegativeButton(getResources().getString(R.string.dialog_option_minimize), (dialogInterface, i) -> minimizeApp());
+
+            dialog.setNeutralButton(getResources().getString(R.string.cancel), (dialogInterface, i) -> {
+
+            });
+            dialog.show();
+
+        } else {
+            AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+            dialog.setIcon(R.drawable.logo);
+            dialog.setTitle(R.string.app_name);
+            dialog.setMessage(getResources().getString(R.string.message));
+            dialog.setPositiveButton(getResources().getString(R.string.dialog_option_quit), (dialogInterface, i) -> {
+                finish();
+                adsManager.destroyBannerAd();
+                if (isServiceRunning()) {
+                    Intent stop = new Intent(MainActivity.this, RadioPlayerService.class);
+                    stop.setAction(RadioPlayerService.ACTION_STOP);
+                    startService(stop);
+                    Log.d("RADIO_SERVICE", "Service Running");
+                } else {
+                    Log.d("RADIO_SERVICE", "Service Not Running");
+                }
+            });
+
+            dialog.setNegativeButton(getResources().getString(R.string.dialog_option_minimize), (dialogInterface, i) -> minimizeApp());
+
+            dialog.setNeutralButton(getResources().getString(R.string.cancel), (dialogInterface, i) -> {
+
+            });
+            dialog.show();
+        }
 
     }
+
+//    public void showExitDialog(boolean exit) {
+//        if (exit) {
+//            if (lytExit.getVisibility() != View.VISIBLE) {
+//                lytExit.startAnimation(AnimationUtils.loadAnimation(getApplicationContext(), R.anim.slide_up));
+//            }
+//            lytExit.setVisibility(View.VISIBLE);
+//        } else {
+//            lytExit.clearAnimation();
+//            lytExit.setVisibility(View.GONE);
+//        }
+//    }
+
+//    public void initExitDialog() {
+//
+//        lytExit = findViewById(R.id.lyt_exit);
+//        lytDialog = findViewById(R.id.lyt_dialog);
+//
+//        lytExit.setOnClickListener(v -> {
+//        });
+//        lytDialog.setOnClickListener(v -> {
+//        });
+//
+//        findViewById(R.id.txt_cancel).setOnClickListener(v -> new Handler(Looper.getMainLooper()).postDelayed(() -> showExitDialog(false), 200));
+//        findViewById(R.id.txt_minimize).setOnClickListener(v -> {
+//                    showExitDialog(false);
+//                    new Handler(Looper.getMainLooper()).postDelayed(this::minimizeApp, 200);
+//                }
+//        );
+//        findViewById(R.id.txt_exit).setOnClickListener(v -> new Handler(Looper.getMainLooper()).postDelayed(() -> {
+//            finish();
+//            adsManager.destroyBannerAd();
+//            if (isServiceRunning()) {
+//                Intent stop = new Intent(MainActivity.this, RadioPlayerService.class);
+//                stop.setAction(RadioPlayerService.ACTION_STOP);
+//                startService(stop);
+//                Log.d(TAG, "Radio service is running");
+//            } else {
+//                Log.d(TAG, "Radio service is not running");
+//            }
+//        }, 200));
+//
+//    }
 
     public void minimizeApp() {
         Intent intent = new Intent(Intent.ACTION_MAIN);

@@ -5,6 +5,7 @@ import static com.solodroid.ads.sdk.util.Constant.AD_STATUS_ON;
 import static com.solodroid.ads.sdk.util.Constant.IRONSOURCE;
 
 import android.app.Activity;
+import android.view.View;
 
 import com.app.AlofokeFm.BuildConfig;
 import com.app.AlofokeFm.database.prefs.AdsPref;
@@ -97,6 +98,20 @@ public class AdsManager {
                 .setFanNativeId(adsPref.getFanNativeUnitId())
                 .setAppLovinNativeId(adsPref.getAppLovinNativeAdManualUnitId())
                 .setPlacementStatus(placement)
+                .setLegacyGDPR(LEGACY_GDPR)
+                .build();
+    }
+
+    public void loadNativeAdView(View view, int placement) {
+        nativeAdView.setAdStatus(adsPref.getAdStatus())
+                .setAdNetwork(adsPref.getAdType())
+                .setBackupAdNetwork(adsPref.getBackupAds())
+                .setAdMobNativeId(adsPref.getAdMobNativeId())
+                .setAdManagerNativeId(adsPref.getAdManagerNativeId())
+                .setFanNativeId(adsPref.getFanNativeUnitId())
+                .setAppLovinNativeId(adsPref.getAppLovinNativeAdManualUnitId())
+                .setPlacementStatus(placement)
+                .setView(view)
                 .setLegacyGDPR(LEGACY_GDPR)
                 .build();
     }
