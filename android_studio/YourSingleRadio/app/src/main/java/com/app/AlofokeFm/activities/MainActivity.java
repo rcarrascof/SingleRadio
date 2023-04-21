@@ -374,13 +374,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             hideKeyboard();
 
             return true;
-        }else if(itemId == R.id.drawer_chat)
+        }
+       /* }else if(itemId == R.id.drawer_chat)
         {
             Intent i = new Intent(MainActivity.this, LoginActivity.class);
             startActivity(i);
             return true;
 
-        }
+        }*/
         return false;
     }
 
