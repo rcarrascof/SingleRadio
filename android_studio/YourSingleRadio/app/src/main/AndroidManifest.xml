@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="com.app.AlofokeFm"
+    package="com.app.matrixFM"
     tools:ignore="LockedOrientationActivity">
 
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -17,15 +17,15 @@
         android:required="false" />
 
     <application
-        android:name=".activities.MyApplication"
+        android:name="com.app.matrixFM.activities.MyApplication"
         android:allowBackup="true"
         android:hardwareAccelerated="true"
-        android:icon="@drawable/logo"
+        android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:largeHeap="true"
         android:networkSecurityConfig="@xml/network_security_config"
         android:requestLegacyExternalStorage="true"
-        android:roundIcon="@drawable/logo"
+        android:roundIcon="@mipmap/ic_launcher"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true"
@@ -38,7 +38,7 @@
             android:name=".activities.ChatActivity"
             android:exported="false" />-->
         <activity
-            android:name=".activities.LoginActivity"
+            android:name="com.app.matrixFM.activities.LoginActivity"
             android:exported="false" />
 
         <meta-data
@@ -49,7 +49,7 @@
             android:value="@string/applovin_sdk_key" />
 
         <activity
-            android:name=".activities.ActivitySplash"
+            android:name="com.app.matrixFM.activities.ActivitySplash"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:exported="true"
             android:label="@string/app_name">
@@ -60,7 +60,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".activities.MainActivity"
+            android:name="com.app.matrixFM.activities.MainActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:exported="true"
             android:launchMode="singleTop">
@@ -71,26 +71,26 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".activities.ActivityPermission"
+            android:name="com.app.matrixFM.activities.ActivityPermission"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:screenOrientation="portrait"/>
 
         <activity
-            android:name=".activities.ActivityRedirect"
+            android:name="com.app.matrixFM.activities.ActivityRedirect"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:screenOrientation="portrait" />
 
         <service
-            android:name=".services.RadioPlayerService"
+            android:name="com.app.matrixFM.services.RadioPlayerService"
             android:exported="false" />
 
         <receiver
-            android:name=".utils.SleepTimeReceiver"
+            android:name="com.app.matrixFM.utils.SleepTimeReceiver"
             android:enabled="true"
             android:exported="true"
             tools:ignore="ExportedReceiver" />
         <receiver
-            android:name=".services.MediaButtonIntentReceiver"
+            android:name="com.app.matrixFM.services.MediaButtonIntentReceiver"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MEDIA_BUTTON" />
@@ -102,7 +102,7 @@
             android:value="@integer/google_play_services_version" />
 
         <service
-            android:name=".notification.MyFirebaseMessageService"
+            android:name="com.app.matrixFM.notification.MyFirebaseMessageService"
             android:enabled="true"
             android:exported="false">
             <intent-filter>
