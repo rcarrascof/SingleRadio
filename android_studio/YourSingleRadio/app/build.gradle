@@ -7,10 +7,10 @@ plugins {
 android {
     compileSdkVersion 33
     defaultConfig {
-        applicationId "com.app.matrix104"
+        applicationId "com.app.AlofokeFm"
         minSdkVersion 21
         targetSdkVersion 33
-        versionCode 1
+        versionCode 18
         versionName "1.0.8"
         multiDexEnabled true
     }

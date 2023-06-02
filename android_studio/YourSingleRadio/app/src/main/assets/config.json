@@ -1,11 +1,11 @@
 {
   "radio": [
     {
-      "radio_name": "Matrix Fm",
+      "radio_name": "Alofoke Fm",
       "radio_genre": "Urbana",
-      "radio_url": "https://radios.monkey.com.do/9312/stream",
-      "radio_image_url": "https://matrix104fm.com/wp-content/uploads/2018/10/logo2sinfondo-10.png",
-      "background_image_url": "https://upload.wikimedia.org/wikipedia/commons/e/ed/Monumento_de_Santiago_%28Buen_Angulo%29.jpg",
+      "radio_url": "https://radio5.domint.net:8222/stream",
+      "radio_image_url": "https://yt3.ggpht.com/ytc/AKedOLQejjicjkEJ1oXP96beCSIr3qWhy4-BwXiAcY-lag=s900-c-k-c0x00ffffff-no-rj",
+      "background_image_url": "https://www.diariodigital.com.do/wp-content/uploads/2021/09/Alofoke.jpg",
       "blur_radio_background": "true",
       "song_metadata": "true",
       "image_album_art": "true",
@@ -17,10 +17,10 @@
     {
       "app_status": "1",
       "onesignal_app_id": "6b49527e-7af2-44d9-bcf2-1622202212a6",
-      "fcm_notification_topic": "matrix_fm",
-      "privacy_policy_url": "https://sites.google.com/view/matrix-fm/home",
+      "fcm_notification_topic": "alofoke_fm",
+      "privacy_policy_url": "https://sites.google.com/view/alofokefm/home",
       "more_apps_url": "https://play.google.com/store/apps/developer?id=rcdev",
-      "redirect_url": "https://play.google.com/store/apps/details?id=com.app.matrix104&hl=en"
+      "redirect_url": "https://play.google.com/store/apps/details?id=com.app.AlofokeFm&hl=en"
     }
   ],
   "ads": [
@@ -29,10 +29,10 @@
       "ad_type": "admob",
       "backup_ads": "none",
       "admob_publisher_id": "pub-5031389661702499",
-      "admob_banner_unit_id": "ca-app-pub-5031389661702499/2028462927",
-      "admob_interstitial_unit_id": "ca-app-pub-5031389661702499/8402299589",
-      "admob_native_unit_id": "ca-app-pub-5031389661702499/1943830304",
-      "admob_app_open_ad_unit_id": "ca-app-pub-5031389661702499/7004585297",
+      "admob_banner_unit_id": "ca-app-pub-5031389661702499/2705579456",
+      "admob_interstitial_unit_id": "ca-app-pub-5031389661702499/8709032402",
+      "admob_native_unit_id": "ca-app-pub-5031389661702499/3443946056",
+      "admob_app_open_ad_unit_id": "ca-app-pub-5031389661702499/5746992999",
       "ad_manager_banner_unit_id": "/6499/example/banner",
       "ad_manager_interstitial_unit_id": "/6499/example/interstitial",
       "ad_manager_native_unit_id": "/6499/example/native",

@@ -2,12 +2,12 @@
 <resources>
 
     <!--app main color-->
-    <color name="colorPrimary">#303F9F</color>
-    <color name="colorPrimaryDark">#303F9F</color>
-    <color name="colorAccent">#FF5722</color>
+    <color name="colorPrimary">#F44336</color>
+    <color name="colorPrimaryDark">#D32F2F</color>
+    <color name="colorAccent">#FF5252</color>
 
     <!--others-->
-    <color name="colorPlayButton">#303F9F</color>
+    <color name="colorPlayButton">#212121</color>
     <color name="colorRadioImageBorder">#E1E1E1</color>
     <color name="colorStatusBarDark">#000000</color>
     <color name="colorToolbarDark">#000000</color>
