@@ -27,7 +27,11 @@
     <color name="colorGreenLight">#81C784</color>
     <color name="colorPurpleLight">#BA68C8</color>
     <color name="colorYellowLight">#FFD54F</color>
-
+    <color name="color_light_status_bar">#00695c</color>
+    <color name="color_light_primary">#00796B</color>
+    <color name="color_white">#FFFFFF</color>
+    <color name="color_dialog_background_light">#5E000000</color>
+    <color name="color_black">#000000</color>
 
 
 </resources>

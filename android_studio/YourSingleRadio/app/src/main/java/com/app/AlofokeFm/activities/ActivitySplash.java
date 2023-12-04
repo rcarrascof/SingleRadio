@@ -32,6 +32,7 @@ import com.app.AlofokeFm.models.Settings;
 import com.app.AlofokeFm.rests.RestAdapter;
 import com.app.AlofokeFm.utils.AdsManager;
 import com.app.AlofokeFm.utils.Utils;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.solodroid.ads.sdk.util.Tools;
 
 import org.json.JSONArray;
@@ -111,7 +112,7 @@ public class ActivitySplash extends AppCompatActivity {
     @SuppressWarnings("ConstantConditions")
     private void requestConfig() {
         if (Config.ACCESS_KEY.contains("XXXXX")) {
-            new AlertDialog.Builder(this)
+            new MaterialAlertDialogBuilder(this)
                     .setTitle("App not configured")
                     .setMessage("Please put your Access Key in your admin panel to Config, you can see the documentation for more detailed instructions.")
                     .setPositiveButton(getString(R.string.option_ok), (dialogInterface, i) -> startMainActivity())
@@ -126,7 +127,7 @@ public class ActivitySplash extends AppCompatActivity {
             if (applicationId.equals(BuildConfig.APPLICATION_ID)) {
                 requestConfig(remoteUrl);
             } else {
-                new AlertDialog.Builder(this)
+                new MaterialAlertDialogBuilder(this)
                         .setTitle("Error")
                         .setMessage("Whoops! invalid access key or applicationId, please check your configuration")
                         .setPositiveButton("Ok", (dialog, which) -> finish())
@@ -190,6 +191,7 @@ public class ActivitySplash extends AppCompatActivity {
 
             if (settings.app_status.equals("0")) {
                 Intent intent = new Intent(getApplicationContext(), ActivityRedirect.class);
+                intent.putExtra("redirect_url", settings.redirect_url);
                 startActivity(intent);
                 finish();
                 Log.d(TAG, "App status is inactive, open redirect activity");
@@ -238,8 +240,6 @@ public class ActivitySplash extends AppCompatActivity {
             String auto_play = radio.getString("auto_play");
 
             String app_status = setting.getString("app_status");
-            String onesignal_app_id = setting.getString("onesignal_app_id");
-            String fcm_notification_topic = setting.getString("fcm_notification_topic");
             String privacy_policy_url = setting.getString("privacy_policy_url");
             String more_apps_url = setting.getString("more_apps_url");
             String redirect_url = setting.getString("redirect_url");

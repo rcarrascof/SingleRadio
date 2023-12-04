@@ -1,17 +1,16 @@
 plugins {
-    id 'com.onesignal.androidsdk.onesignal-gradle-plugin'
     id 'com.android.application'
     id 'com.google.gms.google-services'
 }
-
 android {
-    compileSdkVersion 33
+    namespace "com.app.AlofokeFm"
+    compileSdk 34
     defaultConfig {
         applicationId "com.app.AlofokeFm"
-        minSdkVersion 21
-        targetSdkVersion 33
-        versionCode 18
-        versionName "1.0.8"
+        minSdk 21
+        targetSdk 34
+        versionCode 19
+        versionName "1.0.9"
         multiDexEnabled true
     }
     buildTypes {
@@ -24,42 +23,51 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
-    useLibrary 'org.apache.http.legacy'
+    bundle {
+        storeArchive {
+            enable = false
+        }
+    }
     lint {
-        disable 'OldTargetApi', 'GradleDependency'
+        disable 'OldTargetApi', 'GradleDependency', 'GradleDynamicVersion'
     }
 }
+
 
 //IMPORTANT :
 //Highly recommended to keep the library version
 //Be careful when update dependencies, different library version may caused error
 dependencies {
     implementation fileTree(include: ['*.jar', '*.aar'], dir: 'libs')
-    implementation fileTree(dir: 'C:\\Users\\Reinold Carrasco\\Desktop\\RC\\android_studio\\YourSingleRadio\\app\\libs', include: ['*.aar', '*.jar'], exclude: [])
-//google support library
-    implementation 'androidx.appcompat:appcompat:1.2.0'
+    //google support library
+    implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'androidx.cardview:cardview:1.0.0'
     implementation 'androidx.recyclerview:recyclerview:1.1.0'
     implementation 'androidx.cardview:cardview:1.0.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
-    implementation 'androidx.lifecycle:lifecycle-process:2.3.1'
-    implementation 'androidx.lifecycle:lifecycle-runtime:2.3.1'
-    implementation 'androidx.lifecycle:lifecycle-common-java8:2.3.1'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'androidx.lifecycle:lifecycle-common-java8:2.5.1'
+    implementation 'androidx.lifecycle:lifecycle-process:2.5.1'
+    implementation 'androidx.lifecycle:lifecycle-runtime:2.5.1'
+    implementation 'androidx.media:media:1.5.0'
     implementation 'androidx.palette:palette:1.0.0'
     implementation 'androidx.work:work-runtime:2.7.1'
-    implementation 'com.google.android.material:material:1.3.0'
-    implementation 'com.google.android.play:core:1.10.0'
-    implementation "androidx.media:media:1.5.0"
+    implementation 'com.google.android.material:material:1.9.0'
+    implementation 'com.google.android.play:core:1.10.3'
 
-    //analytics
-    implementation platform('com.google.firebase:firebase-bom:30.3.2')
+    //Firebase
+    implementation platform('com.google.firebase:firebase-bom:32.2.3')
     implementation 'com.google.firebase:firebase-analytics'
+    implementation 'com.google.firebase:firebase-messaging'
 
-    //notification
-    implementation 'com.onesignal:OneSignal:4.8.0'
+    //Ad Network Sdk options, change to:
+    //simple-ads-sdk: The app uses AdMob, Google Ad Manager and Meta Audience Network
+    //triple-ads-sdk: The app uses AdMob, Google Ad Manager, Meta Audience Network and Applovin
+    //multi-ads-sdk: The app uses all of ads from simple-ads-sdk and other ads providers from: Applovin, Start.io, Unity, ironSource
+    //no-ads-sdk: The app doesn't use any ads
+    implementation 'com.github.solodroidx:simple-ads-sdk:1.+'
 
-    //ad networks library
-    implementation 'com.github.solodroidx:solodroid-ads-sdk:+'
+    //Push notification
+    implementation 'com.github.solodroidx:solodroidx-push-sdk:1.1.1'
 
     //seek bar and layout library
     implementation 'com.sothree.slidinguppanel:library:3.4.0'
@@ -77,14 +85,9 @@ dependencies {
     //network library
     implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
     implementation 'com.squareup.retrofit2:retrofit:2.9.0'
-    // define a BOM and its version
-    implementation(platform("com.squareup.okhttp3:okhttp-bom:4.9.3"))
-    // define any required OkHttp artifacts without version
+    implementation(platform("com.squareup.okhttp3:okhttp-bom:4.10.0"))
     implementation("com.squareup.okhttp3:okhttp")
     implementation("com.squareup.okhttp3:logging-interceptor")
-
-    //tab layout library
-    implementation 'com.ogaclejapan.smarttablayout:library:2.0.0@aar'
 
     //shimmer effect library
     implementation 'com.facebook.shimmer:shimmer:0.5.0'
@@ -93,18 +96,7 @@ dependencies {
     implementation 'androidx.multidex:multidex:2.0.1'
 
     //local storage
-    implementation 'androidx.room:room-runtime:2.4.3'
-    annotationProcessor 'androidx.room:room-compiler:2.4.3'
-
-    //FireBase
-    implementation 'com.google.firebase:firebase-core:18.0.0'
-   // implementation 'com.google.firebase:firebase-auth:20.0.1'
-  //  implementation 'com.firebaseui:firebase-ui-auth:7.2.0'
-    implementation 'com.firebaseui:firebase-ui:0.6.0'
-    implementation 'com.google.firebase:firebase-messaging:17.3.4'
-   // implementation 'com.google.firebase:firebase-database:18.0.1'
-
-
-    implementation 'de.hdodenhof:circleimageview:3.1.0'
+    implementation 'androidx.room:room-runtime:2.5.2'
+    annotationProcessor 'androidx.room:room-compiler:2.5.2'
 
 }

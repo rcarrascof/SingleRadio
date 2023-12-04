@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="TypographyDashes">
+
+    <string name="fcm_notification_topic">alofoke_fm</string>
+    <string name="onesignal_app_id">6b49527e-7af2-44d9-bcf2-1622202212a6</string>
+
+</resources>

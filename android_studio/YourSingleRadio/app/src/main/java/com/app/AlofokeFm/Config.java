@@ -6,7 +6,7 @@ public class Config {
 
     //set true to enable json remote configuration with access key
     //set false for offline json configuration from assets folder
-    public static final boolean ENABLE_REMOTE_JSON = false;
+    public static final boolean ENABLE_REMOTE_JSON = true;
 
     //only used when remote json is enabled
     //generate your access key using the link below or check the documentation for more detailed instructions
@@ -30,7 +30,7 @@ public class Config {
     public static final boolean ENABLE_RTL_MODE = false;
 
     //GDPR EU Consent
-    public static final boolean LEGACY_GDPR = true;
+    public static final boolean ENABLE_GDPR_UMP_SDK = true;
 
     //social menu open url
     public static final boolean OPEN_SOCIAL_MENU_IN_EXTERNAL_BROWSER = false;

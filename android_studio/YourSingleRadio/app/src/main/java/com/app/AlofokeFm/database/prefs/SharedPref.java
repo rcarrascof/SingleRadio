@@ -10,9 +10,9 @@ import com.app.AlofokeFm.R;
 
 public class SharedPref {
 
-    private Context context;
-    private SharedPreferences sharedPreferences;
-    private SharedPreferences.Editor editor;
+    Context context;
+    SharedPreferences sharedPreferences;
+    SharedPreferences.Editor editor;
     private static final String IS_FIRST_TIME_LAUNCH = "IsFirstTimeLaunch";
 
     @SuppressLint("CommitPrefEdits")
@@ -23,11 +23,11 @@ public class SharedPref {
     }
 
     public int getFirstColor() {
-        return sharedPreferences.getInt("first", ContextCompat.getColor(context, R.color.colorPrimaryDark));
+        return sharedPreferences.getInt("first", ContextCompat.getColor(context, R.color.color_light_status_bar));
     }
 
     public int getSecondColor() {
-        return sharedPreferences.getInt("second", ContextCompat.getColor(context, R.color.colorPrimary));
+        return sharedPreferences.getInt("second", ContextCompat.getColor(context, R.color.color_light_primary));
     }
 
     public void setCheckSleepTime() {
