@@ -24,7 +24,7 @@ public class Config {
     public static final boolean RESUME_RADIO_ON_PHONE_CALL = false;
 
     //splash screen duration in millisecond
-    public static final int SPLASH_DURATION = 1000;
+    public static final int DELAY_SPLASH = 1000;
 
     //set true if you want to enable RTL (Right To Left) mode, e.g : Arabic Language
     public static final boolean ENABLE_RTL_MODE = false;

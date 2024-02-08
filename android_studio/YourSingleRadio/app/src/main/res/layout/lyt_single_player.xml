@@ -15,14 +15,14 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:scaleType="centerCrop"
-            android:src="@drawable/background" />
+            android:src="@drawable/ic_thumbnail1" />
 
         <ImageView
             android:id="@+id/img_music_background_album_art"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:visibility="gone"
-            android:scaleType="centerCrop" />
+            android:scaleType="centerCrop"
+            android:visibility="gone" />
 
         <View
             android:layout_width="match_parent"
@@ -67,8 +67,8 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:scaleType="centerCrop"
-                        android:src="@drawable/logo"
-                        app:riv_border_color="@color/colorRadioImageBorder"
+                        android:src="@drawable/ic_artwork"
+                        app:riv_border_color="@color/color_radio_image_border"
                         app:riv_border_width="@dimen/radio_image_border_width"
                         app:riv_corner_radius="@dimen/corner_radius"
                         app:riv_mutate_background="true" />
@@ -78,7 +78,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:scaleType="centerCrop"
-                        app:riv_border_color="@color/colorRadioImageBorder"
+                        app:riv_border_color="@color/color_radio_image_border"
                         app:riv_border_width="@dimen/radio_image_border_width"
                         app:riv_corner_radius="@dimen/corner_radius"
                         app:riv_mutate_background="true" />
@@ -108,7 +108,7 @@
                         android:layout_gravity="center_horizontal"
                         android:layout_marginBottom="10dp"
                         custom:animDuration="3500"
-                        custom:foregroundColor="@color/white" />
+                        custom:foregroundColor="@color/color_white" />
 
                     <TextView
                         android:id="@+id/txt_radio_name_expand"
@@ -118,7 +118,7 @@
                         android:layout_marginEnd="10dp"
                         android:gravity="center"
                         android:text=""
-                        android:textColor="@color/white"
+                        android:textColor="@color/color_white"
                         android:textSize="22sp"
                         android:textStyle="bold" />
 
@@ -136,7 +136,7 @@
                         android:scrollHorizontally="true"
                         android:singleLine="true"
                         android:text=""
-                        android:textColor="@color/white"
+                        android:textColor="@color/color_white"
                         android:textSize="18sp" />
 
                 </LinearLayout>
@@ -146,7 +146,7 @@
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="20dp">
+                android:layout_marginBottom="100dp">
 
                 <LinearLayout
                     android:id="@+id/lyt_player_expand"
@@ -191,10 +191,11 @@
                             android:insetTop="0dp"
                             android:insetRight="0dp"
                             android:insetBottom="0dp"
-                            app:icon="@drawable/ic_button_play"
+                            app:icon="@drawable/ic_action_play"
                             app:iconGravity="textStart"
                             app:iconPadding="0dp"
-                            app:iconTint="@color/white"
+                            app:iconSize="42dp"
+                            app:iconTint="@color/color_white"
                             app:shapeAppearanceOverlay="@style/ShapeAppearance.Image.Circular" />
 
                     </LinearLayout>

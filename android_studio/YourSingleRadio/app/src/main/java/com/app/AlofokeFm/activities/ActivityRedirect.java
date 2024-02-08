@@ -1,5 +1,6 @@
 package com.app.AlofokeFm.activities;
 
+
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -9,7 +10,7 @@ import android.widget.ImageButton;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.app.AlofokeFm.R;
-import com.app.AlofokeFm.database.prefs.SharedPref;
+import com.app.AlofokeFm.utils.Constant;
 import com.google.android.material.snackbar.Snackbar;
 
 /**
@@ -34,7 +35,10 @@ public class ActivityRedirect extends AppCompatActivity {
         btnClose = findViewById(R.id.btn_close);
         btnRedirect = findViewById(R.id.btn_redirect);
 
-        btnClose.setOnClickListener(view -> finish());
+        btnClose.setOnClickListener(view -> {
+            finish();
+            Constant.isAppOpen = false;
+        });
 
         btnRedirect.setOnClickListener(view -> {
             if (redirectUrl.equals("")) {
@@ -42,11 +46,25 @@ public class ActivityRedirect extends AppCompatActivity {
             } else {
                 startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(redirectUrl)));
                 finish();
+                Constant.isAppOpen = false;
             }
         });
     }
 
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        Constant.isAppOpen = false;
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Constant.isAppOpen = false;
+    }
+
 }
+
 
 
 

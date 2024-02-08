@@ -73,26 +73,8 @@ public class ActivitySplash extends AppCompatActivity {
         adsManager.initializeAd();
         sharedPref = new SharedPref(this);
         adsPref = new AdsPref(this);
-        if (adsPref.getAdStatus().equals(AD_STATUS_ON)) {
-            Application application = getApplication();
-            if (adsPref.getAdType().equals(ADMOB)) {
-                if (!adsPref.getAdMobAppOpenAdId().equals("0")) {
-                    ((MyApplication) application).showAdIfAvailable(ActivitySplash.this, this::initAppConfiguration);
-                } else {
-                    initAppConfiguration();
-                }
-            } else if (adsPref.getAdType().equals(GOOGLE_AD_MANAGER)) {
-                if (!adsPref.getAdManagerAppOpenAdId().equals("0")) {
-                    ((MyApplication) application).showAdIfAvailable(ActivitySplash.this, this::initAppConfiguration);
-                } else {
-                    initAppConfiguration();
-                }
-            } else {
-                initAppConfiguration();
-            }
-        } else {
-            initAppConfiguration();
-        }
+
+        new Handler(Looper.getMainLooper()).postDelayed(this::initAppConfiguration, Config.DELAY_SPLASH);
 
         progressBar = findViewById(R.id.progressBar);
         progressBar.setVisibility(View.VISIBLE);
@@ -115,7 +97,7 @@ public class ActivitySplash extends AppCompatActivity {
             new MaterialAlertDialogBuilder(this)
                     .setTitle("App not configured")
                     .setMessage("Please put your Access Key in your admin panel to Config, you can see the documentation for more detailed instructions.")
-                    .setPositiveButton(getString(R.string.option_ok), (dialogInterface, i) -> startMainActivity())
+                    .setPositiveButton(getString(R.string.option_ok), (dialogInterface, i) -> finish())
                     .setCancelable(false)
                     .show();
         } else {
@@ -206,7 +188,7 @@ public class ActivitySplash extends AppCompatActivity {
                             radio.radio_image_url,
                             radio.background_image_url
                     );
-                    startMainActivity();
+                    showOpenAdsIfAvailable();
                 }, 100);
             }
             Log.d(TAG, "success load config");
@@ -326,7 +308,7 @@ public class ActivitySplash extends AppCompatActivity {
                         radio_image_url,
                         background_image_url
                 );
-                startMainActivity();
+                showOpenAdsIfAvailable();
             }, 100);
 
             Log.d(TAG, "success");
@@ -334,16 +316,8 @@ public class ActivitySplash extends AppCompatActivity {
         } catch (JSONException e) {
             e.printStackTrace();
             Log.d(TAG, "failed : " + e.getMessage());
-            startMainActivity();
+            showOpenAdsIfAvailable();
         }
-    }
-
-    private void startMainActivity() {
-        new Handler().postDelayed(() -> {
-            Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-            startActivity(intent);
-            finish();
-        }, Config.SPLASH_DURATION);
     }
 
     private void readSocial() {
@@ -364,23 +338,51 @@ public class ActivitySplash extends AppCompatActivity {
         }
     }
 
+    /** @noinspection ResultOfMethodCallIgnored*/
     public String readJSON() {
         String json = null;
         try {
-            // Opening data.json file
             InputStream inputStream = getAssets().open("config.json");
             int size = inputStream.available();
             byte[] buffer = new byte[size];
-            // read values in the byte array
             inputStream.read(buffer);
             inputStream.close();
-            // convert byte to string
             json = new String(buffer, StandardCharsets.UTF_8);
         } catch (IOException e) {
             e.printStackTrace();
             return json;
         }
         return json;
+    }
+
+
+    private void showOpenAdsIfAvailable() {
+        if (adsPref.getAdStatus().equals(AD_STATUS_ON)) {
+            Application application = getApplication();
+            if (adsPref.getAdType().equals(ADMOB)) {
+                if (!adsPref.getAdMobAppOpenAdId().equals("0")) {
+                    ((MyApplication) application).showAdIfAvailable(ActivitySplash.this, this::startMainActivity);
+                } else {
+                    startMainActivity();
+                }
+            } else if (adsPref.getAdType().equals(GOOGLE_AD_MANAGER)) {
+                if (!adsPref.getAdManagerAppOpenAdId().equals("0")) {
+                    ((MyApplication) application).showAdIfAvailable(ActivitySplash.this, this::startMainActivity);
+                } else {
+                    startMainActivity();
+                }
+            } else {
+                startMainActivity();
+            }
+        } else {
+            startMainActivity();
+        }
+    }
+
+    private void startMainActivity() {
+        Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+        startActivity(intent);
+        finish();
     }
 
 }

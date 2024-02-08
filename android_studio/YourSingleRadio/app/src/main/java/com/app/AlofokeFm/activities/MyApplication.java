@@ -29,6 +29,7 @@ import com.app.AlofokeFm.database.prefs.AdsPref;
 import com.app.AlofokeFm.database.prefs.SharedPref;
 import com.app.AlofokeFm.models.Settings;
 import com.app.AlofokeFm.rests.RestAdapter;
+import com.app.AlofokeFm.utils.Constant;
 import com.app.AlofokeFm.utils.Utils;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.messaging.FirebaseMessaging;
@@ -107,23 +108,24 @@ public class MyApplication extends Application implements Application.ActivityLi
         @Override
         public void onStart(@NonNull LifecycleOwner owner) {
             DefaultLifecycleObserver.super.onStart(owner);
-            // Show the ad (if available) when the app moves to foreground.
-            if (adsPref.getAdStatus().equals(AD_STATUS_ON)) {
-                switch (adsPref.getAdType()) {
-                    case ADMOB:
-                        if (!adsPref.getAdMobAppOpenAdId().equals("0")) {
-                            if (!currentActivity.getIntent().hasExtra("unique_id")) {
-                                appOpenAdMob.showAdIfAvailable(currentActivity, adsPref.getAdMobAppOpenAdId());
+            if (Constant.isAppOpen) {
+                if (adsPref.getAdStatus().equals(AD_STATUS_ON)) {
+                    switch (adsPref.getAdType()) {
+                        case ADMOB:
+                            if (!adsPref.getAdMobAppOpenAdId().equals("0")) {
+                                if (!currentActivity.getIntent().hasExtra("unique_id")) {
+                                    appOpenAdMob.showAdIfAvailable(currentActivity, adsPref.getAdMobAppOpenAdId());
+                                }
                             }
-                        }
-                        break;
-                    case GOOGLE_AD_MANAGER:
-                        if (!adsPref.getAdManagerAppOpenAdId().equals("0")) {
-                            if (!currentActivity.getIntent().hasExtra("unique_id")) {
-                                appOpenAdManager.showAdIfAvailable(currentActivity, adsPref.getAdManagerAppOpenAdId());
+                            break;
+                        case GOOGLE_AD_MANAGER:
+                            if (!adsPref.getAdManagerAppOpenAdId().equals("0")) {
+                                if (!currentActivity.getIntent().hasExtra("unique_id")) {
+                                    appOpenAdManager.showAdIfAvailable(currentActivity, adsPref.getAdManagerAppOpenAdId());
+                                }
                             }
-                        }
-                        break;
+                            break;
+                    }
                 }
             }
         }
@@ -182,11 +184,13 @@ public class MyApplication extends Application implements Application.ActivityLi
                 case ADMOB:
                     if (!adsPref.getAdMobAppOpenAdId().equals("0")) {
                         appOpenAdMob.showAdIfAvailable(activity, adsPref.getAdMobAppOpenAdId(), onShowAdCompleteListener);
+                        Constant.isAppOpen = true;
                     }
                     break;
                 case GOOGLE_AD_MANAGER:
                     if (!adsPref.getAdManagerAppOpenAdId().equals("0")) {
                         appOpenAdManager.showAdIfAvailable(activity, adsPref.getAdManagerAppOpenAdId(), onShowAdCompleteListener);
+                        Constant.isAppOpen = true;
                     }
                     break;
             }

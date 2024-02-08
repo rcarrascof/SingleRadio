@@ -35,5 +35,6 @@ public class Constant implements Serializable {
 
     public static final String NATIVE_AD_STYLE = "medium";
 
+    public static boolean isAppOpen = false;
 
 }

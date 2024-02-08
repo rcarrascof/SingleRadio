@@ -121,6 +121,8 @@ public class Utils {
         }
     }
 
+
+
     public void showToast(String msg) {
         Toast.makeText(context, msg, Toast.LENGTH_LONG).show();
     }
@@ -453,6 +455,16 @@ public class Utils {
                 nativeAdView.addView(View.inflate(context, com.solodroid.ads.sdk.R.layout.view_native_ad_medium, null));
                 break;
         }
+    }
+
+    public static String formatSeconds(long timeInSeconds) {
+        long secondsLeft = timeInSeconds % 3600 % 60;
+        long minutes = (long) (double) (timeInSeconds % 3600 / 60);
+        long hours = (long) (double) (timeInSeconds / 3600);
+        String HH = ((hours       < 10) ? "0" : "") + hours;
+        String MM = ((minutes     < 10) ? "0" : "") + minutes;
+        String SS = ((secondsLeft < 10) ? "0" : "") + secondsLeft;
+        return HH + ":" + MM + ":" + SS;
     }
 
 

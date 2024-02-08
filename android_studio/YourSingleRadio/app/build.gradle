@@ -2,6 +2,7 @@ plugins {
     id 'com.android.application'
     id 'com.google.gms.google-services'
 }
+
 android {
     namespace "com.app.AlofokeFm"
     compileSdk 34
@@ -9,19 +10,16 @@ android {
         applicationId "com.app.AlofokeFm"
         minSdk 21
         targetSdk 34
-        versionCode 19
-        versionName "1.0.9"
+        versionCode 20
+        versionName "1.0.10"
         multiDexEnabled true
-    }
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-        }
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
+    }
+    buildFeatures {
+        buildConfig = true
     }
     bundle {
         storeArchive {
@@ -32,7 +30,6 @@ android {
         disable 'OldTargetApi', 'GradleDependency', 'GradleDynamicVersion'
     }
 }
-
 
 //IMPORTANT :
 //Highly recommended to keep the library version
@@ -64,10 +61,10 @@ dependencies {
     //triple-ads-sdk: The app uses AdMob, Google Ad Manager, Meta Audience Network and Applovin
     //multi-ads-sdk: The app uses all of ads from simple-ads-sdk and other ads providers from: Applovin, Start.io, Unity, ironSource
     //no-ads-sdk: The app doesn't use any ads
-    implementation 'com.github.solodroidx:simple-ads-sdk:1.+'
+    implementation 'com.github.solodroid-dev:simple-ads-sdk:1.+'
 
     //Push notification
-    implementation 'com.github.solodroidx:solodroidx-push-sdk:1.1.1'
+    implementation 'com.github.solodroid-dev:push-notification-sdk:1.+'
 
     //seek bar and layout library
     implementation 'com.sothree.slidinguppanel:library:3.4.0'
