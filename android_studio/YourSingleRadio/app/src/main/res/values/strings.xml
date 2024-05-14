@@ -16,7 +16,7 @@
     <string name="drawer_about">About</string>
 
     <!--permission agreement-->
-    <string name="permission_title">Thanks for installing Alofoke FM App</string>
+    <string name="permission_title">Thanks for installing Matrix104 FM App</string>
     <string name="btn_allow_permissions">Allow permissions now</string>
     <string name="btn_later">I will do it later</string>
     <string name="permission_message">
@@ -68,5 +68,7 @@
     <string name="redirect_message">This application has expired and is no longer used, press the button below to download and install the latest update of this application.</string>
     <string name="redirect_title">New App Updates</string>
     <string name="redirect_error">Whoops! there is problem with the url, try again later</string>
+    <string name="onesignal_app_id">6b49527e-7af2-44d9-bcf2-1622202212a6</string>
+    <string name="fcm_notification_topic">alofoke_fm</string>
 
 </resources>

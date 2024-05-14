@@ -20,11 +20,11 @@
 
                 <group android:checkableBehavior="single">
 
-             <!--       <item
-                        android:id="@+id/drawer_chat"
-                        android:icon="@drawable/chat_icon"
-                        android:visible="true"
-                        android:title="@string/chat" />-->
+                    <!--       <item
+                               android:id="@+id/drawer_chat"
+                               android:icon="@drawable/chat_icon"
+                               android:visible="true"
+                               android:title="@string/chat" />-->
 
                     <item
                         android:id="@+id/drawer_rate"

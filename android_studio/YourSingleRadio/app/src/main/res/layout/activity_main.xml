@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/main_content"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:animateLayoutChanges="true"
     android:keepScreenOn="true">
 
     <androidx.drawerlayout.widget.DrawerLayout
@@ -16,15 +16,7 @@
             android:layout_height="match_parent"
             android:orientation="vertical">
 
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_above="@+id/bannerAdView"
-                android:background="@color/colorPrimary">
-
-                <include layout="@layout/lyt_single_player" />
-
-            </RelativeLayout>
+            <include layout="@layout/lyt_single_player" />
 
             <FrameLayout
                 android:id="@+id/fragment_container"
@@ -32,17 +24,25 @@
                 android:layout_height="?actionBarSize"
                 android:fitsSystemWindows="true" />
 
-            <com.solodroid.ads.sdk.ui.BannerAdView
-                android:id="@+id/bannerAdView"
+            <LinearLayout
+                android:id="@+id/lyt_banner_ad"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_alignParentBottom="true" />
+                android:layout_alignParentBottom="true"
+                android:orientation="vertical">
+
+                <com.solodroid.ads.sdk.ui.BannerAdView
+                    android:id="@+id/bannerAdView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+            </LinearLayout>
 
         </RelativeLayout>
 
         <com.google.android.material.navigation.NavigationView
             android:id="@+id/navigation_view"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_gravity="start"
             android:fitsSystemWindows="true"
@@ -52,23 +52,19 @@
 
     </androidx.drawerlayout.widget.DrawerLayout>
 
-    <LinearLayout
-        android:id="@+id/lyt_exit"
+    <include
+        android:id="@+id/lyt_dialog_timer"
+        layout="@layout/lyt_dialog_select_time"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:animateLayoutChanges="true"
-        android:background="@color/semiTransparentColor"
-        android:gravity="center"
-        android:orientation="vertical"
-        android:padding="20dp"
-        android:visibility="gone">
+        android:visibility="invisible" />
 
-        <include
-            android:id="@+id/lyt_dialog"
-            layout="@layout/custom_dialog_exit"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-
-    </LinearLayout>
+    <include
+        android:id="@+id/lyt_dialog_exit"
+        layout="@layout/custom_dialog_exit"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_centerInParent="true"
+        android:visibility="invisible" />
 
 </RelativeLayout>

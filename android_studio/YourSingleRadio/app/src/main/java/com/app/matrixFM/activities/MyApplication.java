@@ -14,26 +14,30 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.lifecycle.DefaultLifecycleObserver;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleObserver;
+import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.OnLifecycleEvent;
 import androidx.lifecycle.ProcessLifecycleOwner;
 import androidx.multidex.MultiDex;
 
 import com.app.matrixFM.Config;
+import com.app.matrixFM.R;
 import com.app.matrixFM.callbacks.CallbackConfig;
 import com.app.matrixFM.database.prefs.AdsPref;
 import com.app.matrixFM.database.prefs.SharedPref;
 import com.app.matrixFM.models.Settings;
 import com.app.matrixFM.rests.RestAdapter;
+import com.app.matrixFM.utils.Constant;
 import com.app.matrixFM.utils.Utils;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.messaging.FirebaseMessaging;
-import com.onesignal.OneSignal;
 import com.solodroid.ads.sdk.format.AppOpenAdManager;
 import com.solodroid.ads.sdk.format.AppOpenAdMob;
 import com.solodroid.ads.sdk.util.OnShowAdCompleteListener;
 import com.solodroid.ads.sdk.util.Tools;
+import com.solodroid.push.sdk.provider.OneSignalPush;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -47,18 +51,10 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class MyApplication extends Application implements Application.ActivityLifecycleCallbacks, LifecycleObserver {
+public class MyApplication extends Application implements Application.ActivityLifecycleCallbacks {
 
     public static final String TAG = "MyApplication";
-    String message = "";
-    String big_picture = "";
-    String title = "";
-    String link = "";
-    long post_id = -1;
-    long unique_id = -1;
     FirebaseAnalytics mFirebaseAnalytics;
-    Call<CallbackConfig> callbackCall = null;
-    Settings settings;
     SharedPref sharedPref;
     AdsPref adsPref;
     private AppOpenAdMob appOpenAdMob;
@@ -76,115 +72,30 @@ public class MyApplication extends Application implements Application.ActivityLi
         sharedPref = new SharedPref(this);
         adsPref = new AdsPref(this);
         mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
-        ProcessLifecycleOwner.get().getLifecycle().addObserver(this);
+        ProcessLifecycleOwner.get().getLifecycle().addObserver(lifecycleObserver);
         appOpenAdMob = new AppOpenAdMob();
         appOpenAdManager = new AppOpenAdManager();
-
         initNotification();
     }
 
-    private void initNotification() {
-        OneSignal.disablePush(false);
-        Log.d(TAG, "OneSignal Notification is enabled");
-
-        // Enable verbose OneSignal logging to debug issues if needed.
-        OneSignal.setLogLevel(OneSignal.LOG_LEVEL.VERBOSE, OneSignal.LOG_LEVEL.NONE);
-        OneSignal.initWithContext(this);
-
-        if (Config.ENABLE_REMOTE_JSON) {
-            requestConfig();
-        } else {
-            requestConfigFromAssets();
-        }
-
-        OneSignal.setNotificationOpenedHandler(
-                result -> {
-                    title = result.getNotification().getTitle();
-                    message = result.getNotification().getBody();
-                    big_picture = result.getNotification().getBigPicture();
-                    Log.d(TAG, title + ", " + message + ", " + big_picture);
-                    try {
-                        unique_id = result.getNotification().getAdditionalData().getLong("unique_id");
-                        post_id = result.getNotification().getAdditionalData().getLong("post_id");
-                        link = result.getNotification().getAdditionalData().getString("link");
-                        Log.d(TAG, post_id + ", " + unique_id);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
+    public void initNotification() {
+        new OneSignalPush.Builder(this)
+                .setOneSignalAppId(getResources().getString(R.string.onesignal_app_id))
+                .build(() -> {
                     Intent intent = new Intent(getApplicationContext(), MainActivity.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    intent.putExtra("title", title);
-                    intent.putExtra("link", link);
+                    intent.putExtra(OneSignalPush.EXTRA_ID, OneSignalPush.Data.id);
+                    intent.putExtra(OneSignalPush.EXTRA_TITLE, OneSignalPush.Data.title);
+                    intent.putExtra(OneSignalPush.EXTRA_MESSAGE, OneSignalPush.Data.message);
+                    intent.putExtra(OneSignalPush.EXTRA_IMAGE, OneSignalPush.Data.bigImage);
+                    intent.putExtra(OneSignalPush.EXTRA_LAUNCH_URL, OneSignalPush.Data.launchUrl);
+                    intent.putExtra(OneSignalPush.EXTRA_UNIQUE_ID, OneSignalPush.AdditionalData.uniqueId);
+                    intent.putExtra(OneSignalPush.EXTRA_POST_ID, OneSignalPush.AdditionalData.postId);
+                    intent.putExtra(OneSignalPush.EXTRA_LINK, OneSignalPush.AdditionalData.link);
                     startActivity(intent);
                 });
-
-        OneSignal.unsubscribeWhenNotificationsAreDisabled(true);
-    }
-
-    @SuppressWarnings("ConstantConditions")
-    private void requestConfig() {
-        if (!Config.ACCESS_KEY.contains("XXXXX")) {
-            String data = Tools.decode(Config.ACCESS_KEY);
-            String[] results = data.split("_applicationId_");
-            String remoteUrl = results[0].replace("http://localhost", LOCALHOST_ADDRESS);
-            requestAPI(remoteUrl);
-        }
-    }
-
-    private void requestAPI(String remoteUrl) {
-        if (remoteUrl.startsWith("http://") || remoteUrl.startsWith("https://")) {
-            if (remoteUrl.contains("https://drive.google.com")) {
-                String driveUrl = remoteUrl.replace("https://", "").replace("http://", "");
-                List<String> data = Arrays.asList(driveUrl.split("/"));
-                String googleDriveFileId = data.get(3);
-                callbackCall = RestAdapter.createAPI().getDriveJsonFileId(googleDriveFileId);
-                Log.d(TAG, "Request API from Google Drive Share link");
-                Log.d(TAG, "Google drive file id : " + data.get(3));
-            } else {
-                callbackCall = RestAdapter.createAPI().getJsonUrl(remoteUrl);
-                Log.d(TAG, "Request API from Json Url");
-            }
-        } else {
-            callbackCall = RestAdapter.createAPI().getDriveJsonFileId(remoteUrl);
-            Log.d(TAG, "Request API from Json Url");
-        }
-        callbackCall.enqueue(new Callback<CallbackConfig>() {
-            @Override
-            public void onResponse(@NonNull Call<CallbackConfig> call, @NonNull Response<CallbackConfig> response) {
-                CallbackConfig resp = response.body();
-                if (resp != null) {
-                    settings = resp.settings.get(0);
-                    FirebaseMessaging.getInstance().subscribeToTopic(settings.fcm_notification_topic);
-                    OneSignal.setAppId(settings.onesignal_app_id);
-                    Log.d(TAG, "FCM Subscribe topic : " + settings.fcm_notification_topic);
-                    Log.d(TAG, "OneSignal App ID : " + settings.onesignal_app_id);
-                }
-            }
-
-            @Override
-            public void onFailure(@NonNull Call<CallbackConfig> call, @NonNull Throwable t) {
-                Log.e("onFailure", "" + t.getMessage());
-            }
-
-        });
-    }
-
-    private void requestConfigFromAssets() {
-        try {
-            JSONObject jsonObject = new JSONObject(Objects.requireNonNull(Utils.loadJSONFromAsset(this, "config.json")));
-            JSONArray settings = jsonObject.getJSONArray("settings");
-            JSONObject setting = settings.getJSONObject(0);
-            String onesignal_app_id = setting.getString("onesignal_app_id");
-            String fcm_notification_topic = setting.getString("fcm_notification_topic");
-
-            FirebaseMessaging.getInstance().subscribeToTopic(fcm_notification_topic);
-            OneSignal.setAppId(onesignal_app_id);
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-            Log.d(TAG, "failed");
-        }
+        FirebaseMessaging.getInstance().subscribeToTopic(getResources().getString(R.string.fcm_notification_topic));
     }
 
     @Override
@@ -193,28 +104,32 @@ public class MyApplication extends Application implements Application.ActivityLi
         MultiDex.install(this);
     }
 
-    @OnLifecycleEvent(Lifecycle.Event.ON_START)
-    protected void onMoveToForeground() {
-        // Show the ad (if available) when the app moves to foreground.
-        if (adsPref.getAdStatus().equals(AD_STATUS_ON)) {
-            switch (adsPref.getAdType()) {
-                case ADMOB:
-                    if (!adsPref.getAdMobAppOpenAdId().equals("0")) {
-                        if (!currentActivity.getIntent().hasExtra("unique_id")) {
-                            appOpenAdMob.showAdIfAvailable(currentActivity, adsPref.getAdMobAppOpenAdId());
-                        }
+    LifecycleObserver lifecycleObserver = new DefaultLifecycleObserver() {
+        @Override
+        public void onStart(@NonNull LifecycleOwner owner) {
+            DefaultLifecycleObserver.super.onStart(owner);
+            if (Constant.isAppOpen) {
+                if (adsPref.getAdStatus().equals(AD_STATUS_ON)) {
+                    switch (adsPref.getAdType()) {
+                        case ADMOB:
+                            if (!adsPref.getAdMobAppOpenAdId().equals("0")) {
+                                if (!currentActivity.getIntent().hasExtra("unique_id")) {
+                                    appOpenAdMob.showAdIfAvailable(currentActivity, adsPref.getAdMobAppOpenAdId());
+                                }
+                            }
+                            break;
+                        case GOOGLE_AD_MANAGER:
+                            if (!adsPref.getAdManagerAppOpenAdId().equals("0")) {
+                                if (!currentActivity.getIntent().hasExtra("unique_id")) {
+                                    appOpenAdManager.showAdIfAvailable(currentActivity, adsPref.getAdManagerAppOpenAdId());
+                                }
+                            }
+                            break;
                     }
-                    break;
-                case GOOGLE_AD_MANAGER:
-                    if (!adsPref.getAdManagerAppOpenAdId().equals("0")) {
-                        if (!currentActivity.getIntent().hasExtra("unique_id")) {
-                            appOpenAdManager.showAdIfAvailable(currentActivity, adsPref.getAdManagerAppOpenAdId());
-                        }
-                    }
-                    break;
+                }
             }
         }
-    }
+    };
 
     @Override
     public void onActivityCreated(@NonNull Activity activity, @Nullable Bundle savedInstanceState) {
@@ -269,11 +184,13 @@ public class MyApplication extends Application implements Application.ActivityLi
                 case ADMOB:
                     if (!adsPref.getAdMobAppOpenAdId().equals("0")) {
                         appOpenAdMob.showAdIfAvailable(activity, adsPref.getAdMobAppOpenAdId(), onShowAdCompleteListener);
+                        Constant.isAppOpen = true;
                     }
                     break;
                 case GOOGLE_AD_MANAGER:
                     if (!adsPref.getAdManagerAppOpenAdId().equals("0")) {
                         appOpenAdManager.showAdIfAvailable(activity, adsPref.getAdManagerAppOpenAdId(), onShowAdCompleteListener);
+                        Constant.isAppOpen = true;
                     }
                     break;
             }

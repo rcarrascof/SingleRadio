@@ -24,13 +24,13 @@ public class Config {
     public static final boolean RESUME_RADIO_ON_PHONE_CALL = false;
 
     //splash screen duration in millisecond
-    public static final int SPLASH_DURATION = 1000;
+    public static final int DELAY_SPLASH = 1000;
 
     //set true if you want to enable RTL (Right To Left) mode, e.g : Arabic Language
     public static final boolean ENABLE_RTL_MODE = false;
 
     //GDPR EU Consent
-    public static final boolean LEGACY_GDPR = true;
+    public static final boolean ENABLE_GDPR_UMP_SDK = true;
 
     //social menu open url
     public static final boolean OPEN_SOCIAL_MENU_IN_EXTERNAL_BROWSER = false;

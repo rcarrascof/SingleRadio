@@ -29,12 +29,14 @@ import android.support.v4.media.session.PlaybackStateCompat;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.widget.RemoteViews;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+import androidx.media.session.MediaButtonReceiver;
 
 import com.app.matrixFM.BuildConfig;
 import com.app.matrixFM.Config;
@@ -51,6 +53,7 @@ import com.app.matrixFM.utils.Constant;
 import com.app.matrixFM.utils.HttpsTrustManager;
 import com.app.matrixFM.utils.Utils;
 import com.vhall.android.exoplayer2.ExoPlaybackException;
+import com.vhall.android.exoplayer2.ExoPlayer;
 import com.vhall.android.exoplayer2.ExoPlayerFactory;
 import com.vhall.android.exoplayer2.PlaybackParameters;
 import com.vhall.android.exoplayer2.Player;
@@ -65,14 +68,21 @@ import com.vhall.android.exoplayer2.source.hls.HlsMediaSource;
 import com.vhall.android.exoplayer2.trackselection.AdaptiveTrackSelection;
 import com.vhall.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.vhall.android.exoplayer2.trackselection.TrackSelectionArray;
+import com.vhall.android.exoplayer2.upstream.DataSource;
 import com.vhall.android.exoplayer2.upstream.DefaultBandwidthMeter;
 import com.vhall.android.exoplayer2.upstream.DefaultDataSourceFactory;
+import com.vhall.android.exoplayer2.upstream.DefaultHttpDataSource;
+import com.vhall.android.exoplayer2.upstream.HttpDataSource;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -150,7 +160,7 @@ public class RadioPlayerService extends Service implements AudioFocusChangedCall
         }
     }
 
-    @SuppressLint("UnspecifiedImmutableFlag")
+    @SuppressLint({"UnspecifiedImmutableFlag", "UnspecifiedRegisterReceiverFlag"})
     @Override
     public void onCreate() {
         super.onCreate();
@@ -217,7 +227,11 @@ public class RadioPlayerService extends Service implements AudioFocusChangedCall
         filter.addAction(ACTION_TOGGLE);
         filter.addAction(ACTION_NEXT);
         filter.addAction(ACTION_STOP);
-        this.registerReceiver(broadcastReceiver, filter);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            this.registerReceiver(broadcastReceiver, filter, RECEIVER_EXPORTED);
+        } else {
+            this.registerReceiver(broadcastReceiver, filter);
+        }
 
         callback = new MediaSessionCompat.Callback() {
             @Override
@@ -297,22 +311,19 @@ public class RadioPlayerService extends Service implements AudioFocusChangedCall
         };
 
         mediaSessionCompat = new MediaSessionCompat(this, MEDIA_SESSION_TAG);
-        mediaSessionCompat.setCallback(callback);
 
-        mediaSessionCompat.setPlaybackState(createPlaybackState(PlaybackStateCompat.STATE_NONE));
-        mediaSessionCompat.setMetadata(new MediaMetadataCompat.Builder().build());
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+            mediaSessionCompat.setCallback(callback);
+            mediaSessionCompat.setPlaybackState(createPlaybackState(PlaybackStateCompat.STATE_NONE));
+            mediaControllerCompat = new MediaControllerCompat(this, mediaSessionCompat);
+            mediaControllerCompat.registerCallback(controllerCallback);
+        }
 
-//        mediaSessionCompat.setFlags(MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS
-//                | MediaSessionCompat.FLAG_HANDLES_QUEUE_COMMANDS
-//                | MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS);
-
-//        mediaSessionCompat.setMetadata(new MediaMetadataCompat.Builder()
-//                .putString(MediaMetadataCompat.METADATA_KEY_TITLE, "")
-//                .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, "")
-//                .build());
-
-        mediaControllerCompat = new MediaControllerCompat(this, mediaSessionCompat);
-        mediaControllerCompat.registerCallback(controllerCallback);
+//        mediaSessionCompat.setCallback(callback);
+//        mediaSessionCompat.setPlaybackState(createPlaybackState(PlaybackStateCompat.STATE_NONE));
+//        mediaSessionCompat.setMetadata(new MediaMetadataCompat.Builder().build());
+//        mediaControllerCompat = new MediaControllerCompat(this, mediaSessionCompat);
+//        mediaControllerCompat.registerCallback(controllerCallback);
 
     }
 
@@ -337,7 +348,6 @@ public class RadioPlayerService extends Service implements AudioFocusChangedCall
         if (action != null)
             try {
                 handleCommand(intent);
-                //Log.d(TAG, "handle command");
             } catch (Exception e) {
                 e.printStackTrace();
                 Log.d(TAG, "error " + e.getMessage());
@@ -349,13 +359,25 @@ public class RadioPlayerService extends Service implements AudioFocusChangedCall
         String action = intent.getAction();
         switch (action) {
             case ACTION_TOGGLE:
-                callback.onPause();
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    togglePlayPause();
+                } else {
+                    callback.onPause();
+                }
                 break;
             case ACTION_NEXT:
-                callback.onSkipToNext();
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    next();
+                } else {
+                    callback.onSkipToNext();
+                }
                 break;
             case ACTION_PREVIOUS:
-                callback.onSkipToPrevious();
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    previous();
+                } else {
+                    callback.onSkipToPrevious();
+                }
                 break;
             case ACTION_PLAY:
                 newPlay();
@@ -365,7 +387,11 @@ public class RadioPlayerService extends Service implements AudioFocusChangedCall
                     new Handler(Looper.getMainLooper()).postDelayed(() -> callback.onStop(), 2000);
                     pause();
                 } else {
-                    callback.onStop();
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        stop(false);
+                    } else {
+                        callback.onStop();
+                    }
                 }
                 break;
         }
@@ -533,6 +559,7 @@ public class RadioPlayerService extends Service implements AudioFocusChangedCall
         if (Constant.exoPlayer.getPlayWhenReady()) {
             pause();
             updateNotificationDefaultAlbumArt();
+            updateNotificationMetadata(Constant.item_radio.get(Constant.position).radio_genre);
         } else {
             if (utils.isNetworkAvailable()) {
                 play();
@@ -661,8 +688,10 @@ public class RadioPlayerService extends Service implements AudioFocusChangedCall
                         new Handler(Looper.getMainLooper()).postDelayed(() -> {
                             if ("".equalsIgnoreCase(icyMetadata.getStreamTitle())) {
                                 updateNotificationMetadata(Constant.item_radio.get(Constant.position).radio_genre);
+                                onMediaMetadataCompatChanged(Constant.item_radio.get(Constant.position).radio_genre);
                             } else {
                                 updateNotificationMetadata(icyMetadata.getStreamTitle());
+                                onMediaMetadataCompatChanged(icyMetadata.getStreamTitle());
                                 requestAlbumArt(icyMetadata.getStreamTitle());
                             }
                         }, 1000);
@@ -671,6 +700,17 @@ public class RadioPlayerService extends Service implements AudioFocusChangedCall
                     e.printStackTrace();
                 }
             }).build();
+
+    private void onMediaMetadataCompatChanged(String metadata) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (mediaSessionCompat != null) {
+                mediaSessionCompat.setMetadata(new MediaMetadataCompat.Builder()
+                        .putString(MediaMetadataCompat.METADATA_KEY_TITLE, Constant.item_radio.get(Constant.position).radio_name)
+                        .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, metadata)
+                        .build());
+            }
+        }
+    }
 
     private void requestAlbumArt(String title) {
         if (sharedPref.getImageAlbumArt().equals("true")) {
@@ -849,7 +889,7 @@ public class RadioPlayerService extends Service implements AudioFocusChangedCall
 
     private void buildNotification() {
 
-        Log.d("Rawrr", "build notification");
+        Log.d(TAG, "build notification");
 
         Intent notificationIntent = new Intent(this, MainActivity.class);
         notificationIntent.setAction(Intent.ACTION_MAIN);
@@ -867,6 +907,7 @@ public class RadioPlayerService extends Service implements AudioFocusChangedCall
                 .setSmallIcon(R.drawable.ic_radio_notif)
                 .setContentTitle(title)
                 .setContentText(artist)
+                .setPriority(Notification.PRIORITY_LOW)
                 .setWhen(0)
                 .setStyle(new androidx.media.app.NotificationCompat.MediaStyle()
                         .setMediaSession(mediaSessionCompat.getSessionToken())

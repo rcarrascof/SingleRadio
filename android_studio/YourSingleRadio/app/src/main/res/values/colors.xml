@@ -27,7 +27,22 @@
     <color name="colorGreenLight">#81C784</color>
     <color name="colorPurpleLight">#BA68C8</color>
     <color name="colorYellowLight">#FFD54F</color>
+    <color name="color_light_status_bar">#00695c</color>
+    <color name="color_light_primary">#00796B</color>
 
-
+    <!--others-->
+    <color name="color_play_button">#009688</color>
+    <color name="color_radio_image_border">#E1E1E1</color>
+    <color name="color_white">#FFFFFF</color>
+    <color name="color_black">#000000</color>
+    <color name="color_grey">#E1E1E1</color>
+    <color name="color_ripple">#7E7E7E</color>
+    <color name="color_progress_bar">#FFE719</color>
+    <color name="color_semi_transparent">#80000000</color>
+    <color name="color_dialog_background_light">#5E000000</color>
+    <color name="color_dialog_status_bar_light">#A1A1A1</color>
+    <color name="color_dialog_navigation_bar_light">#989A9C</color>
+    <color name="color_dialog_background_dark_overlay">#5E000000</color>
+    <color name="color_dialog_status_bar_dark">#091217</color>
 
 </resources>

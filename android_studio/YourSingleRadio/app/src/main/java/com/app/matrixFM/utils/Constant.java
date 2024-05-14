@@ -1,6 +1,7 @@
 package com.app.matrixFM.utils;
 
 import com.app.matrixFM.models.Radio;
+import com.vhall.android.exoplayer2.ExoPlayer;
 import com.vhall.android.exoplayer2.SimpleExoPlayer;
 
 import java.io.Serializable;
@@ -31,5 +32,9 @@ public class Constant implements Serializable {
     public static final int BANNER_AD = 1;
     public static final int INTERSTITIAL_AD = 1;
     public static final int NATIVE_AD = 1;
+
+    public static final String NATIVE_AD_STYLE = "medium";
+
+    public static boolean isAppOpen = false;
 
 }

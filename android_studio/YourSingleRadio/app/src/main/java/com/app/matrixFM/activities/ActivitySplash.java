@@ -9,6 +9,7 @@ import android.app.Application;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
@@ -31,6 +32,7 @@ import com.app.matrixFM.models.Settings;
 import com.app.matrixFM.rests.RestAdapter;
 import com.app.matrixFM.utils.AdsManager;
 import com.app.matrixFM.utils.Utils;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.solodroid.ads.sdk.util.Tools;
 
 import org.json.JSONArray;
@@ -71,26 +73,8 @@ public class ActivitySplash extends AppCompatActivity {
         adsManager.initializeAd();
         sharedPref = new SharedPref(this);
         adsPref = new AdsPref(this);
-        if (adsPref.getAdStatus().equals(AD_STATUS_ON)) {
-            Application application = getApplication();
-            if (adsPref.getAdType().equals(ADMOB)) {
-                if (!adsPref.getAdMobAppOpenAdId().equals("0")) {
-                    ((MyApplication) application).showAdIfAvailable(ActivitySplash.this, this::initAppConfiguration);
-                } else {
-                    initAppConfiguration();
-                }
-            } else if (adsPref.getAdType().equals(GOOGLE_AD_MANAGER)) {
-                if (!adsPref.getAdManagerAppOpenAdId().equals("0")) {
-                    ((MyApplication) application).showAdIfAvailable(ActivitySplash.this, this::initAppConfiguration);
-                } else {
-                    initAppConfiguration();
-                }
-            } else {
-                initAppConfiguration();
-            }
-        } else {
-            initAppConfiguration();
-        }
+
+        new Handler(Looper.getMainLooper()).postDelayed(this::initAppConfiguration, Config.DELAY_SPLASH);
 
         progressBar = findViewById(R.id.progressBar);
         progressBar.setVisibility(View.VISIBLE);
@@ -110,10 +94,10 @@ public class ActivitySplash extends AppCompatActivity {
     @SuppressWarnings("ConstantConditions")
     private void requestConfig() {
         if (Config.ACCESS_KEY.contains("XXXXX")) {
-            new AlertDialog.Builder(this)
+            new MaterialAlertDialogBuilder(this)
                     .setTitle("App not configured")
                     .setMessage("Please put your Access Key in your admin panel to Config, you can see the documentation for more detailed instructions.")
-                    .setPositiveButton(getString(R.string.option_ok), (dialogInterface, i) -> startMainActivity())
+                    .setPositiveButton(getString(R.string.option_ok), (dialogInterface, i) -> finish())
                     .setCancelable(false)
                     .show();
         } else {
@@ -125,7 +109,7 @@ public class ActivitySplash extends AppCompatActivity {
             if (applicationId.equals(BuildConfig.APPLICATION_ID)) {
                 requestConfig(remoteUrl);
             } else {
-                new AlertDialog.Builder(this)
+                new MaterialAlertDialogBuilder(this)
                         .setTitle("Error")
                         .setMessage("Whoops! invalid access key or applicationId, please check your configuration")
                         .setPositiveButton("Ok", (dialog, which) -> finish())
@@ -189,6 +173,7 @@ public class ActivitySplash extends AppCompatActivity {
 
             if (settings.app_status.equals("0")) {
                 Intent intent = new Intent(getApplicationContext(), ActivityRedirect.class);
+                intent.putExtra("redirect_url", settings.redirect_url);
                 startActivity(intent);
                 finish();
                 Log.d(TAG, "App status is inactive, open redirect activity");
@@ -203,7 +188,7 @@ public class ActivitySplash extends AppCompatActivity {
                             radio.radio_image_url,
                             radio.background_image_url
                     );
-                    startMainActivity();
+                    showOpenAdsIfAvailable();
                 }, 100);
             }
             Log.d(TAG, "success load config");
@@ -237,8 +222,6 @@ public class ActivitySplash extends AppCompatActivity {
             String auto_play = radio.getString("auto_play");
 
             String app_status = setting.getString("app_status");
-            String onesignal_app_id = setting.getString("onesignal_app_id");
-            String fcm_notification_topic = setting.getString("fcm_notification_topic");
             String privacy_policy_url = setting.getString("privacy_policy_url");
             String more_apps_url = setting.getString("more_apps_url");
             String redirect_url = setting.getString("redirect_url");
@@ -325,7 +308,7 @@ public class ActivitySplash extends AppCompatActivity {
                         radio_image_url,
                         background_image_url
                 );
-                startMainActivity();
+                showOpenAdsIfAvailable();
             }, 100);
 
             Log.d(TAG, "success");
@@ -333,16 +316,8 @@ public class ActivitySplash extends AppCompatActivity {
         } catch (JSONException e) {
             e.printStackTrace();
             Log.d(TAG, "failed : " + e.getMessage());
-            startMainActivity();
+            showOpenAdsIfAvailable();
         }
-    }
-
-    private void startMainActivity() {
-        new Handler().postDelayed(() -> {
-            Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-            startActivity(intent);
-            finish();
-        }, Config.SPLASH_DURATION);
     }
 
     private void readSocial() {
@@ -363,23 +338,51 @@ public class ActivitySplash extends AppCompatActivity {
         }
     }
 
+    /** @noinspection ResultOfMethodCallIgnored*/
     public String readJSON() {
         String json = null;
         try {
-            // Opening data.json file
             InputStream inputStream = getAssets().open("config.json");
             int size = inputStream.available();
             byte[] buffer = new byte[size];
-            // read values in the byte array
             inputStream.read(buffer);
             inputStream.close();
-            // convert byte to string
             json = new String(buffer, StandardCharsets.UTF_8);
         } catch (IOException e) {
             e.printStackTrace();
             return json;
         }
         return json;
+    }
+
+
+    private void showOpenAdsIfAvailable() {
+        if (adsPref.getAdStatus().equals(AD_STATUS_ON)) {
+            Application application = getApplication();
+            if (adsPref.getAdType().equals(ADMOB)) {
+                if (!adsPref.getAdMobAppOpenAdId().equals("0")) {
+                    ((MyApplication) application).showAdIfAvailable(ActivitySplash.this, this::startMainActivity);
+                } else {
+                    startMainActivity();
+                }
+            } else if (adsPref.getAdType().equals(GOOGLE_AD_MANAGER)) {
+                if (!adsPref.getAdManagerAppOpenAdId().equals("0")) {
+                    ((MyApplication) application).showAdIfAvailable(ActivitySplash.this, this::startMainActivity);
+                } else {
+                    startMainActivity();
+                }
+            } else {
+                startMainActivity();
+            }
+        } else {
+            startMainActivity();
+        }
+    }
+
+    private void startMainActivity() {
+        Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+        startActivity(intent);
+        finish();
     }
 
 }

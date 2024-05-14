@@ -5,6 +5,7 @@ import static com.app.matrixFM.utils.Constant.INTERSTITIAL_AD;
 import static com.app.matrixFM.utils.Constant.NATIVE_AD;
 import static com.solodroid.ads.sdk.util.Constant.AD_STATUS_ON;
 
+import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
 import android.app.ActivityManager;
 import android.app.AlarmManager;
@@ -24,6 +25,7 @@ import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
@@ -32,9 +34,12 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
+import android.view.animation.TranslateAnimation;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -80,6 +85,8 @@ import com.bumptech.glide.request.target.CustomTarget;
 import com.bumptech.glide.request.target.Target;
 import com.bumptech.glide.request.transition.Transition;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.play.core.appupdate.AppUpdateInfo;
 import com.google.android.play.core.appupdate.AppUpdateManager;
@@ -92,6 +99,7 @@ import com.google.android.play.core.review.ReviewManagerFactory;
 import com.google.android.play.core.tasks.Task;
 import com.h6ah4i.android.widget.verticalseekbar.VerticalSeekBar;
 import com.makeramen.roundedimageview.RoundedImageView;
+import com.solodroid.push.sdk.provider.OneSignalPush;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -129,21 +137,33 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     List<RadioEntity> radioEntities;
     ArrayList<Radio> radios;
     private AppUpdateManager appUpdateManager;
+    View lytDialogExit;
+    View lytDialogTimer;
+    LinearLayout lytPanelView;
+    LinearLayout lytPanelViewTimer;
+    LinearLayout lytPanelDialog;
+    LinearLayout lytPanelDialogTimer;
+    LinearLayout lytSeekbarTimer;
+    TextView txtTimer;
+    TextView txtMinutes;
+    Button btnCancelTimer, btnSetTimer, btnStopTimer;
+    CountDownTimer mCountDownTimer;
+    public static long minutes = 1;
+    LinearLayout lytBannerAd;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Utils.darkStatusBar(this, true);
-        adsPref = new AdsPref(this);
         setContentView(R.layout.activity_main);
         db = AppDatabase.getDb(this).get();
 
+        adsPref = new AdsPref(this);
         adsManager = new AdsManager(this);
         adsManager.initializeAd();
         adsManager.updateConsentStatus();
         adsManager.loadBannerAd(BANNER_AD);
         adsManager.loadInterstitialAd(INTERSTITIAL_AD, adsPref.getInterstitialAdInterval());
-        adsManager.loadNativeAd(NATIVE_AD);
 
         if (Config.ENABLE_RTL_MODE) {
             getWindow().getDecorView().setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
@@ -185,6 +205,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             inAppUpdate();
             inAppReview();
         }
+
+        new OneSignalPush.Builder(this).requestNotificationPermission();
+        initExitDialog();
+        initTimerDialog();
 
     }
 
@@ -247,9 +271,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public void initComponent() {
 
         fragmentManager = getSupportFragmentManager();
-
+        txtTimer = findViewById(R.id.txt_timer);
+        txtMinutes = findViewById(R.id.txt_minutes);
         imgMusicBackground = findViewById(R.id.img_music_background);
         imgMusicBackgroundAlbumArt = findViewById(R.id.img_music_background_album_art);
+        lytBannerAd = findViewById(R.id.lyt_banner_ad);
 
         equalizerView = findViewById(R.id.equalizer_view);
         progressBar = findViewById(R.id.progress_bar);
@@ -280,11 +306,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         setIfPlaying();
 
         imgTimer.setOnClickListener(v -> {
-            if (sharedPref.getIsSleepTimeOn()) {
-                openTimeDialog();
-            } else {
-                openTimeSelectDialog();
+            if (lytDialogTimer.getVisibility() != View.VISIBLE) {
+                showTimerDialog(true);
             }
+//            if (sharedPref.getIsSleepTimeOn()) {
+//                openTimeDialog();
+//            } else {
+//                openTimeSelectDialog();
+//                startTimer();
+//            }
         });
 
         imgVolume.setOnClickListener(v -> changeVolume());
@@ -321,14 +351,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
             return true;
         } else if (itemId == R.id.drawer_rate) {
-            final String package_name = BuildConfig.APPLICATION_ID;
-            try {
-                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + package_name)));
-            } catch (ActivityNotFoundException e) {
-                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://play.google.com/store/apps/details?id=" + package_name)));
-            }
+            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://play.google.com/store/apps/details?id=" + BuildConfig.APPLICATION_ID)));
             drawerLayout.closeDrawer(GravityCompat.START);
-
             return true;
         } else if (itemId == R.id.drawer_more) {
             startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(sharedPref.getMoreAppsUrl())));
@@ -372,31 +396,53 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
             return true;
         }
-       /* }else if(itemId == R.id.drawer_chat)
-        {
-            Intent i = new Intent(MainActivity.this, LoginActivity.class);
-            startActivity(i);
-            return true;
-
-        }*/
         return false;
     }
 
     public void setupNavigationDrawer(Toolbar toolbar) {
         actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.drawer_open, R.string.drawer_close) {
-            @Override
-            public void onDrawerOpened(View drawerView) {
-                super.onDrawerOpened(drawerView);
-            }
-
-            @Override
-            public void onDrawerClosed(View drawerView) {
-                super.onDrawerClosed(drawerView);
-            }
+//            @Override
+//            public void onDrawerOpened(View drawerView) {
+//                super.onDrawerOpened(drawerView);
+//                lytBannerAd.setVisibility(View.GONE);
+//            }
+//
+//            @Override
+//            public void onDrawerClosed(View drawerView) {
+//                super.onDrawerClosed(drawerView);
+//                lytBannerAd.setVisibility(View.VISIBLE);
+//            }
         };
-
-        drawerLayout.addDrawerListener(actionBarDrawerToggle);
+//
+//        drawerLayout.addDrawerListener(actionBarDrawerToggle);
         actionBarDrawerToggle.syncState();
+
+        drawerLayout.addDrawerListener(new DrawerLayout.DrawerListener() {
+            @Override
+            public void onDrawerSlide(@NonNull View drawerView, float slideOffset) {
+                Log.d("Rawr", "offset: " + slideOffset);
+                if (slideOffset > 0) {
+                    lytBannerAd.setVisibility(View.GONE);
+                } else {
+                    lytBannerAd.setVisibility(View.VISIBLE);
+                }
+            }
+
+            @Override
+            public void onDrawerOpened(@NonNull View drawerView) {
+
+            }
+
+            @Override
+            public void onDrawerClosed(@NonNull View drawerView) {
+
+            }
+
+            @Override
+            public void onDrawerStateChanged(int newState) {
+
+            }
+        });
     }
 
     public void loadFrag(Fragment f1, FragmentManager fm) {
@@ -644,76 +690,76 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     public void openTimeSelectDialog() {
-        AlertDialog.Builder alt_bld = new AlertDialog.Builder(this);
-        alt_bld.setTitle(getString(R.string.sleep_time));
-
-        LayoutInflater inflater = this.getLayoutInflater();
-        View dialogView = inflater.inflate(R.layout.lyt_dialog_select_time, null);
-        alt_bld.setView(dialogView);
-
-        final TextView tv_min = dialogView.findViewById(R.id.txt_minutes);
-        tv_min.setText("1 " + getString(R.string.min));
-
-        SeekBar seekBar = dialogView.findViewById(R.id.seekBar);
-        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                tv_min.setText(progress + " " + getString(R.string.min));
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-
-            }
-        });
-
-        alt_bld.setPositiveButton(getString(R.string.set), (dialog, which) -> {
-            String hours = String.valueOf(seekBar.getProgress() / 60);
-            String minute = String.valueOf(seekBar.getProgress() % 60);
-
-            if (hours.length() == 1) {
-                hours = "0" + hours;
-            }
-
-            if (minute.length() == 1) {
-                minute = "0" + minute;
-            }
-
-            String totalTime = hours + ":" + minute;
-            long total_timer = utils.convertToMilliSeconds(totalTime) + System.currentTimeMillis();
-
-            Random random = new Random();
-            int id = random.nextInt(100);
-
-            sharedPref.setSleepTime(true, total_timer, id);
-
-            int FLAG;
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                FLAG = PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_ONE_SHOT;
-            } else {
-                FLAG = PendingIntent.FLAG_ONE_SHOT;
-            }
-
-            Intent intent = new Intent(MainActivity.this, SleepTimeReceiver.class);
-            PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), id, intent, FLAG);
-            AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
-            assert alarmManager != null;
-            alarmManager.setExact(AlarmManager.RTC_WAKEUP, total_timer, pendingIntent);
-        });
-        alt_bld.setNegativeButton(getString(R.string.cancel), (dialog, which) -> {
-
-        });
-        AlertDialog alert = alt_bld.create();
-        alert.show();
+//        MaterialAlertDialogBuilder alt_bld = new MaterialAlertDialogBuilder(this);
+//        alt_bld.setTitle(getString(R.string.sleep_time));
+//
+//        LayoutInflater inflater = this.getLayoutInflater();
+//        View dialogView = inflater.inflate(R.layout.lyt_dialog_select_time, null);
+//        alt_bld.setView(dialogView);
+//
+//        final TextView tv_min = dialogView.findViewById(R.id.txt_minutes);
+//        tv_min.setText("1 " + getString(R.string.min));
+//
+//        SeekBar seekBar = dialogView.findViewById(R.id.seekBar);
+//        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+//            @Override
+//            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+//                tv_min.setText(progress + " " + getString(R.string.min));
+//            }
+//
+//            @Override
+//            public void onStartTrackingTouch(SeekBar seekBar) {
+//
+//            }
+//
+//            @Override
+//            public void onStopTrackingTouch(SeekBar seekBar) {
+//
+//            }
+//        });
+//
+//        alt_bld.setPositiveButton(getString(R.string.set), (dialog, which) -> {
+//            String hours = String.valueOf(seekBar.getProgress() / 60);
+//            String minute = String.valueOf(seekBar.getProgress() % 60);
+//
+//            if (hours.length() == 1) {
+//                hours = "0" + hours;
+//            }
+//
+//            if (minute.length() == 1) {
+//                minute = "0" + minute;
+//            }
+//
+//            String totalTime = hours + ":" + minute;
+//            long total_timer = utils.convertToMilliSeconds(totalTime) + System.currentTimeMillis();
+//
+//            Random random = new Random();
+//            int id = random.nextInt(100);
+//
+//            sharedPref.setSleepTime(true, total_timer, id);
+//
+//            int FLAG;
+//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//                FLAG = PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_ONE_SHOT;
+//            } else {
+//                FLAG = PendingIntent.FLAG_ONE_SHOT;
+//            }
+//
+//            Intent intent = new Intent(MainActivity.this, SleepTimeReceiver.class);
+//            PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), id, intent, FLAG);
+//            AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+//            assert alarmManager != null;
+//            alarmManager.setExact(AlarmManager.RTC_WAKEUP, total_timer, pendingIntent);
+//        });
+//        alt_bld.setNegativeButton(getString(R.string.cancel), (dialog, which) -> {
+//
+//        });
+//        AlertDialog alert = alt_bld.create();
+//        alert.show();
     }
 
     public void openTimeDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(MainActivity.this);
         builder.setTitle(getString(R.string.sleep_time));
         LayoutInflater inflater = this.getLayoutInflater();
         View dialogView = inflater.inflate(R.layout.lyt_dialog_time, null);
@@ -773,112 +819,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 Utils.darkStatusBar(this, true);
             }
         } else {
-            showExitDialog();
+            if (lytDialogExit.getVisibility() != View.VISIBLE) {
+                showExitDialog(true);
+            }
         }
     }
-
-    public void showExitDialog() {
-
-        if (adsPref.getAdStatus().equals(AD_STATUS_ON)) {
-            LayoutInflater inflater = LayoutInflater.from(this);
-            View view = inflater.inflate(R.layout.custom_dialog_exit, null);
-
-            adsManager.loadNativeAdView(view, 1);
-
-            final AlertDialog.Builder dialog;
-            dialog = new AlertDialog.Builder(this);
-            dialog.setView(view);
-            dialog.setCancelable(false);
-            dialog.setPositiveButton(getResources().getString(R.string.dialog_option_quit), (dialogInterface, i) -> {
-                finish();
-                adsManager.destroyBannerAd();
-                if (isServiceRunning()) {
-                    Intent stop = new Intent(this, RadioPlayerService.class);
-                    stop.setAction(RadioPlayerService.ACTION_STOP);
-                    startService(stop);
-                    Log.d("RADIO_SERVICE", "Service Running");
-                } else {
-                    Log.d("RADIO_SERVICE", "Service Not Running");
-                }
-            });
-
-            dialog.setNegativeButton(getResources().getString(R.string.dialog_option_minimize), (dialogInterface, i) -> minimizeApp());
-
-            dialog.setNeutralButton(getResources().getString(R.string.cancel), (dialogInterface, i) -> {
-
-            });
-            dialog.show();
-
-        } else {
-            AlertDialog.Builder dialog = new AlertDialog.Builder(this);
-            dialog.setIcon(R.drawable.logo);
-            dialog.setTitle(R.string.app_name);
-            dialog.setMessage(getResources().getString(R.string.message));
-            dialog.setPositiveButton(getResources().getString(R.string.dialog_option_quit), (dialogInterface, i) -> {
-                finish();
-                adsManager.destroyBannerAd();
-                if (isServiceRunning()) {
-                    Intent stop = new Intent(MainActivity.this, RadioPlayerService.class);
-                    stop.setAction(RadioPlayerService.ACTION_STOP);
-                    startService(stop);
-                    Log.d("RADIO_SERVICE", "Service Running");
-                } else {
-                    Log.d("RADIO_SERVICE", "Service Not Running");
-                }
-            });
-
-            dialog.setNegativeButton(getResources().getString(R.string.dialog_option_minimize), (dialogInterface, i) -> minimizeApp());
-
-            dialog.setNeutralButton(getResources().getString(R.string.cancel), (dialogInterface, i) -> {
-
-            });
-            dialog.show();
-        }
-
-    }
-
-//    public void showExitDialog(boolean exit) {
-//        if (exit) {
-//            if (lytExit.getVisibility() != View.VISIBLE) {
-//                lytExit.startAnimation(AnimationUtils.loadAnimation(getApplicationContext(), R.anim.slide_up));
-//            }
-//            lytExit.setVisibility(View.VISIBLE);
-//        } else {
-//            lytExit.clearAnimation();
-//            lytExit.setVisibility(View.GONE);
-//        }
-//    }
-
-//    public void initExitDialog() {
-//
-//        lytExit = findViewById(R.id.lyt_exit);
-//        lytDialog = findViewById(R.id.lyt_dialog);
-//
-//        lytExit.setOnClickListener(v -> {
-//        });
-//        lytDialog.setOnClickListener(v -> {
-//        });
-//
-//        findViewById(R.id.txt_cancel).setOnClickListener(v -> new Handler(Looper.getMainLooper()).postDelayed(() -> showExitDialog(false), 200));
-//        findViewById(R.id.txt_minimize).setOnClickListener(v -> {
-//                    showExitDialog(false);
-//                    new Handler(Looper.getMainLooper()).postDelayed(this::minimizeApp, 200);
-//                }
-//        );
-//        findViewById(R.id.txt_exit).setOnClickListener(v -> new Handler(Looper.getMainLooper()).postDelayed(() -> {
-//            finish();
-//            adsManager.destroyBannerAd();
-//            if (isServiceRunning()) {
-//                Intent stop = new Intent(MainActivity.this, RadioPlayerService.class);
-//                stop.setAction(RadioPlayerService.ACTION_STOP);
-//                startService(stop);
-//                Log.d(TAG, "Radio service is running");
-//            } else {
-//                Log.d(TAG, "Radio service is not running");
-//            }
-//        }, 200));
-//
-//    }
 
     public void minimizeApp() {
         Intent intent = new Intent(Intent.ACTION_MAIN);
@@ -914,7 +859,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         View view = layoutInflater.inflate(R.layout.custom_dialog_about, null);
         ((TextView) view.findViewById(R.id.txt_app_version)).setText(getString(R.string.sub_about_app_version) + " " + BuildConfig.VERSION_NAME);
 
-        final AlertDialog.Builder alert = new AlertDialog.Builder(MainActivity.this);
+        final MaterialAlertDialogBuilder alert = new MaterialAlertDialogBuilder(MainActivity.this);
         alert.setView(view);
         alert.setCancelable(false);
         alert.setPositiveButton(R.string.option_ok, (dialog, which) -> dialog.dismiss());
@@ -937,6 +882,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     protected void onDestroy() {
         super.onDestroy();
         Constant.is_app_open = false;
+        Constant.isAppOpen = false;
         adsManager.destroyBannerAd();
     }
 
@@ -997,6 +943,219 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 Toast.makeText(getApplicationContext(), getString(R.string.msg_failed_update), Toast.LENGTH_SHORT).show();
                 inAppUpdate();
             }
+        }
+    }
+
+    public void initExitDialog() {
+
+        lytDialogExit = findViewById(R.id.lyt_dialog_exit);
+        lytPanelView = findViewById(R.id.lyt_panel_view);
+        lytPanelDialog = findViewById(R.id.lyt_panel_dialog);
+
+        lytPanelView.setBackgroundColor(getResources().getColor(R.color.color_dialog_background_light));
+        lytPanelDialog.setBackgroundResource(R.drawable.bg_dialog_default);
+
+        lytPanelView.setOnClickListener(view -> {
+            //empty state
+        });
+
+        LinearLayout nativeAdView = findViewById(R.id.native_ad_view);
+        Utils.setNativeAdStyle(this, nativeAdView, Constant.NATIVE_AD_STYLE);
+        adsManager.loadNativeAd(Constant.NATIVE_AD);
+
+        Button btnCancel = findViewById(R.id.btn_cancel);
+        Button btnMinimize = findViewById(R.id.btn_minimize);
+        Button btnExit = findViewById(R.id.btn_exit);
+
+        FloatingActionButton btnRate = findViewById(R.id.btn_rate);
+        FloatingActionButton btnShare = findViewById(R.id.btn_share);
+
+        btnCancel.setOnClickListener(view -> showExitDialog(false));
+
+        btnMinimize.setOnClickListener(view -> {
+            showExitDialog(false);
+            new Handler(Looper.getMainLooper()).postDelayed(this::minimizeApp, 300);
+        });
+
+        btnExit.setOnClickListener(view -> {
+            showExitDialog(false);
+            new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                finish();
+                adsManager.destroyBannerAd();
+                if (isServiceRunning()) {
+                    Intent stop = new Intent(this, RadioPlayerService.class);
+                    stop.setAction(RadioPlayerService.ACTION_STOP);
+                    startService(stop);
+                    Log.d("RADIO_SERVICE", "Service Running");
+                } else {
+                    Log.d("RADIO_SERVICE", "Service Not Running");
+                }
+            }, 300);
+            Constant.isAppOpen = false;
+        });
+
+        btnRate.setOnClickListener(v -> {
+            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://play.google.com/store/apps/details?id=" + BuildConfig.APPLICATION_ID)));
+            showExitDialog(false);
+        });
+
+        btnShare.setOnClickListener(v -> {
+            Intent intent = new Intent();
+            intent.setAction(Intent.ACTION_SEND);
+            intent.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.app_name));
+            intent.putExtra(Intent.EXTRA_TEXT, getString(R.string.share_content) + "\n" + "https://play.google.com/store/apps/details?id=" + BuildConfig.APPLICATION_ID);
+            intent.setType("text/plain");
+            startActivity(intent);
+            showExitDialog(false);
+        });
+    }
+
+    public void initTimerDialog() {
+
+        lytDialogTimer = findViewById(R.id.lyt_dialog_timer);
+        lytPanelViewTimer = findViewById(R.id.lyt_panel_view_timer);
+        lytPanelDialogTimer = findViewById(R.id.lyt_panel_dialog_timer);
+        lytSeekbarTimer = findViewById(R.id.lyt_seekbar_timer);
+
+        lytPanelViewTimer.setBackgroundColor(getResources().getColor(R.color.color_dialog_background_light));
+        lytPanelDialogTimer.setBackgroundResource(R.drawable.bg_dialog_default);
+
+        lytPanelViewTimer.setOnClickListener(view -> {
+            //empty state
+        });
+
+        SeekBar seekBar = findViewById(R.id.seek_bar_timer);
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int min, boolean fromUser) {
+                txtMinutes.setText(min + " " + getString(R.string.min));
+                minutes = min;
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+
+        btnCancelTimer = findViewById(R.id.btn_cancel_timer);
+        btnSetTimer = findViewById(R.id.btn_set_timer);
+        btnStopTimer = findViewById(R.id.btn_stop_timer);
+
+        btnCancelTimer.setOnClickListener(view -> showTimerDialog(false));
+
+        btnSetTimer.setOnClickListener(view -> {
+            showTimerDialog(false);
+            startTimer(minutes);
+        });
+
+        btnStopTimer.setOnClickListener(view -> {
+            showTimerDialog(false);
+            stopTimer();
+        });
+    }
+
+    private void showExitDialog(boolean show) {
+        if (show) {
+            lytDialogExit.setVisibility(View.VISIBLE);
+            slideUp(findViewById(R.id.dialog_card_view));
+            ObjectAnimator.ofFloat(lytDialogExit, View.ALPHA, 0.1f, 1.0f).setDuration(300).start();
+            Utils.fullScreenMode(this, true);
+        } else {
+            slideDown(findViewById(R.id.dialog_card_view));
+            ObjectAnimator.ofFloat(lytDialogExit, View.ALPHA, 1.0f, 0.1f).setDuration(300).start();
+            new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                lytDialogExit.setVisibility(View.GONE);
+                Utils.fullScreenMode(this, false);
+            }, 300);
+        }
+    }
+
+    private void showTimerDialog(boolean show) {
+        if (show) {
+            lytDialogTimer.setVisibility(View.VISIBLE);
+            slideUp(findViewById(R.id.dialog_card_view_timer));
+            ObjectAnimator.ofFloat(lytDialogTimer, View.ALPHA, 0.1f, 1.0f).setDuration(300).start();
+            Utils.fullScreenMode(this, true);
+        } else {
+            slideDown(findViewById(R.id.dialog_card_view_timer));
+            ObjectAnimator.ofFloat(lytDialogTimer, View.ALPHA, 1.0f, 0.1f).setDuration(300).start();
+            new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                lytDialogTimer.setVisibility(View.GONE);
+                Utils.fullScreenMode(this, false);
+            }, 300);
+        }
+    }
+
+    public void slideUp(View view) {
+        view.setVisibility(View.VISIBLE);
+        TranslateAnimation animate = new TranslateAnimation(0, 0, findViewById(R.id.main_content).getHeight(), 0);
+        animate.setDuration(300);
+        animate.setFillAfter(true);
+        view.startAnimation(animate);
+    }
+
+    public void slideDown(View view) {
+        TranslateAnimation animate = new TranslateAnimation(0, 0, 0, findViewById(R.id.main_content).getHeight());
+        animate.setDuration(300);
+        animate.setFillAfter(true);
+        view.startAnimation(animate);
+    }
+
+    private void startTimer(long minutes) {
+        setCountDownTimer(minutes * 60);
+        showSetTimerButton(true);
+        mCountDownTimer.start();
+    }
+
+    private void stopTimer() {
+        mCountDownTimer.cancel();
+        showSetTimerButton(true);
+        txtTimer.setText("00:00:00");
+    }
+
+    private void setCountDownTimer(long seconds) {
+        mCountDownTimer = new CountDownTimer(seconds * 1000, 1000) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                txtTimer.setText(Utils.formatSeconds(millisUntilFinished / 1000));
+                if (millisUntilFinished > 0) {
+                    showSetTimerButton(false);
+                } else {
+                    showSetTimerButton(true);
+                }
+                Log.d(TAG, "seconds remaining: " + millisUntilFinished / 1000);
+            }
+
+            @Override
+            public void onFinish() {
+                txtTimer.setText("00:00:00");
+                showSetTimerButton(true);
+                if (isServiceRunning()) {
+                    Intent stop = new Intent(MainActivity.this, RadioPlayerService.class);
+                    stop.setAction(RadioPlayerService.ACTION_STOP);
+                    startService(stop);
+                }
+            }
+        };
+    }
+
+    private void showSetTimerButton(boolean show) {
+        if (show) {
+            btnSetTimer.setVisibility(View.VISIBLE);
+            btnStopTimer.setVisibility(View.GONE);
+            txtTimer.setVisibility(View.GONE);
+            lytSeekbarTimer.setVisibility(View.VISIBLE);
+        } else {
+            btnSetTimer.setVisibility(View.GONE);
+            btnStopTimer.setVisibility(View.VISIBLE);
+            txtTimer.setVisibility(View.VISIBLE);
+            lytSeekbarTimer.setVisibility(View.GONE);
         }
     }
 
