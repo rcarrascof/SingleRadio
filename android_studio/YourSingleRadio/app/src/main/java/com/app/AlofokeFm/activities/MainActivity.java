@@ -8,9 +8,6 @@ import static com.solodroid.ads.sdk.util.Constant.AD_STATUS_ON;
 import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
 import android.app.ActivityManager;
-import android.app.AlarmManager;
-import android.app.PendingIntent;
-import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
@@ -23,7 +20,6 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
@@ -34,7 +30,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
-import android.view.animation.AnimationUtils;
 import android.view.animation.TranslateAnimation;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
@@ -49,7 +44,6 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBarDrawerToggle;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
@@ -85,6 +79,7 @@ import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.CustomTarget;
 import com.bumptech.glide.request.target.Target;
 import com.bumptech.glide.request.transition.Transition;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -97,17 +92,15 @@ import com.google.android.play.core.install.model.UpdateAvailability;
 import com.google.android.play.core.review.ReviewInfo;
 import com.google.android.play.core.review.ReviewManager;
 import com.google.android.play.core.review.ReviewManagerFactory;
-import com.google.android.play.core.tasks.Task;
 import com.h6ah4i.android.widget.verticalseekbar.VerticalSeekBar;
 import com.makeramen.roundedimageview.RoundedImageView;
 import com.solodroid.push.sdk.provider.OneSignalPush;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
-import java.util.concurrent.TimeUnit;
 
 import es.claucookie.miniequalizerlibrary.EqualizerView;
+
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
     private static final String TAG = "MainActivity";
@@ -310,12 +303,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             if (lytDialogTimer.getVisibility() != View.VISIBLE) {
                 showTimerDialog(true);
             }
-//            if (sharedPref.getIsSleepTimeOn()) {
-//                openTimeDialog();
-//            } else {
-//                openTimeSelectDialog();
-//                startTimer();
-//            }
         });
 
         imgVolume.setOnClickListener(v -> changeVolume());
@@ -553,17 +540,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         Glide.with(getApplicationContext())
                 .load(artworkUrl.replace(" ", "%20"))
                 .placeholder(android.R.color.transparent)
-                .thumbnail(0.3f)
                 .diskCacheStrategy(DiskCacheStrategy.ALL)
                 .listener(new RequestListener<Drawable>() {
                     @Override
-                    public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+                    public boolean onLoadFailed(@Nullable GlideException e, Object model, @NonNull Target<Drawable> target, boolean isFirstResource) {
                         imgAlbumArtLarge.setVisibility(View.GONE);
                         return false;
                     }
 
                     @Override
-                    public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+                    public boolean onResourceReady(@NonNull Drawable resource, @NonNull Object model, Target<Drawable> target, @NonNull DataSource dataSource, boolean isFirstResource) {
                         imgAlbumArtLarge.setVisibility(View.VISIBLE);
                         return false;
                     }
@@ -576,17 +562,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         .asBitmap()
                         .load(artworkUrl.replace(" ", "%20"))
                         .placeholder(android.R.color.transparent)
-                        .thumbnail(0.3f)
                         .diskCacheStrategy(DiskCacheStrategy.ALL)
                         .listener(new RequestListener<Bitmap>() {
                             @Override
-                            public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Bitmap> target, boolean isFirstResource) {
+                            public boolean onLoadFailed(@Nullable GlideException e, Object model, @NonNull Target<Bitmap> target, boolean isFirstResource) {
                                 imgMusicBackgroundAlbumArt.setVisibility(View.GONE);
                                 return false;
                             }
 
                             @Override
-                            public boolean onResourceReady(Bitmap resource, Object model, Target<Bitmap> target, DataSource dataSource, boolean isFirstResource) {
+                            public boolean onResourceReady(@NonNull Bitmap resource, @NonNull Object model, Target<Bitmap> target, @NonNull DataSource dataSource, boolean isFirstResource) {
                                 imgMusicBackgroundAlbumArt.setVisibility(View.VISIBLE);
                                 return false;
                             }
@@ -607,17 +592,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 Glide.with(getApplicationContext())
                         .load(artworkUrl.replace(" ", "%20"))
                         .placeholder(android.R.color.transparent)
-                        .thumbnail(0.3f)
                         .diskCacheStrategy(DiskCacheStrategy.ALL)
                         .listener(new RequestListener<Drawable>() {
                             @Override
-                            public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+                            public boolean onLoadFailed(@Nullable GlideException e, Object model, @NonNull Target<Drawable> target, boolean isFirstResource) {
                                 imgMusicBackgroundAlbumArt.setVisibility(View.GONE);
                                 return false;
                             }
 
                             @Override
-                            public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+                            public boolean onResourceReady(@NonNull Drawable resource, @NonNull Object model, Target<Drawable> target, @NonNull DataSource dataSource, boolean isFirstResource) {
                                 imgMusicBackgroundAlbumArt.setVisibility(View.VISIBLE);
                                 return false;
                             }
@@ -688,125 +672,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         popupWindow.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         popupWindow.setContentView(view);
         popupWindow.showOnAnchor(imgVolume, RelativePopupWindow.VerticalPosition.ABOVE, RelativePopupWindow.HorizontalPosition.CENTER);
-    }
-
-    public void openTimeSelectDialog() {
-//        MaterialAlertDialogBuilder alt_bld = new MaterialAlertDialogBuilder(this);
-//        alt_bld.setTitle(getString(R.string.sleep_time));
-//
-//        LayoutInflater inflater = this.getLayoutInflater();
-//        View dialogView = inflater.inflate(R.layout.lyt_dialog_select_time, null);
-//        alt_bld.setView(dialogView);
-//
-//        final TextView tv_min = dialogView.findViewById(R.id.txt_minutes);
-//        tv_min.setText("1 " + getString(R.string.min));
-//
-//        SeekBar seekBar = dialogView.findViewById(R.id.seekBar);
-//        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-//            @Override
-//            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-//                tv_min.setText(progress + " " + getString(R.string.min));
-//            }
-//
-//            @Override
-//            public void onStartTrackingTouch(SeekBar seekBar) {
-//
-//            }
-//
-//            @Override
-//            public void onStopTrackingTouch(SeekBar seekBar) {
-//
-//            }
-//        });
-//
-//        alt_bld.setPositiveButton(getString(R.string.set), (dialog, which) -> {
-//            String hours = String.valueOf(seekBar.getProgress() / 60);
-//            String minute = String.valueOf(seekBar.getProgress() % 60);
-//
-//            if (hours.length() == 1) {
-//                hours = "0" + hours;
-//            }
-//
-//            if (minute.length() == 1) {
-//                minute = "0" + minute;
-//            }
-//
-//            String totalTime = hours + ":" + minute;
-//            long total_timer = utils.convertToMilliSeconds(totalTime) + System.currentTimeMillis();
-//
-//            Random random = new Random();
-//            int id = random.nextInt(100);
-//
-//            sharedPref.setSleepTime(true, total_timer, id);
-//
-//            int FLAG;
-//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//                FLAG = PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_ONE_SHOT;
-//            } else {
-//                FLAG = PendingIntent.FLAG_ONE_SHOT;
-//            }
-//
-//            Intent intent = new Intent(MainActivity.this, SleepTimeReceiver.class);
-//            PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), id, intent, FLAG);
-//            AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
-//            assert alarmManager != null;
-//            alarmManager.setExact(AlarmManager.RTC_WAKEUP, total_timer, pendingIntent);
-//        });
-//        alt_bld.setNegativeButton(getString(R.string.cancel), (dialog, which) -> {
-//
-//        });
-//        AlertDialog alert = alt_bld.create();
-//        alert.show();
-    }
-
-    public void openTimeDialog() {
-        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(MainActivity.this);
-        builder.setTitle(getString(R.string.sleep_time));
-        LayoutInflater inflater = this.getLayoutInflater();
-        View dialogView = inflater.inflate(R.layout.lyt_dialog_time, null);
-        builder.setView(dialogView);
-
-        TextView textView = dialogView.findViewById(R.id.txt_time);
-
-        builder.setNegativeButton(getString(R.string.cancel), (dialog, which) -> {
-
-        });
-
-        builder.setPositiveButton(getString(R.string.stop), (dialog, which) -> {
-            int FLAG;
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                FLAG = PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_ONE_SHOT;
-            } else {
-                FLAG = PendingIntent.FLAG_ONE_SHOT;
-            }
-            Intent i = new Intent(MainActivity.this, SleepTimeReceiver.class);
-            PendingIntent pendingIntent = PendingIntent.getBroadcast(MainActivity.this, sharedPref.getSleepID(), i, FLAG);
-            AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-            pendingIntent.cancel();
-            assert alarmManager != null;
-            alarmManager.cancel(pendingIntent);
-            sharedPref.setSleepTime(false, 0, 0);
-        });
-
-        updateTimer(textView, sharedPref.getSleepTime());
-
-        builder.show();
-    }
-
-    private void updateTimer(final TextView textView, long time) {
-        long timeLeft = time - System.currentTimeMillis();
-        if (timeLeft > 0) {
-            @SuppressLint("DefaultLocale") String hms = String.format("%02d:%02d:%02d", TimeUnit.MILLISECONDS.toHours(timeLeft),
-                    TimeUnit.MILLISECONDS.toMinutes(timeLeft) % TimeUnit.HOURS.toMinutes(1),
-                    TimeUnit.MILLISECONDS.toSeconds(timeLeft) % TimeUnit.MINUTES.toSeconds(1));
-
-            textView.setText(hms);
-            handler.postDelayed(() -> {
-                if (sharedPref.getIsSleepTimeOn()) {
-                    updateTimer(textView, sharedPref.getSleepTime());
-                }
-            }, 1000);
-        }
     }
 
     @Override
@@ -924,6 +789,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         });
     }
 
+    @SuppressWarnings("deprecation")
     private void startUpdateFlow(AppUpdateInfo appUpdateInfo) {
         try {
             appUpdateManager.startUpdateFlowForResult(appUpdateInfo, AppUpdateType.IMMEDIATE, this, Constant.IMMEDIATE_APP_UPDATE_REQ_CODE);

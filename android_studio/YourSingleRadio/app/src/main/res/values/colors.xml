@@ -5,6 +5,7 @@
     <color name="colorPrimary">#F44336</color>
     <color name="colorPrimaryDark">#D32F2F</color>
     <color name="colorAccent">#FF5252</color>
+    <color name="color_native_ad_background">#F3F3F3</color>
 
     <!--others-->
     <color name="colorPlayButton">#212121</color>

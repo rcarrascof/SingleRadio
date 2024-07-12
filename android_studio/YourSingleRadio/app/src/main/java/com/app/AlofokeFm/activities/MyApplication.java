@@ -1,6 +1,5 @@
 package com.app.AlofokeFm.activities;
 
-import static com.app.AlofokeFm.utils.Constant.LOCALHOST_ADDRESS;
 import static com.solodroid.ads.sdk.util.Constant.ADMOB;
 import static com.solodroid.ads.sdk.util.Constant.AD_STATUS_ON;
 import static com.solodroid.ads.sdk.util.Constant.GOOGLE_AD_MANAGER;
@@ -10,46 +9,25 @@ import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.lifecycle.DefaultLifecycleObserver;
-import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleObserver;
 import androidx.lifecycle.LifecycleOwner;
-import androidx.lifecycle.OnLifecycleEvent;
 import androidx.lifecycle.ProcessLifecycleOwner;
 import androidx.multidex.MultiDex;
 
-import com.app.AlofokeFm.Config;
 import com.app.AlofokeFm.R;
-import com.app.AlofokeFm.callbacks.CallbackConfig;
 import com.app.AlofokeFm.database.prefs.AdsPref;
 import com.app.AlofokeFm.database.prefs.SharedPref;
-import com.app.AlofokeFm.models.Settings;
-import com.app.AlofokeFm.rests.RestAdapter;
 import com.app.AlofokeFm.utils.Constant;
-import com.app.AlofokeFm.utils.Utils;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.solodroid.ads.sdk.format.AppOpenAdManager;
 import com.solodroid.ads.sdk.format.AppOpenAdMob;
 import com.solodroid.ads.sdk.util.OnShowAdCompleteListener;
-import com.solodroid.ads.sdk.util.Tools;
 import com.solodroid.push.sdk.provider.OneSignalPush;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class MyApplication extends Application implements Application.ActivityLifecycleCallbacks {
 

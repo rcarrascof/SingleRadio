@@ -73,7 +73,6 @@ public class AdapterSocial extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             Glide.with(context)
                     .load(social.social_icon.replace(" ", "%20"))
                     .placeholder(R.drawable.ic_thumbnail)
-                    .thumbnail(0.3f)
                     .diskCacheStrategy(DiskCacheStrategy.ALL)
                     .into(vItem.imgIcon);
 

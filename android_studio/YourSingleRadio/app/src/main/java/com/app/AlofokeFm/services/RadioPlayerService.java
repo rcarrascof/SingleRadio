@@ -29,14 +29,12 @@ import android.support.v4.media.session.PlaybackStateCompat;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.KeyEvent;
-import android.widget.RemoteViews;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
-import androidx.media.session.MediaButtonReceiver;
 
 import com.app.AlofokeFm.BuildConfig;
 import com.app.AlofokeFm.Config;
@@ -49,11 +47,11 @@ import com.app.AlofokeFm.models.AlbumArt;
 import com.app.AlofokeFm.models.Radio;
 import com.app.AlofokeFm.rests.RestAdapter;
 import com.app.AlofokeFm.services.parser.URLParser;
+import com.app.AlofokeFm.utils.AsyncTaskExecutor;
 import com.app.AlofokeFm.utils.Constant;
 import com.app.AlofokeFm.utils.HttpsTrustManager;
 import com.app.AlofokeFm.utils.Utils;
 import com.vhall.android.exoplayer2.ExoPlaybackException;
-import com.vhall.android.exoplayer2.ExoPlayer;
 import com.vhall.android.exoplayer2.ExoPlayerFactory;
 import com.vhall.android.exoplayer2.PlaybackParameters;
 import com.vhall.android.exoplayer2.Player;
@@ -68,21 +66,14 @@ import com.vhall.android.exoplayer2.source.hls.HlsMediaSource;
 import com.vhall.android.exoplayer2.trackselection.AdaptiveTrackSelection;
 import com.vhall.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.vhall.android.exoplayer2.trackselection.TrackSelectionArray;
-import com.vhall.android.exoplayer2.upstream.DataSource;
 import com.vhall.android.exoplayer2.upstream.DefaultBandwidthMeter;
 import com.vhall.android.exoplayer2.upstream.DefaultDataSourceFactory;
-import com.vhall.android.exoplayer2.upstream.DefaultHttpDataSource;
-import com.vhall.android.exoplayer2.upstream.HttpDataSource;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -397,16 +388,18 @@ public class RadioPlayerService extends Service implements AudioFocusChangedCall
         }
     }
 
-    private class LoadSong extends AsyncTask<String, Void, Boolean> {
+    public class LoadSong extends AsyncTaskExecutor<Void, Void, Void> {
 
         MediaSource mediaSource;
 
+        @Override
         protected void onPreExecute() {
             ((MainActivity) context).setBuffer(true);
             ((MainActivity) context).changeSongName(Constant.item_radio.get(Constant.position).radio_genre);
         }
 
-        protected Boolean doInBackground(final String... args) {
+        @Override
+        protected Void doInBackground(Void params) {
             try {
                 HttpsTrustManager.allowAllSSL();
                 String url = Constant.item_radio.get(Constant.position).radio_url;
@@ -431,25 +424,18 @@ public class RadioPlayerService extends Service implements AudioFocusChangedCall
                             .setExtractorsFactory(new DefaultExtractorsFactory())
                             .createMediaSource(Uri.parse(url));
                 }
-                return true;
             } catch (Exception e) {
                 e.printStackTrace();
-                return false;
             }
+            return params;
         }
 
         @Override
-        protected void onPostExecute(Boolean aBoolean) {
-            super.onPostExecute(aBoolean);
+        protected void onPostExecute(Void result) {
             if (context != null) {
-                super.onPostExecute(aBoolean);
                 Constant.exoPlayer.seekTo(Constant.exoPlayer.getCurrentWindowIndex(), Constant.exoPlayer.getCurrentPosition());
                 Constant.exoPlayer.prepare(mediaSource, false, false);
                 Constant.exoPlayer.setPlayWhenReady(true);
-                if (!aBoolean) {
-                    ((MainActivity) context).setBuffer(false);
-                    Toast.makeText(context, getString(R.string.error_loading_radio), Toast.LENGTH_SHORT).show();
-                }
             }
         }
 
@@ -562,7 +548,7 @@ public class RadioPlayerService extends Service implements AudioFocusChangedCall
             updateNotificationMetadata(Constant.item_radio.get(Constant.position).radio_genre);
         } else {
             if (utils.isNetworkAvailable()) {
-                play();
+                newPlay();
             } else {
                 Toast.makeText(context, getString(R.string.internet_not_connected), Toast.LENGTH_SHORT).show();
             }
@@ -575,13 +561,13 @@ public class RadioPlayerService extends Service implements AudioFocusChangedCall
         updateNotificationPlay(Constant.exoPlayer.getPlayWhenReady());
     }
 
-    private void play() {
-        Constant.exoPlayer.setPlayWhenReady(true);
-        Constant.exoPlayer.seekTo(Constant.exoPlayer.getCurrentWindowIndex(), Constant.exoPlayer.getCurrentPosition());
-        changePlayPause(true);
-        updateNotificationPlay(Constant.exoPlayer.getPlayWhenReady());
-        //((MainActivity) context).seekBarUpdate();
-    }
+//    private void play() {
+//        Constant.exoPlayer.setPlayWhenReady(true);
+//        Constant.exoPlayer.seekTo(Constant.exoPlayer.getCurrentWindowIndex(), Constant.exoPlayer.getCurrentPosition());
+//        changePlayPause(true);
+//        updateNotificationPlay(Constant.exoPlayer.getPlayWhenReady());
+//        //((MainActivity) context).seekBarUpdate();
+//    }
 
     private void newPlay() {
         loadSong = new LoadSong();
@@ -832,9 +818,9 @@ public class RadioPlayerService extends Service implements AudioFocusChangedCall
 
     @SuppressLint("StaticFieldLeak")
     private void updateNotificationAlbumArt(String artWorkUrl) {
-        new AsyncTask<String, String, String>() {
+        new AsyncTaskExecutor<Void, Void, Void>() {
             @Override
-            protected String doInBackground(String... strings) {
+            protected Void doInBackground(Void params) {
                 try {
                     getBitmapFromURL(artWorkUrl);
                     if (builder != null) {
@@ -844,12 +830,12 @@ public class RadioPlayerService extends Service implements AudioFocusChangedCall
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-                return null;
+                return params;
             }
 
             @Override
-            protected void onPostExecute(String s) {
-                super.onPostExecute(s);
+            protected void onPostExecute(Void result) {
+
             }
         }.execute();
     }
