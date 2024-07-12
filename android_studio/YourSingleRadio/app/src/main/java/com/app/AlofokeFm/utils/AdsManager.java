@@ -4,10 +4,10 @@ import static com.solodroid.ads.sdk.util.Constant.AD_STATUS_ON;
 import static com.solodroid.ads.sdk.util.Constant.IRONSOURCE;
 
 import android.app.Activity;
-import android.view.View;
 
 import com.app.AlofokeFm.BuildConfig;
 import com.app.AlofokeFm.Config;
+import com.app.AlofokeFm.R;
 import com.app.AlofokeFm.database.prefs.AdsPref;
 import com.app.AlofokeFm.database.prefs.SharedPref;
 import com.app.AlofokeFm.models.Ads;
@@ -15,10 +15,8 @@ import com.solodroid.ads.sdk.format.AdNetwork;
 import com.solodroid.ads.sdk.format.BannerAd;
 import com.solodroid.ads.sdk.format.InterstitialAd;
 import com.solodroid.ads.sdk.format.NativeAd;
-import com.solodroid.ads.sdk.format.NativeAdFragment;
 import com.solodroid.ads.sdk.format.NativeAdView;
 import com.solodroid.ads.sdk.gdpr.GDPR;
-import com.solodroid.ads.sdk.gdpr.LegacyGDPR;
 
 public class AdsManager {
 
@@ -30,14 +28,12 @@ public class AdsManager {
     NativeAdView.Builder nativeAdView;
     SharedPref sharedPref;
     AdsPref adsPref;
-    LegacyGDPR legacyGDPR;
     GDPR gdpr;
 
     public AdsManager(Activity activity) {
         this.activity = activity;
         this.sharedPref = new SharedPref(activity);
         this.adsPref = new AdsPref(activity);
-        this.legacyGDPR = new LegacyGDPR(activity);
         this.gdpr = new GDPR(activity);
         adNetwork = new AdNetwork.Initialize(activity);
         bannerAd = new BannerAd.Builder(activity);
@@ -99,6 +95,7 @@ public class AdsManager {
                 .setAppLovinDiscoveryMrecZoneId(adsPref.getAppLovinBannerZoneId())
                 .setPlacementStatus(placement)
                 .setNativeAdStyle(Constant.NATIVE_AD_STYLE)
+                .setNativeAdBackgroundColor(R.color.color_native_ad_background, R.color.color_native_ad_background)
                 .build();
     }
 
@@ -120,7 +117,7 @@ public class AdsManager {
 
     public void updateConsentStatus() {
         if (Config.ENABLE_GDPR_UMP_SDK) {
-            gdpr.updateGDPRConsentStatus();
+            gdpr.updateGDPRConsentStatus(adsPref.getAdType(), false, false);
         }
     }
 
@@ -158,4 +155,3 @@ public class AdsManager {
     }
 
 }
-

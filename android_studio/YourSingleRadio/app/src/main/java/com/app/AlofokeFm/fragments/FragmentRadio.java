@@ -14,6 +14,7 @@ import androidx.fragment.app.Fragment;
 import com.app.AlofokeFm.R;
 import com.app.AlofokeFm.activities.MainActivity;
 
+@SuppressWarnings("deprecation")
 public class FragmentRadio extends Fragment {
 
     private MainActivity mainActivity;

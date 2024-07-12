@@ -50,6 +50,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+@SuppressWarnings("deprecation")
 public class Utils {
 
     public static final String TAG = "Utils";
@@ -120,8 +121,6 @@ public class Utils {
             }
         }
     }
-
-
 
     public void showToast(String msg) {
         Toast.makeText(context, msg, Toast.LENGTH_LONG).show();
