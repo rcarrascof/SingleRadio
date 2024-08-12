@@ -37,6 +37,7 @@ import androidx.fragment.app.FragmentTransaction;
 import com.app.AlofokeFm.R;
 import com.app.AlofokeFm.database.prefs.SharedPref;
 import com.app.AlofokeFm.fragments.FragmentWebView;
+import com.solodroid.push.sdk.provider.OneSignalPush;
 
 import org.json.JSONObject;
 
@@ -96,30 +97,44 @@ public class Utils {
         win.setAttributes(winParams);
     }
 
-    public static void notificationHandler(AppCompatActivity context, Intent i) {
-        String title = i.getStringExtra("title");
-        String url = i.getStringExtra("link");
-        if (url != null && !url.equals("")) {
-            if (url.contains("play.google.com") || url.contains("?target=external")) {
-                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-                context.startActivity(intent);
+    public static void notificationHandler(AppCompatActivity context, Intent getIntent) {
+        String id = getIntent.getStringExtra(OneSignalPush.EXTRA_ID);
+        String title = getIntent.getStringExtra(OneSignalPush.EXTRA_TITLE);
+        String message = getIntent.getStringExtra(OneSignalPush.EXTRA_MESSAGE);
+        String bigImage = getIntent.getStringExtra(OneSignalPush.EXTRA_IMAGE);
+        String launchUrl = getIntent.getStringExtra(OneSignalPush.EXTRA_LAUNCH_URL);
+        String link = getIntent.getStringExtra(OneSignalPush.EXTRA_LINK);
+        String uniqueId = getIntent.getStringExtra(OneSignalPush.EXTRA_UNIQUE_ID);
+        if (getIntent.hasExtra(OneSignalPush.EXTRA_UNIQUE_ID)) {
+            if (launchUrl != null && !launchUrl.equals("")) {
+                Utils.openActivityLaunchUrl(context, title, launchUrl);
             } else {
-                new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                    FragmentWebView fragmentWebView = new FragmentWebView();
-                    Bundle args = new Bundle();
-                    args.putString("title", title);
-                    args.putString("url", url);
-                    fragmentWebView.setArguments(args);
-
-                    FragmentManager fragmentManager = context.getSupportFragmentManager();
-                    FragmentTransaction transaction = fragmentManager.beginTransaction()
-                            .setCustomAnimations(R.anim.slide_up, 0, 0, R.anim.slide_down);
-                    transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
-                    transaction.add(android.R.id.content, fragmentWebView).addToBackStack("page");
-                    transaction.commit();
-                }, 1000);
+                if (link != null && !link.equals("")) {
+                    if (!link.equals("0")) {
+                        Utils.openActivityLaunchUrl(context, title, link);
+                    }
+                }
             }
         }
+    }
+
+    public static void openActivityLaunchUrl(AppCompatActivity context, String title, String url) {
+        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+            if (url.contains("play.google.com") || url.contains("?target=external")) {
+                context.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
+            } else {
+                FragmentWebView fragmentWebView = new FragmentWebView();
+                Bundle args = new Bundle();
+                args.putString("title", title);
+                args.putString("url", url);
+                fragmentWebView.setArguments(args);
+                FragmentManager fragmentManager = context.getSupportFragmentManager();
+                FragmentTransaction transaction = fragmentManager.beginTransaction().setCustomAnimations(R.anim.slide_up, 0, 0, R.anim.slide_down);
+                transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+                transaction.add(android.R.id.content, fragmentWebView).addToBackStack("page");
+                transaction.commit();
+            }
+        }, 1000);
     }
 
     public void showToast(String msg) {
@@ -460,11 +475,10 @@ public class Utils {
         long secondsLeft = timeInSeconds % 3600 % 60;
         long minutes = (long) (double) (timeInSeconds % 3600 / 60);
         long hours = (long) (double) (timeInSeconds / 3600);
-        String HH = ((hours       < 10) ? "0" : "") + hours;
-        String MM = ((minutes     < 10) ? "0" : "") + minutes;
+        String HH = ((hours < 10) ? "0" : "") + hours;
+        String MM = ((minutes < 10) ? "0" : "") + minutes;
         String SS = ((secondsLeft < 10) ? "0" : "") + secondsLeft;
         return HH + ":" + MM + ":" + SS;
     }
-
 
 }

@@ -3,6 +3,7 @@ package com.app.AlofokeFm.activities;
 import static com.solodroid.ads.sdk.util.Constant.ADMOB;
 import static com.solodroid.ads.sdk.util.Constant.AD_STATUS_ON;
 import static com.solodroid.ads.sdk.util.Constant.GOOGLE_AD_MANAGER;
+import static com.solodroid.ads.sdk.util.Constant.WORTISE;
 
 import android.app.Activity;
 import android.app.Application;
@@ -26,6 +27,7 @@ import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.solodroid.ads.sdk.format.AppOpenAdManager;
 import com.solodroid.ads.sdk.format.AppOpenAdMob;
+import com.solodroid.ads.sdk.format.AppOpenAdWortise;
 import com.solodroid.ads.sdk.util.OnShowAdCompleteListener;
 import com.solodroid.push.sdk.provider.OneSignalPush;
 
@@ -37,6 +39,7 @@ public class MyApplication extends Application implements Application.ActivityLi
     AdsPref adsPref;
     private AppOpenAdMob appOpenAdMob;
     private AppOpenAdManager appOpenAdManager;
+    private AppOpenAdWortise appOpenAdWortise;
     Activity currentActivity;
 
     public MyApplication() {
@@ -53,6 +56,7 @@ public class MyApplication extends Application implements Application.ActivityLi
         ProcessLifecycleOwner.get().getLifecycle().addObserver(lifecycleObserver);
         appOpenAdMob = new AppOpenAdMob();
         appOpenAdManager = new AppOpenAdManager();
+        appOpenAdWortise = new AppOpenAdWortise();
         initNotification();
     }
 
@@ -103,6 +107,13 @@ public class MyApplication extends Application implements Application.ActivityLi
                                 }
                             }
                             break;
+                        case WORTISE:
+                            if (!adsPref.getWortiseAppOpenId().equals("0")) {
+                                if (!currentActivity.getIntent().hasExtra("unique_id")) {
+                                    appOpenAdWortise.showAdIfAvailable(currentActivity, adsPref.getWortiseAppOpenId());
+                                }
+                            }
+                            break;
                     }
                 }
             }
@@ -127,6 +138,13 @@ public class MyApplication extends Application implements Application.ActivityLi
                 case GOOGLE_AD_MANAGER:
                     if (!adsPref.getAdManagerAppOpenAdId().equals("0")) {
                         if (!appOpenAdManager.isShowingAd) {
+                            currentActivity = activity;
+                        }
+                    }
+                    break;
+                case WORTISE:
+                    if (!adsPref.getWortiseAppOpenId().equals("0")) {
+                        if (!appOpenAdWortise.isShowingAd) {
                             currentActivity = activity;
                         }
                     }
@@ -168,6 +186,13 @@ public class MyApplication extends Application implements Application.ActivityLi
                 case GOOGLE_AD_MANAGER:
                     if (!adsPref.getAdManagerAppOpenAdId().equals("0")) {
                         appOpenAdManager.showAdIfAvailable(activity, adsPref.getAdManagerAppOpenAdId(), onShowAdCompleteListener);
+                        Constant.isAppOpen = true;
+                    }
+                    break;
+
+                case WORTISE:
+                    if (!adsPref.getWortiseAppOpenId().equals("0")) {
+                        appOpenAdWortise.showAdIfAvailable(activity, adsPref.getWortiseAppOpenId(), onShowAdCompleteListener);
                         Constant.isAppOpen = true;
                     }
                     break;

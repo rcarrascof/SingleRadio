@@ -50,6 +50,11 @@
       "ironsource_app_key": "85460dcd",
       "ironsource_banner_placement_name": "DefaultBanner",
       "ironsource_interstitial_placement_name": "DefaultInterstitial",
+      "wortise_app_id": "test-app-id",
+      "wortise_banner_unit_id": "test-banner",
+      "wortise_interstitial_unit_id": "test-interstitial",
+      "wortise_native_unit_id": "test-native",
+      "wortise_app_open_ad_unit_id": "test-app-open",
       "interstitial_ad_interval": 2
     }
   ],

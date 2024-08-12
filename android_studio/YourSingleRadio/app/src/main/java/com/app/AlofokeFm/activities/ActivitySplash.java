@@ -4,6 +4,7 @@ import static com.app.AlofokeFm.utils.Constant.LOCALHOST_ADDRESS;
 import static com.solodroid.ads.sdk.util.Constant.ADMOB;
 import static com.solodroid.ads.sdk.util.Constant.AD_STATUS_ON;
 import static com.solodroid.ads.sdk.util.Constant.GOOGLE_AD_MANAGER;
+import static com.solodroid.ads.sdk.util.Constant.WORTISE;
 
 import android.app.Application;
 import android.content.Intent;
@@ -252,6 +253,11 @@ public class ActivitySplash extends AppCompatActivity {
             String ironsource_app_key = ad.getString("ironsource_app_key");
             String ironsource_banner_placement_name = ad.getString("ironsource_banner_placement_name");
             String ironsource_interstitial_placement_name = ad.getString("ironsource_interstitial_placement_name");
+            String wortise_app_id = ad.getString("wortise_app_id");
+            String wortise_banner_unit_id = ad.getString("wortise_banner_unit_id");
+            String wortise_interstitial_unit_id = ad.getString("wortise_interstitial_unit_id");
+            String wortise_native_unit_id = ad.getString("wortise_native_unit_id");
+            String wortise_app_open_ad_unit_id = ad.getString("wortise_app_open_ad_unit_id");
             int interstitial_ad_interval = ad.getInt("interstitial_ad_interval");
 
             sharedPref.saveSettings(
@@ -294,6 +300,11 @@ public class ActivitySplash extends AppCompatActivity {
                     ironsource_app_key,
                     ironsource_banner_placement_name,
                     ironsource_interstitial_placement_name,
+                    wortise_app_id,
+                    wortise_banner_unit_id,
+                    wortise_interstitial_unit_id,
+                    wortise_native_unit_id,
+                    wortise_app_open_ad_unit_id,
                     interstitial_ad_interval
             );
 
@@ -366,6 +377,12 @@ public class ActivitySplash extends AppCompatActivity {
                 }
             } else if (adsPref.getAdType().equals(GOOGLE_AD_MANAGER)) {
                 if (!adsPref.getAdManagerAppOpenAdId().equals("0")) {
+                    ((MyApplication) application).showAdIfAvailable(ActivitySplash.this, this::startMainActivity);
+                } else {
+                    startMainActivity();
+                }
+            } else if (adsPref.getAdType().equals(WORTISE)) {
+                if (!adsPref.getWortiseAppOpenId().equals("0")) {
                     ((MyApplication) application).showAdIfAvailable(ActivitySplash.this, this::startMainActivity);
                 } else {
                     startMainActivity();
