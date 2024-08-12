@@ -32,9 +32,8 @@ public class Constant implements Serializable {
     public static final int BANNER_AD = 1;
     public static final int INTERSTITIAL_AD = 1;
     public static final int NATIVE_AD = 1;
-
     public static final String NATIVE_AD_STYLE = "medium";
-
     public static boolean isAppOpen = false;
+    public static boolean isRadioPlaying = false;
 
 }

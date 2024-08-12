@@ -61,6 +61,7 @@ public class ActivityRedirect extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         Constant.isAppOpen = false;
+        Constant.isRadioPlaying = false;
     }
 
 }

@@ -69,7 +69,6 @@ import com.app.AlofokeFm.services.RadioPlayerService;
 import com.app.AlofokeFm.utils.AdsManager;
 import com.app.AlofokeFm.utils.Constant;
 import com.app.AlofokeFm.utils.RelativePopupWindow;
-import com.app.AlofokeFm.utils.SleepTimeReceiver;
 import com.app.AlofokeFm.utils.Utils;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.DataSource;
@@ -389,48 +388,20 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     public void setupNavigationDrawer(Toolbar toolbar) {
         actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.drawer_open, R.string.drawer_close) {
-//            @Override
-//            public void onDrawerOpened(View drawerView) {
-//                super.onDrawerOpened(drawerView);
-//                lytBannerAd.setVisibility(View.GONE);
-//            }
-//
-//            @Override
-//            public void onDrawerClosed(View drawerView) {
-//                super.onDrawerClosed(drawerView);
-//                lytBannerAd.setVisibility(View.VISIBLE);
-//            }
+            @Override
+            public void onDrawerOpened(View drawerView) {
+                super.onDrawerOpened(drawerView);
+                lytBannerAd.setVisibility(View.GONE);
+            }
+
+            @Override
+            public void onDrawerClosed(View drawerView) {
+                super.onDrawerClosed(drawerView);
+                lytBannerAd.setVisibility(View.VISIBLE);
+            }
         };
-//
-//        drawerLayout.addDrawerListener(actionBarDrawerToggle);
+        drawerLayout.addDrawerListener(actionBarDrawerToggle);
         actionBarDrawerToggle.syncState();
-
-        drawerLayout.addDrawerListener(new DrawerLayout.DrawerListener() {
-            @Override
-            public void onDrawerSlide(@NonNull View drawerView, float slideOffset) {
-                Log.d("Rawr", "offset: " + slideOffset);
-                if (slideOffset > 0) {
-                    lytBannerAd.setVisibility(View.GONE);
-                } else {
-                    lytBannerAd.setVisibility(View.VISIBLE);
-                }
-            }
-
-            @Override
-            public void onDrawerOpened(@NonNull View drawerView) {
-
-            }
-
-            @Override
-            public void onDrawerClosed(@NonNull View drawerView) {
-
-            }
-
-            @Override
-            public void onDrawerStateChanged(int newState) {
-
-            }
-        });
     }
 
     public void loadFrag(Fragment f1, FragmentManager fm) {
@@ -516,7 +487,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
                         }
                     });
-        } /*else {
+        } else {
             Glide.with(getApplicationContext())
                     .load(radio.getBackground_image_url().replace(" ", "%20"))
                     .placeholder(R.drawable.ic_thumbnail)
@@ -527,7 +498,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         Glide.with(getApplicationContext())
                 .load(radio.getRadio_image_url().replace(" ", "%20"))
                 .placeholder(R.drawable.ic_artwork)
-                .into(imgRadioLarge);*/
+                .into(imgRadioLarge);
     }
 
     public void changeSongName(String songName) {
@@ -749,6 +720,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         super.onDestroy();
         Constant.is_app_open = false;
         Constant.isAppOpen = false;
+        Constant.isRadioPlaying = false;
         adsManager.destroyBannerAd();
     }
 
@@ -933,12 +905,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             slideUp(findViewById(R.id.dialog_card_view));
             ObjectAnimator.ofFloat(lytDialogExit, View.ALPHA, 0.1f, 1.0f).setDuration(300).start();
             Utils.fullScreenMode(this, true);
+            showBannerAd(false);
         } else {
             slideDown(findViewById(R.id.dialog_card_view));
             ObjectAnimator.ofFloat(lytDialogExit, View.ALPHA, 1.0f, 0.1f).setDuration(300).start();
             new Handler(Looper.getMainLooper()).postDelayed(() -> {
                 lytDialogExit.setVisibility(View.GONE);
                 Utils.fullScreenMode(this, false);
+                showBannerAd(true);
             }, 300);
         }
     }
@@ -949,12 +923,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             slideUp(findViewById(R.id.dialog_card_view_timer));
             ObjectAnimator.ofFloat(lytDialogTimer, View.ALPHA, 0.1f, 1.0f).setDuration(300).start();
             Utils.fullScreenMode(this, true);
+            showBannerAd(false);
         } else {
             slideDown(findViewById(R.id.dialog_card_view_timer));
             ObjectAnimator.ofFloat(lytDialogTimer, View.ALPHA, 1.0f, 0.1f).setDuration(300).start();
             new Handler(Looper.getMainLooper()).postDelayed(() -> {
                 lytDialogTimer.setVisibility(View.GONE);
                 Utils.fullScreenMode(this, false);
+                showBannerAd(true);
             }, 300);
         }
     }
@@ -1023,6 +999,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             btnStopTimer.setVisibility(View.VISIBLE);
             txtTimer.setVisibility(View.VISIBLE);
             lytSeekbarTimer.setVisibility(View.GONE);
+        }
+    }
+
+    private void showBannerAd(boolean show) {
+        if (show) {
+            findViewById(R.id.bannerAdView).setVisibility(View.VISIBLE);
+        } else {
+            findViewById(R.id.bannerAdView).setVisibility(View.GONE);
         }
     }
 

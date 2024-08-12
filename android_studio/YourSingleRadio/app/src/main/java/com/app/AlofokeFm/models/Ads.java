@@ -31,6 +31,11 @@ public class Ads implements Serializable {
     public String ironsource_app_key = "";
     public String ironsource_banner_placement_name = "";
     public String ironsource_interstitial_placement_name = "";
+    public String wortise_app_id = "";
+    public String wortise_banner_unit_id = "";
+    public String wortise_interstitial_unit_id = "";
+    public String wortise_native_unit_id = "";
+    public String wortise_app_open_ad_unit_id = "";
     public int interstitial_ad_interval;
 
 }

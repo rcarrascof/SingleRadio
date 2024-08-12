@@ -89,12 +89,6 @@
             </intent-filter>
         </receiver>
 
-        <receiver
-            android:name=".utils.SleepTimeReceiver"
-            android:enabled="true"
-            android:exported="true"
-            tools:ignore="ExportedReceiver" />
-
         <service
             android:name=".notification.MyFirebaseMessageService"
             android:enabled="true"

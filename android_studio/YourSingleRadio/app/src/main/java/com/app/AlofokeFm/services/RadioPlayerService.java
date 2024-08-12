@@ -274,7 +274,7 @@ public class RadioPlayerService extends Service implements AudioFocusChangedCall
             @Override
             public boolean onMediaButtonEvent(Intent mediaButtonEvent) {
                 KeyEvent mediaEvent = mediaButtonEvent.getParcelableExtra(Intent.EXTRA_KEY_EVENT);
-                if (mediaEvent.getAction() == KeyEvent.ACTION_UP) {
+                if (mediaEvent != null && mediaEvent.getAction() == KeyEvent.ACTION_UP) {
                     int keyCode = mediaEvent.getKeyCode();
                     switch (keyCode) {
                         case KeyEvent.KEYCODE_MEDIA_NEXT:
@@ -331,6 +331,7 @@ public class RadioPlayerService extends Service implements AudioFocusChangedCall
             ((MainActivity) context).finish();
             stop(false);
         }
+        Constant.isRadioPlaying = false;
     }
 
     @Override
@@ -348,43 +349,45 @@ public class RadioPlayerService extends Service implements AudioFocusChangedCall
 
     private void handleCommand(Intent intent) {
         String action = intent.getAction();
-        switch (action) {
-            case ACTION_TOGGLE:
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    togglePlayPause();
-                } else {
-                    callback.onPause();
-                }
-                break;
-            case ACTION_NEXT:
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    next();
-                } else {
-                    callback.onSkipToNext();
-                }
-                break;
-            case ACTION_PREVIOUS:
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    previous();
-                } else {
-                    callback.onSkipToPrevious();
-                }
-                break;
-            case ACTION_PLAY:
-                newPlay();
-                break;
-            case ACTION_STOP:
-                if (isPlaying()) {
-                    new Handler(Looper.getMainLooper()).postDelayed(() -> callback.onStop(), 2000);
-                    pause();
-                } else {
+        if (action != null) {
+            switch (action) {
+                case ACTION_TOGGLE:
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                        stop(false);
+                        togglePlayPause();
                     } else {
-                        callback.onStop();
+                        callback.onPause();
                     }
-                }
-                break;
+                    break;
+                case ACTION_NEXT:
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        next();
+                    } else {
+                        callback.onSkipToNext();
+                    }
+                    break;
+                case ACTION_PREVIOUS:
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        previous();
+                    } else {
+                        callback.onSkipToPrevious();
+                    }
+                    break;
+                case ACTION_PLAY:
+                    newPlay();
+                    break;
+                case ACTION_STOP:
+                    if (isPlaying()) {
+                        new Handler(Looper.getMainLooper()).postDelayed(() -> callback.onStop(), 2000);
+                        pause();
+                    } else {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                            stop(false);
+                        } else {
+                            callback.onStop();
+                        }
+                    }
+                    break;
+            }
         }
     }
 
@@ -544,7 +547,7 @@ public class RadioPlayerService extends Service implements AudioFocusChangedCall
     private void togglePlayPause() {
         if (Constant.exoPlayer.getPlayWhenReady()) {
             pause();
-            updateNotificationDefaultAlbumArt();
+            updateNotificationAlbumArt(Constant.item_radio.get(Constant.position).radio_image_url);
             updateNotificationMetadata(Constant.item_radio.get(Constant.position).radio_genre);
         } else {
             if (utils.isNetworkAvailable()) {
@@ -713,7 +716,7 @@ public class RadioPlayerService extends Service implements AudioFocusChangedCall
                         Log.d(TAG, "request album art success");
                     } else {
                         ((MainActivity) context).changeAlbumArt("");
-                        updateNotificationDefaultAlbumArt();
+                        updateNotificationAlbumArt(Constant.item_radio.get(Constant.position).radio_image_url);
                         new Handler(Looper.getMainLooper()).postDelayed(() -> ((MainActivity) context).showImageAlbumArt(false), 100);
                         Log.d(TAG, "request album art failed");
                     }
@@ -793,7 +796,9 @@ public class RadioPlayerService extends Service implements AudioFocusChangedCall
             case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
                 if (isPlaying()) {
                     togglePlayPause();
-
+                    Constant.isRadioPlaying = true;
+                } else {
+                    Constant.isRadioPlaying = false;
                 }
                 break;
         }
@@ -816,7 +821,6 @@ public class RadioPlayerService extends Service implements AudioFocusChangedCall
         buildNotification();
     }
 
-    @SuppressLint("StaticFieldLeak")
     private void updateNotificationAlbumArt(String artWorkUrl) {
         new AsyncTaskExecutor<Void, Void, Void>() {
             @Override
@@ -829,6 +833,7 @@ public class RadioPlayerService extends Service implements AudioFocusChangedCall
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
+                    Log.d(TAG, "error: " + e.getMessage());
                 }
                 return params;
             }
@@ -836,30 +841,6 @@ public class RadioPlayerService extends Service implements AudioFocusChangedCall
             @Override
             protected void onPostExecute(Void result) {
 
-            }
-        }.execute();
-    }
-
-    @SuppressLint("StaticFieldLeak")
-    private void updateNotificationDefaultAlbumArt() {
-        new AsyncTask<String, String, String>() {
-            @Override
-            protected String doInBackground(String... strings) {
-                try {
-                    getBitmapFromURL(Constant.item_radio.get(Constant.position).radio_image_url);
-                    if (builder != null) {
-                        builder.setLargeIcon(bitmap);
-                        notificationManager.notify(NOTIFICATION_ID, builder.build());
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                return null;
-            }
-
-            @Override
-            protected void onPostExecute(String s) {
-                super.onPostExecute(s);
             }
         }.execute();
     }

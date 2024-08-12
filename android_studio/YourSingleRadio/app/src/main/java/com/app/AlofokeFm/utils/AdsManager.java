@@ -49,6 +49,7 @@ public class AdsManager {
                 .setStartappAppId(adsPref.getStartappAppId())
                 .setUnityGameId(adsPref.getUnityGameId())
                 .setIronSourceAppKey(adsPref.getIronSourceAppKey())
+                .setWortiseAppId(adsPref.getWortiseAppId())
                 .setDebug(BuildConfig.DEBUG)
                 .build();
     }
@@ -64,6 +65,7 @@ public class AdsManager {
                 .setAppLovinBannerId(adsPref.getAppLovinBannerAdUnitId())
                 .setAppLovinBannerZoneId(adsPref.getAppLovinBannerZoneId())
                 .setIronSourceBannerId(adsPref.getIronSourceBannerId())
+                .setWortiseBannerId(adsPref.getWortiseBannerId())
                 .setPlacementStatus(placement)
                 .build();
     }
@@ -79,6 +81,7 @@ public class AdsManager {
                 .setAppLovinInterstitialId(adsPref.getAppLovinInterstitialAdUnitId())
                 .setAppLovinInterstitialZoneId(adsPref.getAppLovinInterstitialZoneId())
                 .setIronSourceInterstitialId(adsPref.getIronSourceInterstitialId())
+                .setWortiseInterstitialId(adsPref.getWortiseInterstitialId())
                 .setInterval(interval)
                 .setPlacementStatus(placement)
                 .build();
@@ -93,6 +96,7 @@ public class AdsManager {
                 .setFanNativeId(adsPref.getFanNativeUnitId())
                 .setAppLovinNativeId(adsPref.getAppLovinNativeAdManualUnitId())
                 .setAppLovinDiscoveryMrecZoneId(adsPref.getAppLovinBannerZoneId())
+                .setWortiseNativeId(adsPref.getWortiseNativeId())
                 .setPlacementStatus(placement)
                 .setNativeAdStyle(Constant.NATIVE_AD_STYLE)
                 .setNativeAdBackgroundColor(R.color.color_native_ad_background, R.color.color_native_ad_background)
@@ -150,6 +154,11 @@ public class AdsManager {
                 ads.ironsource_app_key,
                 ads.ironsource_banner_placement_name,
                 ads.ironsource_interstitial_placement_name,
+                ads.wortise_app_id,
+                ads.wortise_banner_unit_id,
+                ads.wortise_interstitial_unit_id,
+                ads.wortise_native_unit_id,
+                ads.wortise_app_open_ad_unit_id,
                 ads.interstitial_ad_interval
         );
     }
