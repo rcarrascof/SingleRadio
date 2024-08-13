@@ -58,7 +58,7 @@
                             android:layout_gravity="center"
                             android:contentDescription="@string/img_content_description"
                             android:scaleType="centerCrop"
-                            android:src="@drawable/logo"
+                            android:src="@mipmap/ic_launcher"
                             app:shapeAppearanceOverlay="@style/ShapeAppearance.Image.Rounded" />
 
                     </androidx.cardview.widget.CardView>

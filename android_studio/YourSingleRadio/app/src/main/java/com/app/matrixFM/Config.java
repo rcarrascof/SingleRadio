@@ -15,7 +15,7 @@ public class Config {
 
     //radio streaming timeout connection, in milliseconds
     public static final boolean ENABLE_RADIO_TIMEOUT = true;
-    public static final int RADIO_TIMEOUT_CONNECTION = 10000;
+    public static final int RADIO_TIMEOUT_CONNECTION = 30000;
 
     //display album art metadata with parameter : Constant.CIRCLE or Constant.SQUARE
     public static final boolean CIRCULAR_RADIO_IMAGE_ALBUM_ART = Constant.CIRCLE;

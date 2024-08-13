@@ -3,7 +3,7 @@
     android:id="@+id/notificationbg"
     android:layout_width="match_parent"
     android:layout_height="100dp"
-    android:background="@color/colorToolbarDark">
+    android:background="@color/color_black">
 
     <ImageView
         android:id="@+id/img_notification"
@@ -12,12 +12,9 @@
         android:layout_alignParentStart="true"
         android:layout_alignParentLeft="true"
         android:layout_centerInParent="true"
-        android:layout_marginStart="10dp"
-        android:layout_marginTop="10dp"
-        android:layout_marginEnd="10dp"
-        android:layout_marginBottom="10dp"
+        android:layout_margin="10dp"
         android:scaleType="centerCrop"
-        android:src="@drawable/logo" />
+        android:src="@mipmap/ic_launcher" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -63,7 +60,7 @@
                     android:fadingEdge="horizontal"
                     android:focusable="true"
                     android:maxLines="1"
-                    android:textColor="@color/white"
+                    android:textColor="@color/color_white"
                     android:textSize="16sp"
                     android:textStyle="bold" />
 
@@ -75,7 +72,7 @@
                     android:ellipsize="end"
                     android:fadingEdge="horizontal"
                     android:maxLines="1"
-                    android:textColor="@color/white"
+                    android:textColor="@color/color_white"
                     android:textSize="13sp" />
 
             </LinearLayout>

@@ -10,4 +10,3 @@ public class CallbackAlbumArt {
     public ArrayList<AlbumArt> results = new ArrayList<>();
 
 }
-

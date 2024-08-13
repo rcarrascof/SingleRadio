@@ -1,4 +1,4 @@
-package com.app.matrixFM.utils;
+package com.app.yoursingleradio.utils;
 
 import android.content.Context;
 import android.graphics.Rect;

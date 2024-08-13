@@ -74,7 +74,6 @@ import com.app.matrixFM.services.RadioPlayerService;
 import com.app.matrixFM.utils.AdsManager;
 import com.app.matrixFM.utils.Constant;
 import com.app.matrixFM.utils.RelativePopupWindow;
-import com.app.matrixFM.utils.SleepTimeReceiver;
 import com.app.matrixFM.utils.Utils;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.DataSource;
@@ -84,6 +83,7 @@ import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.CustomTarget;
 import com.bumptech.glide.request.target.Target;
 import com.bumptech.glide.request.transition.Transition;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -96,7 +96,6 @@ import com.google.android.play.core.install.model.UpdateAvailability;
 import com.google.android.play.core.review.ReviewInfo;
 import com.google.android.play.core.review.ReviewManager;
 import com.google.android.play.core.review.ReviewManagerFactory;
-import com.google.android.play.core.tasks.Task;
 import com.h6ah4i.android.widget.verticalseekbar.VerticalSeekBar;
 import com.makeramen.roundedimageview.RoundedImageView;
 import com.solodroid.push.sdk.provider.OneSignalPush;
@@ -309,12 +308,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             if (lytDialogTimer.getVisibility() != View.VISIBLE) {
                 showTimerDialog(true);
             }
-//            if (sharedPref.getIsSleepTimeOn()) {
-//                openTimeDialog();
-//            } else {
-//                openTimeSelectDialog();
-//                startTimer();
-//            }
         });
 
         imgVolume.setOnClickListener(v -> changeVolume());
@@ -401,48 +394,20 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     public void setupNavigationDrawer(Toolbar toolbar) {
         actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.drawer_open, R.string.drawer_close) {
-//            @Override
-//            public void onDrawerOpened(View drawerView) {
-//                super.onDrawerOpened(drawerView);
-//                lytBannerAd.setVisibility(View.GONE);
-//            }
-//
-//            @Override
-//            public void onDrawerClosed(View drawerView) {
-//                super.onDrawerClosed(drawerView);
-//                lytBannerAd.setVisibility(View.VISIBLE);
-//            }
+            @Override
+            public void onDrawerOpened(View drawerView) {
+                super.onDrawerOpened(drawerView);
+                lytBannerAd.setVisibility(View.GONE);
+            }
+
+            @Override
+            public void onDrawerClosed(View drawerView) {
+                super.onDrawerClosed(drawerView);
+                lytBannerAd.setVisibility(View.VISIBLE);
+            }
         };
-//
-//        drawerLayout.addDrawerListener(actionBarDrawerToggle);
+        drawerLayout.addDrawerListener(actionBarDrawerToggle);
         actionBarDrawerToggle.syncState();
-
-        drawerLayout.addDrawerListener(new DrawerLayout.DrawerListener() {
-            @Override
-            public void onDrawerSlide(@NonNull View drawerView, float slideOffset) {
-                Log.d("Rawr", "offset: " + slideOffset);
-                if (slideOffset > 0) {
-                    lytBannerAd.setVisibility(View.GONE);
-                } else {
-                    lytBannerAd.setVisibility(View.VISIBLE);
-                }
-            }
-
-            @Override
-            public void onDrawerOpened(@NonNull View drawerView) {
-
-            }
-
-            @Override
-            public void onDrawerClosed(@NonNull View drawerView) {
-
-            }
-
-            @Override
-            public void onDrawerStateChanged(int newState) {
-
-            }
-        });
     }
 
     public void loadFrag(Fragment f1, FragmentManager fm) {
@@ -528,7 +493,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
                         }
                     });
-        } /*else {
+        } else {
             Glide.with(getApplicationContext())
                     .load(radio.getBackground_image_url().replace(" ", "%20"))
                     .placeholder(R.drawable.ic_thumbnail)
@@ -539,7 +504,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         Glide.with(getApplicationContext())
                 .load(radio.getRadio_image_url().replace(" ", "%20"))
                 .placeholder(R.drawable.ic_artwork)
-                .into(imgRadioLarge);*/
+                .into(imgRadioLarge);
     }
 
     public void changeSongName(String songName) {
@@ -552,17 +517,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         Glide.with(getApplicationContext())
                 .load(artworkUrl.replace(" ", "%20"))
                 .placeholder(android.R.color.transparent)
-                .thumbnail(0.3f)
                 .diskCacheStrategy(DiskCacheStrategy.ALL)
                 .listener(new RequestListener<Drawable>() {
                     @Override
-                    public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+                    public boolean onLoadFailed(@Nullable GlideException e, Object model, @NonNull Target<Drawable> target, boolean isFirstResource) {
                         imgAlbumArtLarge.setVisibility(View.GONE);
                         return false;
                     }
 
                     @Override
-                    public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+                    public boolean onResourceReady(@NonNull Drawable resource, @NonNull Object model, Target<Drawable> target, @NonNull DataSource dataSource, boolean isFirstResource) {
                         imgAlbumArtLarge.setVisibility(View.VISIBLE);
                         return false;
                     }
@@ -575,17 +539,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         .asBitmap()
                         .load(artworkUrl.replace(" ", "%20"))
                         .placeholder(android.R.color.transparent)
-                        .thumbnail(0.3f)
                         .diskCacheStrategy(DiskCacheStrategy.ALL)
                         .listener(new RequestListener<Bitmap>() {
                             @Override
-                            public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Bitmap> target, boolean isFirstResource) {
+                            public boolean onLoadFailed(@Nullable GlideException e, Object model, @NonNull Target<Bitmap> target, boolean isFirstResource) {
                                 imgMusicBackgroundAlbumArt.setVisibility(View.GONE);
                                 return false;
                             }
 
                             @Override
-                            public boolean onResourceReady(Bitmap resource, Object model, Target<Bitmap> target, DataSource dataSource, boolean isFirstResource) {
+                            public boolean onResourceReady(@NonNull Bitmap resource, @NonNull Object model, Target<Bitmap> target, @NonNull DataSource dataSource, boolean isFirstResource) {
                                 imgMusicBackgroundAlbumArt.setVisibility(View.VISIBLE);
                                 return false;
                             }
@@ -606,17 +569,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 Glide.with(getApplicationContext())
                         .load(artworkUrl.replace(" ", "%20"))
                         .placeholder(android.R.color.transparent)
-                        .thumbnail(0.3f)
                         .diskCacheStrategy(DiskCacheStrategy.ALL)
                         .listener(new RequestListener<Drawable>() {
                             @Override
-                            public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+                            public boolean onLoadFailed(@Nullable GlideException e, Object model, @NonNull Target<Drawable> target, boolean isFirstResource) {
                                 imgMusicBackgroundAlbumArt.setVisibility(View.GONE);
                                 return false;
                             }
 
                             @Override
-                            public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+                            public boolean onResourceReady(@NonNull Drawable resource, @NonNull Object model, Target<Drawable> target, @NonNull DataSource dataSource, boolean isFirstResource) {
                                 imgMusicBackgroundAlbumArt.setVisibility(View.VISIBLE);
                                 return false;
                             }
@@ -687,125 +649,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         popupWindow.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         popupWindow.setContentView(view);
         popupWindow.showOnAnchor(imgVolume, RelativePopupWindow.VerticalPosition.ABOVE, RelativePopupWindow.HorizontalPosition.CENTER);
-    }
-
-    public void openTimeSelectDialog() {
-//        MaterialAlertDialogBuilder alt_bld = new MaterialAlertDialogBuilder(this);
-//        alt_bld.setTitle(getString(R.string.sleep_time));
-//
-//        LayoutInflater inflater = this.getLayoutInflater();
-//        View dialogView = inflater.inflate(R.layout.lyt_dialog_select_time, null);
-//        alt_bld.setView(dialogView);
-//
-//        final TextView tv_min = dialogView.findViewById(R.id.txt_minutes);
-//        tv_min.setText("1 " + getString(R.string.min));
-//
-//        SeekBar seekBar = dialogView.findViewById(R.id.seekBar);
-//        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-//            @Override
-//            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-//                tv_min.setText(progress + " " + getString(R.string.min));
-//            }
-//
-//            @Override
-//            public void onStartTrackingTouch(SeekBar seekBar) {
-//
-//            }
-//
-//            @Override
-//            public void onStopTrackingTouch(SeekBar seekBar) {
-//
-//            }
-//        });
-//
-//        alt_bld.setPositiveButton(getString(R.string.set), (dialog, which) -> {
-//            String hours = String.valueOf(seekBar.getProgress() / 60);
-//            String minute = String.valueOf(seekBar.getProgress() % 60);
-//
-//            if (hours.length() == 1) {
-//                hours = "0" + hours;
-//            }
-//
-//            if (minute.length() == 1) {
-//                minute = "0" + minute;
-//            }
-//
-//            String totalTime = hours + ":" + minute;
-//            long total_timer = utils.convertToMilliSeconds(totalTime) + System.currentTimeMillis();
-//
-//            Random random = new Random();
-//            int id = random.nextInt(100);
-//
-//            sharedPref.setSleepTime(true, total_timer, id);
-//
-//            int FLAG;
-//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//                FLAG = PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_ONE_SHOT;
-//            } else {
-//                FLAG = PendingIntent.FLAG_ONE_SHOT;
-//            }
-//
-//            Intent intent = new Intent(MainActivity.this, SleepTimeReceiver.class);
-//            PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), id, intent, FLAG);
-//            AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
-//            assert alarmManager != null;
-//            alarmManager.setExact(AlarmManager.RTC_WAKEUP, total_timer, pendingIntent);
-//        });
-//        alt_bld.setNegativeButton(getString(R.string.cancel), (dialog, which) -> {
-//
-//        });
-//        AlertDialog alert = alt_bld.create();
-//        alert.show();
-    }
-
-    public void openTimeDialog() {
-        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(MainActivity.this);
-        builder.setTitle(getString(R.string.sleep_time));
-        LayoutInflater inflater = this.getLayoutInflater();
-        View dialogView = inflater.inflate(R.layout.lyt_dialog_time, null);
-        builder.setView(dialogView);
-
-        TextView textView = dialogView.findViewById(R.id.txt_time);
-
-        builder.setNegativeButton(getString(R.string.cancel), (dialog, which) -> {
-
-        });
-
-        builder.setPositiveButton(getString(R.string.stop), (dialog, which) -> {
-            int FLAG;
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                FLAG = PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_ONE_SHOT;
-            } else {
-                FLAG = PendingIntent.FLAG_ONE_SHOT;
-            }
-            Intent i = new Intent(MainActivity.this, SleepTimeReceiver.class);
-            PendingIntent pendingIntent = PendingIntent.getBroadcast(MainActivity.this, sharedPref.getSleepID(), i, FLAG);
-            AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-            pendingIntent.cancel();
-            assert alarmManager != null;
-            alarmManager.cancel(pendingIntent);
-            sharedPref.setSleepTime(false, 0, 0);
-        });
-
-        updateTimer(textView, sharedPref.getSleepTime());
-
-        builder.show();
-    }
-
-    private void updateTimer(final TextView textView, long time) {
-        long timeLeft = time - System.currentTimeMillis();
-        if (timeLeft > 0) {
-            @SuppressLint("DefaultLocale") String hms = String.format("%02d:%02d:%02d", TimeUnit.MILLISECONDS.toHours(timeLeft),
-                    TimeUnit.MILLISECONDS.toMinutes(timeLeft) % TimeUnit.HOURS.toMinutes(1),
-                    TimeUnit.MILLISECONDS.toSeconds(timeLeft) % TimeUnit.MINUTES.toSeconds(1));
-
-            textView.setText(hms);
-            handler.postDelayed(() -> {
-                if (sharedPref.getIsSleepTimeOn()) {
-                    updateTimer(textView, sharedPref.getSleepTime());
-                }
-            }, 1000);
-        }
     }
 
     @Override
@@ -883,6 +726,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         super.onDestroy();
         Constant.is_app_open = false;
         Constant.isAppOpen = false;
+        Constant.isRadioPlaying = false;
         adsManager.destroyBannerAd();
     }
 
@@ -923,6 +767,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         });
     }
 
+    @SuppressWarnings("deprecation")
     private void startUpdateFlow(AppUpdateInfo appUpdateInfo) {
         try {
             appUpdateManager.startUpdateFlowForResult(appUpdateInfo, AppUpdateType.IMMEDIATE, this, Constant.IMMEDIATE_APP_UPDATE_REQ_CODE);
@@ -1066,12 +911,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             slideUp(findViewById(R.id.dialog_card_view));
             ObjectAnimator.ofFloat(lytDialogExit, View.ALPHA, 0.1f, 1.0f).setDuration(300).start();
             Utils.fullScreenMode(this, true);
+            showBannerAd(false);
         } else {
             slideDown(findViewById(R.id.dialog_card_view));
             ObjectAnimator.ofFloat(lytDialogExit, View.ALPHA, 1.0f, 0.1f).setDuration(300).start();
             new Handler(Looper.getMainLooper()).postDelayed(() -> {
                 lytDialogExit.setVisibility(View.GONE);
                 Utils.fullScreenMode(this, false);
+                showBannerAd(true);
             }, 300);
         }
     }
@@ -1082,12 +929,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             slideUp(findViewById(R.id.dialog_card_view_timer));
             ObjectAnimator.ofFloat(lytDialogTimer, View.ALPHA, 0.1f, 1.0f).setDuration(300).start();
             Utils.fullScreenMode(this, true);
+            showBannerAd(false);
         } else {
             slideDown(findViewById(R.id.dialog_card_view_timer));
             ObjectAnimator.ofFloat(lytDialogTimer, View.ALPHA, 1.0f, 0.1f).setDuration(300).start();
             new Handler(Looper.getMainLooper()).postDelayed(() -> {
                 lytDialogTimer.setVisibility(View.GONE);
                 Utils.fullScreenMode(this, false);
+                showBannerAd(true);
             }, 300);
         }
     }
@@ -1156,6 +1005,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             btnStopTimer.setVisibility(View.VISIBLE);
             txtTimer.setVisibility(View.VISIBLE);
             lytSeekbarTimer.setVisibility(View.GONE);
+        }
+    }
+
+    private void showBannerAd(boolean show) {
+        if (show) {
+            findViewById(R.id.bannerAdView).setVisibility(View.VISIBLE);
+        } else {
+            findViewById(R.id.bannerAdView).setVisibility(View.GONE);
         }
     }
 

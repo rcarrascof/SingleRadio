@@ -93,7 +93,7 @@ public class FragmentSocial extends DialogFragment {
         });
 
         swipeRefreshLayout = rootView.findViewById(R.id.swipeRefreshLayout);
-        swipeRefreshLayout.setColorSchemeResources(R.color.colorPrimary);
+        swipeRefreshLayout.setColorSchemeResources(R.color.color_light_primary);
 
         recyclerView = rootView.findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new StaggeredGridLayoutManager(1, StaggeredGridLayoutManager.VERTICAL));
@@ -234,11 +234,13 @@ public class FragmentSocial extends DialogFragment {
         showFailedView(false, "");
         showNoItemView(false);
         swipeProgress(true);
-        new Handler(Looper.getMainLooper()).postDelayed(()-> {
-            String data = Tools.decode(Config.ACCESS_KEY);
-            String[] results = data.split("_applicationId_");
-            String remoteUrl = results[0].replace("http://localhost", LOCALHOST_ADDRESS);
-            requestAPI(remoteUrl);
+        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+            if (!Config.ACCESS_KEY.contains("XXXXX")) {
+                String data = Tools.decode(Config.ACCESS_KEY);
+                String[] results = data.split("_applicationId_");
+                String remoteUrl = results[0].replace("http://localhost", LOCALHOST_ADDRESS);
+                requestAPI(remoteUrl);
+            }
         }, 10);
     }
 

@@ -8,6 +8,7 @@ import android.view.View;
 
 import com.app.matrixFM.BuildConfig;
 import com.app.matrixFM.Config;
+import com.app.matrixFM.R;
 import com.app.matrixFM.database.prefs.AdsPref;
 import com.app.matrixFM.database.prefs.SharedPref;
 import com.app.matrixFM.models.Ads;
@@ -30,14 +31,12 @@ public class AdsManager {
     NativeAdView.Builder nativeAdView;
     SharedPref sharedPref;
     AdsPref adsPref;
-    LegacyGDPR legacyGDPR;
     GDPR gdpr;
 
     public AdsManager(Activity activity) {
         this.activity = activity;
         this.sharedPref = new SharedPref(activity);
         this.adsPref = new AdsPref(activity);
-        this.legacyGDPR = new LegacyGDPR(activity);
         this.gdpr = new GDPR(activity);
         adNetwork = new AdNetwork.Initialize(activity);
         bannerAd = new BannerAd.Builder(activity);
@@ -53,6 +52,7 @@ public class AdsManager {
                 .setStartappAppId(adsPref.getStartappAppId())
                 .setUnityGameId(adsPref.getUnityGameId())
                 .setIronSourceAppKey(adsPref.getIronSourceAppKey())
+                .setWortiseAppId(adsPref.getWortiseAppId())
                 .setDebug(BuildConfig.DEBUG)
                 .build();
     }
@@ -68,6 +68,7 @@ public class AdsManager {
                 .setAppLovinBannerId(adsPref.getAppLovinBannerAdUnitId())
                 .setAppLovinBannerZoneId(adsPref.getAppLovinBannerZoneId())
                 .setIronSourceBannerId(adsPref.getIronSourceBannerId())
+                .setWortiseBannerId(adsPref.getWortiseBannerId())
                 .setPlacementStatus(placement)
                 .build();
     }
@@ -83,6 +84,7 @@ public class AdsManager {
                 .setAppLovinInterstitialId(adsPref.getAppLovinInterstitialAdUnitId())
                 .setAppLovinInterstitialZoneId(adsPref.getAppLovinInterstitialZoneId())
                 .setIronSourceInterstitialId(adsPref.getIronSourceInterstitialId())
+                .setWortiseInterstitialId(adsPref.getWortiseInterstitialId())
                 .setInterval(interval)
                 .setPlacementStatus(placement)
                 .build();
@@ -97,8 +99,10 @@ public class AdsManager {
                 .setFanNativeId(adsPref.getFanNativeUnitId())
                 .setAppLovinNativeId(adsPref.getAppLovinNativeAdManualUnitId())
                 .setAppLovinDiscoveryMrecZoneId(adsPref.getAppLovinBannerZoneId())
+                .setWortiseNativeId(adsPref.getWortiseNativeId())
                 .setPlacementStatus(placement)
                 .setNativeAdStyle(Constant.NATIVE_AD_STYLE)
+                .setNativeAdBackgroundColor(R.color.color_native_ad_background, R.color.color_native_ad_background)
                 .build();
     }
 
@@ -120,7 +124,7 @@ public class AdsManager {
 
     public void updateConsentStatus() {
         if (Config.ENABLE_GDPR_UMP_SDK) {
-            gdpr.updateGDPRConsentStatus();
+            gdpr.updateGDPRConsentStatus(adsPref.getAdType(), false, false);
         }
     }
 
@@ -153,6 +157,11 @@ public class AdsManager {
                 ads.ironsource_app_key,
                 ads.ironsource_banner_placement_name,
                 ads.ironsource_interstitial_placement_name,
+                ads.wortise_app_id,
+                ads.wortise_banner_unit_id,
+                ads.wortise_interstitial_unit_id,
+                ads.wortise_native_unit_id,
+                ads.wortise_app_open_ad_unit_id,
                 ads.interstitial_ad_interval
         );
     }

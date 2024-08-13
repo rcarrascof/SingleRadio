@@ -18,7 +18,7 @@
             android:layout_width="36dp"
             android:layout_height="36dp"
             android:layout_gravity="center"
-            android:src="@drawable/logo"
+            android:src="@mipmap/ic_launcher"
             app:riv_oval="true" />
 
         <TextView
@@ -36,6 +36,6 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:background="@color/colorGrey"/>
+        android:background="@color/color_grey"/>
 
 </LinearLayout>

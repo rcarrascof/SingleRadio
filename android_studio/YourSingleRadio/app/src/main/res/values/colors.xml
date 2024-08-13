@@ -44,5 +44,6 @@
     <color name="color_dialog_navigation_bar_light">#989A9C</color>
     <color name="color_dialog_background_dark_overlay">#5E000000</color>
     <color name="color_dialog_status_bar_dark">#091217</color>
+    <color name="color_native_ad_background">#F3F3F3</color>
 
 </resources>
