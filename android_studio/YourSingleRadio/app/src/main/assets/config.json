@@ -1,11 +1,11 @@
 {
   "radio": [
     {
-      "radio_name": "Alofoke Fm",
+      "radio_name": "Ritmo96",
       "radio_genre": "Urbana",
-      "radio_url": "https://radio5.domint.net:8222/stream",
-      "radio_image_url": "https://yt3.ggpht.com/ytc/AKedOLQejjicjkEJ1oXP96beCSIr3qWhy4-BwXiAcY-lag=s900-c-k-c0x00ffffff-no-rj",
-      "background_image_url": "https://www.diariodigital.com.do/wp-content/uploads/2021/09/Alofoke.jpg",
+      "radio_url": "https://stream.zenolive.com/y0br5ck4ququv",
+      "radio_image_url": "https://ritmo96.com/wp-content/uploads/2024/05/BannerRitmoDLaM-oficial-1-1.jpg",
+      "background_image_url": "https://ritmo96.com/wp-content/uploads/2024/05/BannerRitmoDLaM-oficial-1-1.jpg",
       "blur_radio_background": "true",
       "song_metadata": "true",
       "image_album_art": "true",
@@ -16,9 +16,9 @@
   "settings": [
     {
       "app_status": "1",
-      "privacy_policy_url": "https://sites.google.com/view/alofokefm/home",
+      "privacy_policy_url": "https://sites.google.com/view/ritmo96fm/home",
       "more_apps_url": "https://play.google.com/store/apps/developer?id=rcdev",
-      "redirect_url": "https://play.google.com/store/apps/details?id=com.app.AlofokeFm&hl=en"
+      "redirect_url": "https://play.google.com/store/apps/details?id=com.app.ritmo96&hl=en"
     }
   ],
   "ads": [
@@ -27,10 +27,10 @@
       "ad_type": "admob",
       "backup_ads": "none",
       "admob_publisher_id": "pub-5031389661702499",
-      "admob_banner_unit_id": "ca-app-pub-5031389661702499/2705579456",
-      "admob_interstitial_unit_id": "ca-app-pub-5031389661702499/8709032402",
-      "admob_native_unit_id": "ca-app-pub-5031389661702499/3443946056",
-      "admob_app_open_ad_unit_id": "ca-app-pub-5031389661702499/5746992999",
+      "admob_banner_unit_id": "ca-app-pub-5031389661702499/2870431955",
+      "admob_interstitial_unit_id": "ca-app-pub-5031389661702499/7306270918",
+      "admob_native_unit_id": "ca-app-pub-5031389661702499/2267796729",
+      "admob_app_open_ad_unit_id": "ca-app-pub-5031389661702499/8641633380",
       "ad_manager_banner_unit_id": "/6499/example/banner",
       "ad_manager_interstitial_unit_id": "/6499/example/interstitial",
       "ad_manager_native_unit_id": "/6499/example/native",
@@ -62,16 +62,16 @@
     {
       "social_name": "Facebook",
       "social_icon": "https://i.ibb.co/hfjH7LL/facebook.png",
-      "social_url": "https://www.facebook.com/Estonoesradioshow1"
+      "social_url": "https://www.facebook.com/ritmo96"
     },
     {
       "social_name": "Twitter",
       "social_icon": "https://i.ibb.co/dDZYx1P/twitter.png",
-      "social_url": "https://twitter.com/estonoesradioTW"
+      "social_url": "https://twitter.com/ritmo96"
     },
     {
       "social_name": "Instagram",
-      "social_icon": "https://i.ibb.co/82ykbnp/instagram.png",
+      "social_icon": "https://www.instagram.com/ritmo96/",
       "social_url": "https://www.instagram.com/estonoesradioshow/"
     }
   ]

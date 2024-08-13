@@ -1,36 +1,26 @@
 {
   "project_info": {
-    "project_number": "657661782912",
-    "project_id": "alofokefm-9cf3c",
-    "storage_bucket": "alofokefm-9cf3c.appspot.com"
+    "project_number": "961982086564",
+    "project_id": "ritmo96-dd3a5",
+    "storage_bucket": "ritmo96-dd3a5.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:657661782912:android:b9df9b4eacab03e2152f65",
+        "mobilesdk_app_id": "1:961982086564:android:3f39d3e6ee688073005531",
         "android_client_info": {
-          "package_name": "com.app.AlofokeFm"
+          "package_name": "com.app.ritmo96"
         }
       },
-      "oauth_client": [
-        {
-          "client_id": "657661782912-qiqkekq3eint87ep1q91efjqc4s0hffo.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
+      "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyBub8Ocq8yC4KxslZ9XTn-EtOWc0FX549E"
+          "current_key": "AIzaSyBkYhsuIP3Y2Fh1MBBACnum7lF3kBkKH-E"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "657661782912-qiqkekq3eint87ep1q91efjqc4s0hffo.apps.googleusercontent.com",
-              "client_type": 3
-            }
-          ]
+          "other_platform_oauth_client": []
         }
       }
     }
