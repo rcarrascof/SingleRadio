@@ -1,70 +1,149 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/main_content"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:keepScreenOn="true">
 
-    <androidx.drawerlayout.widget.DrawerLayout
-        android:id="@+id/drawer_layout"
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <RelativeLayout
+        <ImageView
+            android:id="@+id/img_music_background"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="vertical">
+            android:scaleType="centerCrop"
+            android:src="@color/color_grey_dark" />
 
-            <include layout="@layout/lyt_single_player" />
+        <ImageView
+            android:id="@+id/img_music_background_album_art"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            android:visibility="gone" />
 
-            <FrameLayout
-                android:id="@+id/fragment_container"
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#40000000" />
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/lyt_cover_image_landscape"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone">
+
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/img_radio_large_landscape"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:contentDescription="@string/img_content_description"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_thumbnail" />
+
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/img_album_art_large_landscape"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:contentDescription="@string/img_content_description"
+            android:scaleType="centerCrop" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#33000000" />
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/root_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:keepScreenOn="true">
+
+        <androidx.drawerlayout.widget.DrawerLayout
+            android:id="@+id/drawer_layout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <RelativeLayout
                 android:layout_width="match_parent"
-                android:layout_height="?actionBarSize"
-                android:fitsSystemWindows="true" />
-
-            <LinearLayout
-                android:id="@+id/lyt_banner_ad"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_alignParentBottom="true"
+                android:layout_height="match_parent"
                 android:orientation="vertical">
 
-                <com.solodroid.ads.sdk.ui.BannerAdView
-                    android:id="@+id/bannerAdView"
+                <include layout="@layout/lyt_single_player" />
+
+                <FrameLayout
+                    android:id="@+id/frame_layout"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="?actionBarSize" />
 
-            </LinearLayout>
+                <LinearLayout
+                    android:id="@+id/lyt_banner_ad"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentBottom="true"
+                    android:orientation="vertical">
 
-        </RelativeLayout>
+                    <com.solodroid.ads.sdk.ui.BannerAdView
+                        android:id="@+id/bannerAdView"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
 
-        <com.google.android.material.navigation.NavigationView
-            android:id="@+id/navigation_view"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_gravity="start"
-            android:fitsSystemWindows="true"
-            app:headerLayout="@layout/drawer_header"
-            app:itemTextAppearance="@style/NavigationView"
-            app:menu="@menu/menu_drawer" />
+                </LinearLayout>
 
-    </androidx.drawerlayout.widget.DrawerLayout>
+            </RelativeLayout>
 
-    <include
-        android:id="@+id/lyt_dialog_timer"
-        layout="@layout/lyt_dialog_select_time"
+            <!--            <com.google.android.material.navigation.NavigationView-->
+            <!--                android:id="@+id/navigation_view"-->
+            <!--                android:layout_width="match_parent"-->
+            <!--                android:layout_height="match_parent"-->
+            <!--                android:layout_gravity="start"-->
+            <!--                app:headerLayout="@layout/drawer_header"-->
+            <!--                app:itemTextAppearance="@style/NavigationView"-->
+            <!--                app:menu="@menu/menu_drawer" />-->
+
+            <com.google.android.material.navigation.NavigationView
+                android:id="@+id/navigation_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="start"
+                app:drawerLayoutCornerSize="@dimen/corner_radius_large">
+
+                <androidx.core.widget.NestedScrollView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <include layout="@layout/drawer_header" />
+
+                        <androidx.recyclerview.widget.RecyclerView
+                            android:id="@+id/recyclerView"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/padding_small"
+                            android:nestedScrollingEnabled="false" />
+
+                    </LinearLayout>
+
+                </androidx.core.widget.NestedScrollView>
+
+            </com.google.android.material.navigation.NavigationView>
+
+        </androidx.drawerlayout.widget.DrawerLayout>
+
+    </RelativeLayout>
+
+    <FrameLayout
+        android:id="@+id/fragment_container"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:visibility="invisible" />
-
-    <include
-        android:id="@+id/lyt_dialog_exit"
-        layout="@layout/custom_dialog_exit"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_centerInParent="true"
-        android:visibility="invisible" />
+        android:layout_height="match_parent" />
 
 </RelativeLayout>

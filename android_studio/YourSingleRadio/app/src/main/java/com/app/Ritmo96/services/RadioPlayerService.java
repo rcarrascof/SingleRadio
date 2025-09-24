@@ -49,7 +49,7 @@ import com.app.Ritmo96.services.parser.URLParser;
 import com.app.Ritmo96.utils.AsyncTaskExecutor;
 import com.app.Ritmo96.utils.Constant;
 import com.app.Ritmo96.utils.HttpsTrustManager;
-import com.app.Ritmo96.utils.Utils;
+import com.app.Ritmo96.utils.Tools;
 import com.vhall.android.exoplayer2.ExoPlaybackException;
 import com.vhall.android.exoplayer2.ExoPlayerFactory;
 import com.vhall.android.exoplayer2.PlaybackParameters;
@@ -79,7 +79,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 @SuppressLint("StaticFieldLeak")
-@SuppressWarnings("deprecation")
+@SuppressWarnings({"deprecation", "CallToPrintStackTrace"})
 public class RadioPlayerService extends Service implements AudioFocusChangedCallback {
 
     public static final String TAG = "RadioService";
@@ -103,7 +103,7 @@ public class RadioPlayerService extends Service implements AudioFocusChangedCall
     ComponentName componentName;
     AudioManager mAudioManager;
     PowerManager.WakeLock mWakeLock;
-    Utils utils;
+    Tools tools;
     private static final int NOTIFICATION_ID = 1;
     private static final String NOTIFICATION_CHANNEL_ID = BuildConfig.APPLICATION_ID;
     public static final String ACTION_TOGGLE = BuildConfig.APPLICATION_ID + ".togglepause";
@@ -154,7 +154,7 @@ public class RadioPlayerService extends Service implements AudioFocusChangedCall
     @Override
     public void onCreate() {
         super.onCreate();
-        utils = new Utils(context);
+        tools = new Tools(context);
         mAudioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
         if (mAudioManager != null) {
             mAudioManager.requestAudioFocus(onAudioFocusChangeListener, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
@@ -549,7 +549,7 @@ public class RadioPlayerService extends Service implements AudioFocusChangedCall
             updateNotificationAlbumArt(Constant.item_radio.get(Constant.position).radio_image_url);
             updateNotificationMetadata(Constant.item_radio.get(Constant.position).radio_genre);
         } else {
-            if (utils.isNetworkAvailable()) {
+            if (tools.isNetworkAvailable()) {
                 newPlay();
             } else {
                 Toast.makeText(context, getString(R.string.internet_not_connected), Toast.LENGTH_SHORT).show();
@@ -601,7 +601,7 @@ public class RadioPlayerService extends Service implements AudioFocusChangedCall
     private void next() {
         if (Constant.item_radio != null && Constant.item_radio.size() > 0) {
             RadioPlayerService.createInstance().initializeRadio(context, Constant.item_radio.get(Constant.position));
-            utils.getPosition(true);
+            tools.getPosition(true);
             radio = Constant.item_radio.get(Constant.position);
             newPlay();
             //((MainActivity) context).hideSeekBar();
@@ -611,7 +611,7 @@ public class RadioPlayerService extends Service implements AudioFocusChangedCall
     private void previous() {
         if (Constant.item_radio != null && Constant.item_radio.size() > 0) {
             RadioPlayerService.createInstance().initializeRadio(context, Constant.item_radio.get(Constant.position));
-            utils.getPosition(false);
+            tools.getPosition(false);
             radio = Constant.item_radio.get(Constant.position);
             newPlay();
             //((MainActivity) context).hideSeekBar();
@@ -665,7 +665,7 @@ public class RadioPlayerService extends Service implements AudioFocusChangedCall
     }
 
     public IcyHttpDataSourceFactory icy = new IcyHttpDataSourceFactory
-            .Builder(Utils.getUserAgent())
+            .Builder(Tools.getUserAgent())
             .setAllowCrossProtocolRedirects(true)
             .setConnectTimeoutMillis(1000)
             .setIcyHeadersListener(icyHeaders -> {
@@ -882,9 +882,9 @@ public class RadioPlayerService extends Service implements AudioFocusChangedCall
                 )
                 .setVisibility(NotificationCompat.VISIBILITY_PRIVATE)
                 //.addAction(R.drawable.ic_noti_previous, "previous", getPlaybackAction(ACTION_PREVIOUS))
-                .addAction(R.drawable.ic_pause_white, "pause", getPlaybackAction(ACTION_TOGGLE))
+                .addAction(R.drawable.ic_action_pause, "pause", getPlaybackAction(ACTION_TOGGLE))
                 //.addAction(R.drawable.ic_noti_next, "next", getPlaybackAction(ACTION_NEXT))
-                .addAction(R.drawable.ic_noti_close, "close", getPlaybackAction(ACTION_STOP));
+                .addAction(R.drawable.ic_action_close, "close", getPlaybackAction(ACTION_STOP));
 
         startForeground(NOTIFICATION_ID, builder.build());
     }
@@ -896,9 +896,9 @@ public class RadioPlayerService extends Service implements AudioFocusChangedCall
             Intent playIntent = new Intent(getApplicationContext(), RadioPlayerService.class);
             playIntent.setAction(ACTION_TOGGLE);
             if (isPlay) {
-                builder.mActions.add(0, new NotificationCompat.Action(R.drawable.ic_pause_white, "pause", getPlaybackAction(ACTION_TOGGLE)));
+                builder.mActions.add(0, new NotificationCompat.Action(R.drawable.ic_action_pause, "pause", getPlaybackAction(ACTION_TOGGLE)));
             } else {
-                builder.mActions.add(0, new NotificationCompat.Action(R.drawable.ic_play_arrow_white, "Play", getPlaybackAction(ACTION_TOGGLE)));
+                builder.mActions.add(0, new NotificationCompat.Action(R.drawable.ic_action_play, "Play", getPlaybackAction(ACTION_TOGGLE)));
             }
             notificationManager.notify(NOTIFICATION_ID, builder.build());
         }

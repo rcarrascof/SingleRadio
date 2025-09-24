@@ -4,14 +4,14 @@ import com.app.Ritmo96.utils.Constant;
 
 public class Config {
 
-    //set true to enable json remote configuration with access key
-    //set false for offline json configuration from assets folder
-    public static final boolean ENABLE_REMOTE_JSON = false;
-
     //only used when remote json is enabled
     //generate your access key using the link below or check the documentation for more detailed instructions
     //https://services.solodroid.co.id/access-key/generate
     public static final String ACCESS_KEY = "WVVoU01HTklUVFpNZVRsclkyMXNNbHBUTlc1aU1qbHVZa2RWZFZreU9YUk1NbHB3WWtkVmRscERPSGhhYlUxMFpHdE5NbUpJUWsxTk1WWkNWR3hhZGt4WFJrMVNhM1JDVFZkM2RGVnNWa2xOVjJocFQwUlJkbVJ0Ykd4a2Vqa3hZek5CT1dNeWFHaGpiV3gxV2pFNWFHTklRbk5oVjA1b1pFZHNkbUpyYkd0WU1rNTJZbE0xYUdOSVFYVlJWM2gyV20wNWNscFZXblE9";
+
+    //set true to enable json remote configuration with access key
+    //set false for offline json configuration from assets folder
+    public static final boolean ENABLE_REMOTE_JSON = false;
 
     //radio streaming timeout connection, in milliseconds
     public static final boolean ENABLE_RADIO_TIMEOUT = true;
@@ -31,8 +31,5 @@ public class Config {
 
     //GDPR EU Consent
     public static final boolean ENABLE_GDPR_UMP_SDK = true;
-
-    //social menu open url
-    public static final boolean OPEN_SOCIAL_MENU_IN_EXTERNAL_BROWSER = false;
 
 }

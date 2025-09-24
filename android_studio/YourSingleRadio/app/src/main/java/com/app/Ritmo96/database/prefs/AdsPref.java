@@ -5,9 +5,9 @@ import android.content.SharedPreferences;
 
 public class AdsPref {
 
-    private Context context;
-    private SharedPreferences sharedPreferences;
-    private SharedPreferences.Editor editor;
+    Context context;
+    SharedPreferences sharedPreferences;
+    SharedPreferences.Editor editor;
 
     public AdsPref(Context context) {
         this.context = context;
@@ -15,7 +15,7 @@ public class AdsPref {
         editor = sharedPreferences.edit();
     }
 
-    public void saveAds(String adStatus, String adType, String backupAds, String adMobPublisherId, String adMobBannerId, String adMobInterstitialId, String adMobNativeId, String adMobAppOpenId, String adManagerBannerUnitId, String adManagerInterstitialUnitId, String adManagerNativeUnitId, String adManagerAppOpenAdUnitId, String fanBannerUnitId, String fanInterstitialUnitId, String fanNativeUnitId, String startAppId, String unityGameId, String unityBannerId, String unityInterstitialId, String appLovinBannerId, String appLovinInterstitialId, String applovinNativeAdManualUnitId, String applovinBannerZoneId, String applovinInterstitialZoneId, String ironSourceAppKey, String ironSourceBannerId, String ironSourceInterstitialId, String wortiseAppId, String wortiseBannerUnitId, String wortiseInterstitialUnitId, String wortiseNativeUnitId, String wortiseAppOpenAdUnitId, int interstitialAdInterval) {
+    public void saveAds(String adStatus, String adType, String backupAds, String adMobPublisherId, String adMobBannerId, String adMobInterstitialId, String adMobNativeId, String adMobAppOpenId, String adManagerBannerUnitId, String adManagerInterstitialUnitId, String adManagerNativeUnitId, String adManagerAppOpenAdUnitId, String fanBannerUnitId, String fanInterstitialUnitId, String fanNativeUnitId, String startAppId, String unityGameId, String unityBannerId, String unityInterstitialId, String appLovinBannerId, String appLovinInterstitialId, String applovinNativeAdManualUnitId, String applovinBannerZoneId, String applovinInterstitialZoneId, String ironSourceAppKey, String ironSourceBannerId, String ironSourceInterstitialId, int interstitialAdInterval) {
         editor.putString("ad_status", adStatus);
         editor.putString("ad_type", adType);
         editor.putString("backup_ads", backupAds);
@@ -43,11 +43,6 @@ public class AdsPref {
         editor.putString("ironsource_app_key", ironSourceAppKey);
         editor.putString("ironsource_banner_id", ironSourceBannerId);
         editor.putString("ironsource_interstitial_id", ironSourceInterstitialId);
-        editor.putString("wortise_app_id", wortiseAppId);
-        editor.putString("wortise_banner_unit_id", wortiseBannerUnitId);
-        editor.putString("wortise_interstitial_unit_id", wortiseInterstitialUnitId);
-        editor.putString("wortise_native_unit_id", wortiseNativeUnitId);
-        editor.putString("wortise_app_open_ad_unit_id", wortiseAppOpenAdUnitId);
         editor.putInt("interstitial_ad_interval", interstitialAdInterval);
         editor.apply();
     }
@@ -162,26 +157,6 @@ public class AdsPref {
 
     public String getIronSourceInterstitialId() {
         return sharedPreferences.getString("ironsource_interstitial_id", "0");
-    }
-
-    public String getWortiseAppId() {
-        return sharedPreferences.getString("wortise_app_id", "");
-    }
-
-    public String getWortiseBannerId() {
-        return sharedPreferences.getString("wortise_banner_unit_id", "");
-    }
-
-    public String getWortiseInterstitialId() {
-        return sharedPreferences.getString("wortise_interstitial_unit_id", "");
-    }
-
-    public String getWortiseNativeId() {
-        return sharedPreferences.getString("wortise_native_unit_id", "");
-    }
-
-    public String getWortiseAppOpenId() {
-        return sharedPreferences.getString("wortise_app_open_ad_unit_id", "");
     }
 
     public int getInterstitialAdInterval() {

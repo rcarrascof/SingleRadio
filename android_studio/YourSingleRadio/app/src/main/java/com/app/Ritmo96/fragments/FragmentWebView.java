@@ -6,7 +6,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.PorterDuff;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -21,20 +23,32 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.FragmentManager;
 
 import com.app.Ritmo96.R;
 import com.app.Ritmo96.activities.MainActivity;
-import com.app.Ritmo96.utils.Utils;
+import com.app.Ritmo96.utils.Constant;
 
 public class FragmentWebView extends DialogFragment {
 
-    public static final String TAG = "Rawr";
+    public static final String TAG = "FragmentWebView";
+    private Toolbar toolbar;
+    private RelativeLayout parentView;
+    private ImageButton btnBack;
+    private TextView toolbarTitle;
     View rootView;
     WebView webView;
     ProgressBar progressBar;
@@ -42,7 +56,6 @@ public class FragmentWebView extends DialogFragment {
     View lytFailed;
     String strUrl;
     String strTitle;
-    TextView dialogTitle;
     MainActivity activity;
 
     @Override
@@ -56,6 +69,7 @@ public class FragmentWebView extends DialogFragment {
         rootView = inflater.inflate(R.layout.fragment_webview, container, false);
         initView();
         loadData();
+        setupToolbar();
         return rootView;
     }
 
@@ -65,25 +79,16 @@ public class FragmentWebView extends DialogFragment {
             strUrl = getArguments().getString("url");
         }
 
-        dialogTitle = rootView.findViewById(R.id.dialog_title);
-        dialogTitle.setText(strTitle);
-
-        (rootView.findViewById(R.id.button_close)).setOnClickListener(v -> new Handler(Looper.getMainLooper()).postDelayed(() -> {
-            int count = activity.getSupportFragmentManager().getBackStackEntryCount();
-            if (count != 0) {
-                activity.getSupportFragmentManager().popBackStack();
-                if (count == 1) {
-                    Utils.darkStatusBar(activity, true);
-                }
-            }
-            dismiss();
-        }, 300));
-
-        (rootView.findViewById(R.id.open_in_browser)).setOnClickListener(v -> {
-            new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(strUrl.trim())));
-            }, 300);
+        parentView = rootView.findViewById(R.id.fragment_view);
+        ViewCompat.setOnApplyWindowInsetsListener(parentView, (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+            return insets;
         });
+
+        toolbar = rootView.findViewById(R.id.toolbar);
+        toolbarTitle = rootView.findViewById(R.id.toolbar_title);
+        btnBack = rootView.findViewById(R.id.btn_back);
 
         webView = rootView.findViewById(R.id.webView);
         progressBar = rootView.findViewById(R.id.progressBar);
@@ -114,6 +119,19 @@ public class FragmentWebView extends DialogFragment {
 
         FrameLayout customViewContainer = rootView.findViewById(R.id.customViewContainer);
         webView.setWebChromeClient(new WebChromeClient() {
+            public void onProgressChanged(WebView view, int newProgress) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    progressBar.setProgress(newProgress, true);
+                } else {
+                    progressBar.setProgress(newProgress);
+                }
+                if (newProgress == 100) {
+                    progressBar.setVisibility(View.INVISIBLE);
+                } else {
+                    progressBar.setVisibility(View.VISIBLE);
+                }
+            }
+
             public void onShowCustomView(View view, CustomViewCallback callback) {
                 super.onShowCustomView(view, callback);
                 webView.setVisibility(View.INVISIBLE);
@@ -164,6 +182,7 @@ public class FragmentWebView extends DialogFragment {
             progressBar.setVisibility(View.GONE);
         }
 
+        @SuppressWarnings("deprecation")
         @Override
         public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
             progressBar.setVisibility(View.GONE);
@@ -203,4 +222,24 @@ public class FragmentWebView extends DialogFragment {
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         return dialog;
     }
+
+    private void setupToolbar() {
+        toolbarTitle.setText(strTitle);
+        btnBack.setOnClickListener(v -> new Handler(Looper.getMainLooper()).postDelayed(() -> {
+            FragmentManager fm = activity.getSupportFragmentManager();
+            if (fm.getBackStackEntryCount() > 0) {
+                fm.popBackStack();
+            }
+            dismiss();
+        }, Constant.DELAY_ACTION_CLICK));
+        themeColor();
+    }
+
+    private void themeColor() {
+        parentView.setBackgroundColor(ContextCompat.getColor(activity, R.color.color_light_status_bar));
+        toolbar.setBackgroundColor(ContextCompat.getColor(activity, R.color.color_light_primary));
+        toolbarTitle.setTextColor(ContextCompat.getColor(activity, R.color.color_white));
+        btnBack.setColorFilter(ContextCompat.getColor(activity, R.color.color_white), PorterDuff.Mode.SRC_ATOP);
+    }
+
 }

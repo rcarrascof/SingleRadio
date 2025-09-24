@@ -2,48 +2,32 @@
 <resources>
 
     <!--app main color-->
-    <color name="colorPrimary">#FBB828</color>
-    <color name="colorPrimaryDark">#F9A825</color>
-    <color name="colorAccent">#FF6F00</color>
+    <color name="color_light_primary">#FBB828</color>  <!-- Antiguo colorPrimary -->
+    <color name="color_light_status_bar">#F9A825</color>  <!-- Antiguo colorPrimaryDark -->
+    <color name="color_light_accent">#FF6F00</color>  <!-- Antiguo colorAccent -->
+    <color name="color_light_background">#FFFFFF</color>
+    <color name="color_navigation_drawer_selected_item">#D5E5E5</color>
     <color name="color_native_ad_background">#F3F3F3</color>
+    <color name="color_selected_item">#33FBB828</color>  <!-- Con transparencia del primary -->
+    <color name="color_light_text">#292929</color>
 
     <!--others-->
-    <color name="colorPlayButton">#212121</color>
-    <color name="colorRadioImageBorder">#E1E1E1</color>
-    <color name="colorStatusBarDark">#000000</color>
-    <color name="colorToolbarDark">#000000</color>
-    <color name="white">#FFFFFF</color>
-    <color name="colorGrey">#E1E1E1</color>
-    <color name="colorRipple">#7E7E7E</color>
-    <color name="progressBarColor">#FFE719</color>
-    <color name="semiTransparentColor">#80000000</color>
-
-    <!--do not change this-->
-    <color name="gnt_white">#FFFFFF</color>
-    <color name="gnt_ad_yellow">#FBB828</color>
-    <color name="gnt_gray">#808080</color>
-    <color name="colorLightGray">#ececec</color>
-    <color name="colorDarkGray">#b4b4b4</color>
-
-    <color name="colorGreenLight">#81C784</color>
-    <color name="colorPurpleLight">#BA68C8</color>
-    <color name="colorYellowLight">#FFD54F</color>
-    <color name="color_light_status_bar">#00695c</color>
-    <color name="color_light_primary">#00796B</color>
-
-    <!--others-->
-    <color name="color_play_button">#009688</color>
+    <color name="color_play_button">#212121</color>  <!-- Antiguo colorPlayButton -->
     <color name="color_radio_image_border">#E1E1E1</color>
     <color name="color_white">#FFFFFF</color>
     <color name="color_black">#000000</color>
-    <color name="color_grey">#E1E1E1</color>
-    <color name="color_ripple">#7E7E7E</color>
+    <color name="color_grey_dark">#808080</color>  <!-- Antiguo gnt_gray -->
+    <color name="color_grey_soft">#E1E1E1</color>  <!-- Antiguo colorGrey -->
+    <color name="color_grey">#7E7E7E</color>  <!-- Antiguo colorRipple -->
     <color name="color_progress_bar">#FFE719</color>
-    <color name="color_semi_transparent">#80000000</color>
-    <color name="color_dialog_background_light">#5E000000</color>
-    <color name="color_dialog_status_bar_light">#A1A1A1</color>
-    <color name="color_dialog_navigation_bar_light">#989A9C</color>
-    <color name="color_dialog_background_dark_overlay">#5E000000</color>
-    <color name="color_dialog_status_bar_dark">#091217</color>
+
+    <!-- Colores adicionales mantenidos por compatibilidad -->
+    <color name="semiTransparentColor">#80000000</color>
+    <color name="colorLightGray">#ececec</color>
+    <color name="colorDarkGray">#b4b4b4</color>
+    <color name="gnt_ad_yellow">#FBB828</color>
+    <color name="colorGreenLight">#81C784</color>
+    <color name="colorPurpleLight">#BA68C8</color>
+    <color name="colorYellowLight">#FFD54F</color>
 
 </resources>

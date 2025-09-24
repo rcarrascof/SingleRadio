@@ -1,27 +1,25 @@
 package com.app.Ritmo96.activities;
 
-
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.ImageButton;
 
+import androidx.activity.OnBackPressedCallback;
+import androidx.activity.OnBackPressedDispatcher;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.app.Ritmo96.R;
 import com.app.Ritmo96.utils.Constant;
 import com.google.android.material.snackbar.Snackbar;
 
-/**
- * Created by Reinold Carrasco
- * on 9/5/2022
- */
 public class ActivityRedirect extends AppCompatActivity {
 
     ImageButton btnClose;
     Button btnRedirect;
     String redirectUrl = "";
+    OnBackPressedDispatcher onBackPressedDispatcher;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,6 +27,18 @@ public class ActivityRedirect extends AppCompatActivity {
         setContentView(R.layout.activity_redirect);
         redirectUrl = getIntent().getStringExtra("redirect_url");
         initView();
+        handleOnBackPressed();
+    }
+
+    public void handleOnBackPressed() {
+        onBackPressedDispatcher = getOnBackPressedDispatcher();
+        onBackPressedDispatcher.addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                finish();
+                Constant.isAppOpen = false;
+            }
+        });
     }
 
     private void initView() {
@@ -52,12 +62,6 @@ public class ActivityRedirect extends AppCompatActivity {
     }
 
     @Override
-    public void onBackPressed() {
-        super.onBackPressed();
-        Constant.isAppOpen = false;
-    }
-
-    @Override
     protected void onDestroy() {
         super.onDestroy();
         Constant.isAppOpen = false;
@@ -65,7 +69,3 @@ public class ActivityRedirect extends AppCompatActivity {
     }
 
 }
-
-
-
-

@@ -35,4 +35,3 @@ public class AlbumArt implements Serializable {
     public String isStreamable;
 
 }
-

@@ -1,10 +1,5 @@
 package com.app.Ritmo96.metadata;
 
-/**
- * Created by Reinold Carrasco
- * on 9/5/2022
- */
-
 import androidx.annotation.NonNull;
 
 import com.vhall.android.exoplayer2.upstream.HttpDataSource;

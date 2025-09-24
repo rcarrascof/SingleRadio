@@ -4,7 +4,6 @@ import static com.app.Ritmo96.utils.Constant.LOCALHOST_ADDRESS;
 import static com.solodroid.ads.sdk.util.Constant.ADMOB;
 import static com.solodroid.ads.sdk.util.Constant.AD_STATUS_ON;
 import static com.solodroid.ads.sdk.util.Constant.GOOGLE_AD_MANAGER;
-import static com.solodroid.ads.sdk.util.Constant.WORTISE;
 
 import android.app.Application;
 import android.content.Intent;
@@ -31,9 +30,8 @@ import com.app.Ritmo96.models.Radio;
 import com.app.Ritmo96.models.Settings;
 import com.app.Ritmo96.rests.RestAdapter;
 import com.app.Ritmo96.utils.AdsManager;
-import com.app.Ritmo96.utils.Utils;
+import com.app.Ritmo96.utils.Tools;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.solodroid.ads.sdk.util.Tools;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -67,7 +65,9 @@ public class ActivitySplash extends AppCompatActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Tools.darkStatusBar(this, true);
         setContentView(R.layout.activity_splash);
+        Tools.setNavigation(this);
         db = AppDatabase.getDb(this).get();
         adsManager = new AdsManager(this);
         adsManager.initializeAd();
@@ -101,7 +101,7 @@ public class ActivitySplash extends AppCompatActivity {
                     .setCancelable(false)
                     .show();
         } else {
-            String data = Tools.decode(Config.ACCESS_KEY);
+            String data = com.solodroid.ads.sdk.util.Tools.decode(Config.ACCESS_KEY);
             String[] results = data.split("_applicationId_");
             String remoteUrl = results[0].replace("http://localhost", LOCALHOST_ADDRESS);
             String applicationId = results[1];
@@ -135,7 +135,7 @@ public class ActivitySplash extends AppCompatActivity {
             callbackCall = RestAdapter.createAPI().getDriveJsonFileId(remoteUrl);
         }
 
-        callbackCall.enqueue(new Callback<CallbackConfig>() {
+        callbackCall.enqueue(new Callback<>() {
             @Override
             public void onResponse(@NonNull Call<CallbackConfig> call, @NonNull Response<CallbackConfig> response) {
                 CallbackConfig resp = response.body();
@@ -158,6 +158,15 @@ public class ActivitySplash extends AppCompatActivity {
             settings = resp.settings.get(0);
             ads = resp.ads.get(0);
 
+            db.deleteAllSocial();
+            for (int i = 0; i < resp.socials.size(); i++) {
+                db.insertSocial(
+                        resp.socials.get(i).social_name,
+                        resp.socials.get(i).social_icon,
+                        resp.socials.get(i).social_url
+                );
+            }
+
             sharedPref.saveSettings(
                     settings.app_status,
                     settings.privacy_policy_url,
@@ -179,7 +188,7 @@ public class ActivitySplash extends AppCompatActivity {
                 Log.d(TAG, "App status is inactive, open redirect activity");
             } else {
                 db.deleteAllRadio();
-                new Handler().postDelayed(() -> {
+                Tools.postDelayed(() -> {
                     db.insertRadio(
                             id,
                             radio.radio_name,
@@ -200,7 +209,7 @@ public class ActivitySplash extends AppCompatActivity {
 
     private void requestConfigFromAssets() {
         try {
-            JSONObject jsonObject = new JSONObject(Objects.requireNonNull(Utils.loadJSONFromAsset(this, "config.json")));
+            JSONObject jsonObject = new JSONObject(Objects.requireNonNull(Tools.loadJSONFromAsset(this, "config.json")));
             JSONArray radios = jsonObject.getJSONArray("radio");
             JSONArray settings = jsonObject.getJSONArray("settings");
             JSONArray ads = jsonObject.getJSONArray("ads");
@@ -253,11 +262,6 @@ public class ActivitySplash extends AppCompatActivity {
             String ironsource_app_key = ad.getString("ironsource_app_key");
             String ironsource_banner_placement_name = ad.getString("ironsource_banner_placement_name");
             String ironsource_interstitial_placement_name = ad.getString("ironsource_interstitial_placement_name");
-            String wortise_app_id = ad.getString("wortise_app_id");
-            String wortise_banner_unit_id = ad.getString("wortise_banner_unit_id");
-            String wortise_interstitial_unit_id = ad.getString("wortise_interstitial_unit_id");
-            String wortise_native_unit_id = ad.getString("wortise_native_unit_id");
-            String wortise_app_open_ad_unit_id = ad.getString("wortise_app_open_ad_unit_id");
             int interstitial_ad_interval = ad.getInt("interstitial_ad_interval");
 
             sharedPref.saveSettings(
@@ -300,16 +304,11 @@ public class ActivitySplash extends AppCompatActivity {
                     ironsource_app_key,
                     ironsource_banner_placement_name,
                     ironsource_interstitial_placement_name,
-                    wortise_app_id,
-                    wortise_banner_unit_id,
-                    wortise_interstitial_unit_id,
-                    wortise_native_unit_id,
-                    wortise_app_open_ad_unit_id,
                     interstitial_ad_interval
             );
 
             db.deleteAllRadio();
-            new Handler().postDelayed(() -> {
+            Tools.postDelayed(() -> {
                 db.insertRadio(
                         id,
                         radio_name,
@@ -377,12 +376,6 @@ public class ActivitySplash extends AppCompatActivity {
                 }
             } else if (adsPref.getAdType().equals(GOOGLE_AD_MANAGER)) {
                 if (!adsPref.getAdManagerAppOpenAdId().equals("0")) {
-                    ((MyApplication) application).showAdIfAvailable(ActivitySplash.this, this::startMainActivity);
-                } else {
-                    startMainActivity();
-                }
-            } else if (adsPref.getAdType().equals(WORTISE)) {
-                if (!adsPref.getWortiseAppOpenId().equals("0")) {
                     ((MyApplication) application).showAdIfAvailable(ActivitySplash.this, this::startMainActivity);
                 } else {
                     startMainActivity();

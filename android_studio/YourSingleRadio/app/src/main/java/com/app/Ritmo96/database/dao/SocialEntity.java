@@ -28,6 +28,12 @@ public class SocialEntity {
     public SocialEntity() {
     }
 
+    public SocialEntity(String social_name, String social_icon, String social_url) {
+        this.social_name = social_name;
+        this.social_icon = social_icon;
+        this.social_url = social_url;
+    }
+
     public Social original() {
         Social social = new Social();
         social.social_name = social_name;

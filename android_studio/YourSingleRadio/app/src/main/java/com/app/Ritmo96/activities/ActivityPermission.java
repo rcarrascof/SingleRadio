@@ -15,7 +15,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.app.Ritmo96.R;
 import com.app.Ritmo96.database.prefs.SharedPref;
-import com.app.Ritmo96.utils.Utils;
+import com.app.Ritmo96.utils.Tools;
 
 public class ActivityPermission extends AppCompatActivity {
 
@@ -28,7 +28,7 @@ public class ActivityPermission extends AppCompatActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Utils.darkStatusBar(this, false);
+        Tools.darkStatusBar(this, false);
         setContentView(R.layout.activity_permission);
 
         sharedPref = new SharedPref(this);
@@ -37,7 +37,7 @@ public class ActivityPermission extends AppCompatActivity {
         txtPermissionMessage = findViewById(R.id.txt_permission_message);
         scrollView = findViewById(R.id.scroll_view);
 
-        btnAllowPermission.setOnClickListener(v -> Utils.requestPermission(ActivityPermission.this));
+        btnAllowPermission.setOnClickListener(v -> Tools.requestPermission(ActivityPermission.this));
         txtPermissionMessage.setText(Html.fromHtml(getString(R.string.permission_message)));
 
         btnLater = findViewById(R.id.btn_later);

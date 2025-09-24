@@ -61,18 +61,18 @@
   "socials": [
     {
       "social_name": "Facebook",
-      "social_icon": "https://i.ibb.co/hfjH7LL/facebook.png",
+      "social_icon": "https://cdn-icons-png.flaticon.com/512/20/20673.png",
       "social_url": "https://www.facebook.com/ritmo96"
     },
     {
       "social_name": "Twitter",
-      "social_icon": "https://i.ibb.co/dDZYx1P/twitter.png",
+      "social_icon": "https://cdn-icons-png.flaticon.com/512/733/733635.png",
       "social_url": "https://twitter.com/ritmo96"
     },
     {
       "social_name": "Instagram",
-      "social_icon": "https://www.instagram.com/ritmo96/",
-      "social_url": "https://www.instagram.com/estonoesradioshow/"
+      "social_icon": "https://www.iconpacks.net/icons/2/free-instagram-logo-icon-3497-thumb.png",
+      "social_url": "https://www.instagram.com/ritmo96/"
     }
   ]
 }

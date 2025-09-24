@@ -20,6 +20,7 @@ public class FragmentRadio extends Fragment {
     private MainActivity mainActivity;
     private Toolbar toolbar;
     View view;
+    public static FragmentRadio instance;
 
     public FragmentRadio() {
     }
@@ -34,10 +35,22 @@ public class FragmentRadio extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.fragment_radio, container, false);
+        instance = this;
         toolbar = view.findViewById(R.id.toolbar);
         setupToolbar();
         return view;
+    }
 
+    public static FragmentRadio getInstance() {
+        return instance;
+    }
+
+    public void showToolbar(boolean show) {
+        if (show) {
+            toolbar.setVisibility(View.VISIBLE);
+        } else {
+            toolbar.setVisibility(View.INVISIBLE);
+        }
     }
 
     @Override

@@ -1,10 +1,5 @@
 package com.app.Ritmo96.metadata;
 
-/**
- * Created by Reinold Carrasco
- * on 9/5/2022
- */
-
 import android.util.Log;
 
 import androidx.annotation.NonNull;
