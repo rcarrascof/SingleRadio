@@ -2,8 +2,8 @@
   "radio": [
     {
       "radio_name": "Alofoke Fm",
-      "radio_genre": "Urbana",
-      "radio_url": "https://radio5.domint.net:8222/stream",
+      "radio_genre": "Alofoke Radio 99.3 FM - La emisora tropical número 1 en la República Dominicana 🇩🇴 - Escúchanos en vivo 24/7",
+      "radio_url": "https://radiordomi.com/8566/stream",
       "radio_image_url": "https://yt3.ggpht.com/ytc/AKedOLQejjicjkEJ1oXP96beCSIr3qWhy4-BwXiAcY-lag=s900-c-k-c0x00ffffff-no-rj",
       "background_image_url": "https://www.diariodigital.com.do/wp-content/uploads/2021/09/Alofoke.jpg",
       "blur_radio_background": "true",
@@ -56,17 +56,17 @@
   "socials": [
     {
       "social_name": "Facebook",
-      "social_icon": "https://i.ibb.co/hfjH7LL/facebook.png",
+      "social_icon": "https://cdn-icons-png.flaticon.com/512/20/20673.png",
       "social_url": "https://www.facebook.com/Estonoesradioshow1"
     },
     {
       "social_name": "Twitter",
-      "social_icon": "https://i.ibb.co/dDZYx1P/twitter.png",
+      "social_icon": "https://cdn-icons-png.flaticon.com/512/733/733635.png",
       "social_url": "https://twitter.com/estonoesradioTW"
     },
     {
       "social_name": "Instagram",
-      "social_icon": "https://i.ibb.co/82ykbnp/instagram.png",
+      "social_icon": "https://www.iconpacks.net/icons/2/free-instagram-logo-icon-3497-thumb.png",
       "social_url": "https://www.instagram.com/estonoesradioshow/"
     }
   ]

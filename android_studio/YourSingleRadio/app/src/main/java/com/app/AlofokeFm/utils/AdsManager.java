@@ -4,6 +4,7 @@ import static com.solodroid.ads.sdk.util.Constant.AD_STATUS_ON;
 import static com.solodroid.ads.sdk.util.Constant.IRONSOURCE;
 
 import android.app.Activity;
+import android.view.View;
 
 import com.app.AlofokeFm.BuildConfig;
 import com.app.AlofokeFm.Config;
@@ -14,7 +15,6 @@ import com.app.AlofokeFm.models.Ads;
 import com.solodroid.ads.sdk.format.AdNetwork;
 import com.solodroid.ads.sdk.format.BannerAd;
 import com.solodroid.ads.sdk.format.InterstitialAd;
-import com.solodroid.ads.sdk.format.NativeAd;
 import com.solodroid.ads.sdk.format.NativeAdView;
 import com.solodroid.ads.sdk.gdpr.GDPR;
 
@@ -24,7 +24,6 @@ public class AdsManager {
     AdNetwork.Initialize adNetwork;
     BannerAd.Builder bannerAd;
     InterstitialAd.Builder interstitialAd;
-    NativeAd.Builder nativeAd;
     NativeAdView.Builder nativeAdView;
     SharedPref sharedPref;
     AdsPref adsPref;
@@ -38,7 +37,6 @@ public class AdsManager {
         adNetwork = new AdNetwork.Initialize(activity);
         bannerAd = new BannerAd.Builder(activity);
         interstitialAd = new InterstitialAd.Builder(activity);
-        nativeAd = new NativeAd.Builder(activity);
         nativeAdView = new NativeAdView.Builder(activity);
     }
 
@@ -53,50 +51,69 @@ public class AdsManager {
                 .build();
     }
 
-    public void loadBannerAd(int placement) {
-        bannerAd.setAdStatus(adsPref.getAdStatus())
-                .setAdNetwork(adsPref.getAdType())
-                .setBackupAdNetwork(adsPref.getBackupAds())
-                .setAdMobBannerId(adsPref.getAdMobBannerId())
-                .setGoogleAdManagerBannerId(adsPref.getAdManagerBannerId())
-                .setFanBannerId(adsPref.getFanBannerUnitId())
-                .setUnityBannerId(adsPref.getUnityBannerPlacementId())
-                .setAppLovinBannerId(adsPref.getAppLovinBannerAdUnitId())
-                .setAppLovinBannerZoneId(adsPref.getAppLovinBannerZoneId())
-                .setIronSourceBannerId(adsPref.getIronSourceBannerId())
-                .setPlacementStatus(placement)
-                .build();
+    public void loadBannerAd(boolean placement) {
+        if (placement) {
+            bannerAd.setAdStatus(adsPref.getAdStatus())
+                    .setAdNetwork(adsPref.getAdType())
+                    .setBackupAdNetwork(adsPref.getBackupAds())
+                    .setAdMobBannerId(adsPref.getAdMobBannerId())
+                    .setGoogleAdManagerBannerId(adsPref.getAdManagerBannerId())
+                    .setFanBannerId(adsPref.getFanBannerUnitId())
+                    .setUnityBannerId(adsPref.getUnityBannerPlacementId())
+                    .setAppLovinBannerId(adsPref.getAppLovinBannerAdUnitId())
+                    .setAppLovinBannerZoneId(adsPref.getAppLovinBannerZoneId())
+                    .setIronSourceBannerId(adsPref.getIronSourceBannerId())
+                    .setPlacementStatus(1)
+                    .build();
+        }
     }
 
-    public void loadInterstitialAd(int placement, int interval) {
-        interstitialAd.setAdStatus(adsPref.getAdStatus())
-                .setAdNetwork(adsPref.getAdType())
-                .setBackupAdNetwork(adsPref.getBackupAds())
-                .setAdMobInterstitialId(adsPref.getAdMobInterstitialId())
-                .setGoogleAdManagerInterstitialId(adsPref.getAdManagerInterstitialId())
-                .setFanInterstitialId(adsPref.getFanInterstitialUnitId())
-                .setUnityInterstitialId(adsPref.getUnityInterstitialPlacementId())
-                .setAppLovinInterstitialId(adsPref.getAppLovinInterstitialAdUnitId())
-                .setAppLovinInterstitialZoneId(adsPref.getAppLovinInterstitialZoneId())
-                .setIronSourceInterstitialId(adsPref.getIronSourceInterstitialId())
-                .setInterval(interval)
-                .setPlacementStatus(placement)
-                .build();
+    public void loadInterstitialAd(boolean placement, int interval) {
+        if (placement) {
+            interstitialAd.setAdStatus(adsPref.getAdStatus())
+                    .setAdNetwork(adsPref.getAdType())
+                    .setBackupAdNetwork(adsPref.getBackupAds())
+                    .setAdMobInterstitialId(adsPref.getAdMobInterstitialId())
+                    .setGoogleAdManagerInterstitialId(adsPref.getAdManagerInterstitialId())
+                    .setFanInterstitialId(adsPref.getFanInterstitialUnitId())
+                    .setUnityInterstitialId(adsPref.getUnityInterstitialPlacementId())
+                    .setAppLovinInterstitialId(adsPref.getAppLovinInterstitialAdUnitId())
+                    .setAppLovinInterstitialZoneId(adsPref.getAppLovinInterstitialZoneId())
+                    .setIronSourceInterstitialId(adsPref.getIronSourceInterstitialId())
+                    .setInterval(interval)
+                    .setPlacementStatus(1)
+                    .build();
+        }
     }
 
-    public void loadNativeAd(int placement) {
-        nativeAd.setAdStatus(adsPref.getAdStatus())
-                .setAdNetwork(adsPref.getAdType())
-                .setBackupAdNetwork(adsPref.getBackupAds())
-                .setAdMobNativeId(adsPref.getAdMobNativeId())
-                .setAdManagerNativeId(adsPref.getAdManagerNativeId())
-                .setFanNativeId(adsPref.getFanNativeUnitId())
-                .setAppLovinNativeId(adsPref.getAppLovinNativeAdManualUnitId())
-                .setAppLovinDiscoveryMrecZoneId(adsPref.getAppLovinBannerZoneId())
-                .setPlacementStatus(placement)
-                .setNativeAdStyle(Constant.NATIVE_AD_STYLE)
-                .setNativeAdBackgroundColor(R.color.color_native_ad_background, R.color.color_native_ad_background)
-                .build();
+    public void loadNativeAdView(View view, boolean placement, String style) {
+        if (placement) {
+            nativeAdView.setAdStatus(adsPref.getAdStatus())
+                    .setAdNetwork(adsPref.getAdType())
+                    .setBackupAdNetwork(adsPref.getBackupAds())
+                    .setAdMobNativeId(adsPref.getAdMobNativeId())
+                    .setAdManagerNativeId(adsPref.getAdManagerNativeId())
+                    .setFanNativeId(adsPref.getFanNativeUnitId())
+                    .setAppLovinNativeId(adsPref.getAppLovinNativeAdManualUnitId())
+                    .setAppLovinDiscoveryMrecZoneId(adsPref.getAppLovinBannerZoneId())
+                    .setPlacementStatus(1)
+                    .setNativeAdStyle(style)
+                    .setView(view)
+                    .setNativeAdBackgroundColor(R.color.color_native_ad_background, R.color.color_native_ad_background)
+                    .setPadding(
+                            activity.getResources().getDimensionPixelSize(R.dimen.padding_small),
+                            activity.getResources().getDimensionPixelSize(R.dimen.padding_small),
+                            activity.getResources().getDimensionPixelSize(R.dimen.padding_small),
+                            activity.getResources().getDimensionPixelSize(R.dimen.padding_small)
+                    )
+                    .setMargin(
+                            activity.getResources().getDimensionPixelSize(R.dimen.no_margin),
+                            activity.getResources().getDimensionPixelSize(R.dimen.margin_small),
+                            activity.getResources().getDimensionPixelSize(R.dimen.no_margin),
+                            activity.getResources().getDimensionPixelSize(R.dimen.margin_small)
+                    )
+                    .build();
+        }
     }
 
     public void showInterstitialAd() {
@@ -107,7 +124,7 @@ public class AdsManager {
         bannerAd.destroyAndDetachBanner();
     }
 
-    public void resumeBannerAd(int placement) {
+    public void resumeBannerAd(boolean placement) {
         if (adsPref.getAdStatus().equals(AD_STATUS_ON) && !adsPref.getIronSourceBannerId().equals("0")) {
             if (adsPref.getAdType().equals(IRONSOURCE) || adsPref.getBackupAds().equals(IRONSOURCE)) {
                 loadBannerAd(placement);

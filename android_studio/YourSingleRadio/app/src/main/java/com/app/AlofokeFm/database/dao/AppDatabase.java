@@ -13,6 +13,7 @@ public abstract class AppDatabase extends RoomDatabase {
 
     private static AppDatabase INSTANCE;
 
+    @SuppressWarnings("deprecation")
     public static AppDatabase getDb(Context context) {
         if (INSTANCE == null) {
             INSTANCE = Room.databaseBuilder(context, AppDatabase.class, "single_radio_app.database")

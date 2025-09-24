@@ -5,9 +5,9 @@ import android.content.SharedPreferences;
 
 public class AdsPref {
 
-    private Context context;
-    private SharedPreferences sharedPreferences;
-    private SharedPreferences.Editor editor;
+    Context context;
+    SharedPreferences sharedPreferences;
+    SharedPreferences.Editor editor;
 
     public AdsPref(Context context) {
         this.context = context;

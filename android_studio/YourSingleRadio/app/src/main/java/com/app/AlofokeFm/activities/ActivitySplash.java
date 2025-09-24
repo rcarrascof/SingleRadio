@@ -30,9 +30,8 @@ import com.app.AlofokeFm.models.Radio;
 import com.app.AlofokeFm.models.Settings;
 import com.app.AlofokeFm.rests.RestAdapter;
 import com.app.AlofokeFm.utils.AdsManager;
-import com.app.AlofokeFm.utils.Utils;
+import com.app.AlofokeFm.utils.Tools;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.solodroid.ads.sdk.util.Tools;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -66,7 +65,9 @@ public class ActivitySplash extends AppCompatActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Tools.darkStatusBar(this, true);
         setContentView(R.layout.activity_splash);
+        Tools.setNavigation(this);
         db = AppDatabase.getDb(this).get();
         adsManager = new AdsManager(this);
         adsManager.initializeAd();
@@ -100,7 +101,7 @@ public class ActivitySplash extends AppCompatActivity {
                     .setCancelable(false)
                     .show();
         } else {
-            String data = Tools.decode(Config.ACCESS_KEY);
+            String data = com.solodroid.ads.sdk.util.Tools.decode(Config.ACCESS_KEY);
             String[] results = data.split("_applicationId_");
             String remoteUrl = results[0].replace("http://localhost", LOCALHOST_ADDRESS);
             String applicationId = results[1];
@@ -134,7 +135,7 @@ public class ActivitySplash extends AppCompatActivity {
             callbackCall = RestAdapter.createAPI().getDriveJsonFileId(remoteUrl);
         }
 
-        callbackCall.enqueue(new Callback<CallbackConfig>() {
+        callbackCall.enqueue(new Callback<>() {
             @Override
             public void onResponse(@NonNull Call<CallbackConfig> call, @NonNull Response<CallbackConfig> response) {
                 CallbackConfig resp = response.body();
@@ -157,6 +158,15 @@ public class ActivitySplash extends AppCompatActivity {
             settings = resp.settings.get(0);
             ads = resp.ads.get(0);
 
+            db.deleteAllSocial();
+            for (int i = 0; i < resp.socials.size(); i++) {
+                db.insertSocial(
+                        resp.socials.get(i).social_name,
+                        resp.socials.get(i).social_icon,
+                        resp.socials.get(i).social_url
+                );
+            }
+
             sharedPref.saveSettings(
                     settings.app_status,
                     settings.privacy_policy_url,
@@ -178,7 +188,7 @@ public class ActivitySplash extends AppCompatActivity {
                 Log.d(TAG, "App status is inactive, open redirect activity");
             } else {
                 db.deleteAllRadio();
-                new Handler().postDelayed(() -> {
+                Tools.postDelayed(() -> {
                     db.insertRadio(
                             id,
                             radio.radio_name,
@@ -199,7 +209,7 @@ public class ActivitySplash extends AppCompatActivity {
 
     private void requestConfigFromAssets() {
         try {
-            JSONObject jsonObject = new JSONObject(Objects.requireNonNull(Utils.loadJSONFromAsset(this, "config.json")));
+            JSONObject jsonObject = new JSONObject(Objects.requireNonNull(Tools.loadJSONFromAsset(this, "config.json")));
             JSONArray radios = jsonObject.getJSONArray("radio");
             JSONArray settings = jsonObject.getJSONArray("settings");
             JSONArray ads = jsonObject.getJSONArray("ads");
@@ -298,7 +308,7 @@ public class ActivitySplash extends AppCompatActivity {
             );
 
             db.deleteAllRadio();
-            new Handler().postDelayed(() -> {
+            Tools.postDelayed(() -> {
                 db.insertRadio(
                         id,
                         radio_name,

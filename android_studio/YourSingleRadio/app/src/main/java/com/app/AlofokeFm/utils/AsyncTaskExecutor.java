@@ -1,10 +1,5 @@
 package com.app.AlofokeFm.utils;
 
-/**
- * Created by Reinold Carrasco
- * on 7/12/2024
- */
-
 import android.os.Handler;
 import android.os.Looper;
 
@@ -81,4 +76,3 @@ public abstract class AsyncTaskExecutor<Params, Progress, Result> {
         return executor == null || executor.isTerminated() || executor.isShutdown();
     }
 }
-

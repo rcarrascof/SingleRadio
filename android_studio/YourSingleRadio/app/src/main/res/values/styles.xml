@@ -1,28 +1,46 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
 
     <style name="AppTheme" parent="BaseTheme" />
 
-    <style name="BaseTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
-        <item name="colorPrimary">@color/colorPrimary</item>
-        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-        <item name="colorAccent">@color/colorAccent</item>
-        <item name="actionBarStyle">@style/ActionBarStyle</item>
-        <item name="android:windowBackground">@color/white</item>
-        <item name="android:windowContentOverlay">@null</item>
+    <style name="BaseTheme" parent="Theme.Material3.Light.NoActionBar">
+        <item name="colorPrimary">@color/color_light_primary</item>
+        <item name="colorPrimaryDark">@color/color_light_status_bar</item>
+        <item name="colorAccent">@color/color_light_accent</item>
+        <item name="android:windowBackground">@color/color_light_background</item>
         <item name="android:fontFamily">@font/custom_font</item>
+        <item name="android:windowLightStatusBar" tools:targetApi="m">false</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="o_mr1">true</item>
+        <item name="colorOnSurface">@color/color_light_primary</item>
+        <item name="colorSecondaryContainer">@color/color_navigation_drawer_selected_item</item>
+        <item name="colorOnSecondaryContainer">@color/color_light_primary</item>
+        <item name="materialAlertDialogTheme">@style/Material3AlertDialogDefault</item>
+        <item name="android:popupElevation">3dp</item>
+    </style>
+
+    <style name="Material3AlertDialogDefault" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="colorPrimary">@color/color_light_background</item>
+        <item name="backgroundTint">@color/color_light_background</item>
+        <item name="colorSurface">@color/color_light_background</item>
+        <item name="buttonBarPositiveButtonStyle">@style/Widget.App.Button</item>
+        <item name="buttonBarNegativeButtonStyle">@style/Widget.App.Button</item>
+    </style>
+
+    <style name="Widget.App.Button" parent="Widget.Material3.Button.TextButton.Dialog">
+        <item name="colorPrimary">@color/color_light_primary</item>
+        <item name="android:textColor">@color/color_light_primary</item>
     </style>
 
     <style name="MaterialButtonStyle" parent="Widget.MaterialComponents.Button">
         <item name="textAllCaps">false</item>
         <item name="android:textStyle">bold</item>
-        <item name="cornerRadius">@dimen/corner_radius</item>
-        <item name="backgroundTint">@color/colorPrimary</item>
+        <item name="cornerRadius">@dimen/corner_radius_large</item>
+        <item name="backgroundTint">@color/color_light_primary</item>
     </style>
 
     <style name="MaterialButtonStyleRounded" parent="Widget.MaterialComponents.Button">
         <item name="cornerSize">50%</item>
-        <item name="backgroundTint">@color/colorPlayButton</item>
+        <item name="backgroundTint">@color/color_play_button</item>
         <item name="elevation">0dp</item>
         <item name="android:stateListAnimator">@null</item>
     </style>
@@ -37,18 +55,20 @@
         <item name="backgroundTint">@color/gnt_black</item>
     </style>
 
-    <style name="ActionBarStyle" parent="Widget.AppCompat.ActionBar.Solid">
-        <item name="elevation">0dp</item>
-    </style>
-
     <style name="ProgressBarStyle">
-        <item name="colorAccent">@color/progressBarColor</item>
+        <item name="colorAccent">@color/color_progress_bar</item>
     </style>
 
-    <style name="NavigationView" >
-        <item name="fontFamily">@font/custom_font</item>
+    <style name="CustomCardViewStyle" parent="@style/Widget.MaterialComponents.CardView">
+        <item name="shapeAppearanceOverlay">@style/ShapeAppearanceOverlay.Card.Custom.Corners</item>
+    </style>
+
+    <style name="ShapeAppearanceOverlay.Card.Custom.Corners" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSizeTopRight">30dp</item>
+        <item name="cornerSizeTopLeft">0dp</item>
+        <item name="cornerSizeBottomRight">30dp</item>
+        <item name="cornerSizeBottomLeft">0dp</item>
     </style>
 
 </resources>
-
-

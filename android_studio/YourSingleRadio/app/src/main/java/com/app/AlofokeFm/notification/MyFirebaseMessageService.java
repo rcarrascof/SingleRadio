@@ -39,40 +39,35 @@ public class MyFirebaseMessageService extends FirebaseMessagingService {
     @Override
     public void onMessageReceived(@NonNull RemoteMessage remoteMessage) {
         super.onMessageReceived(remoteMessage);
-
         if (remoteMessage.getData().size() > 0) {
             Map<String, String> data = remoteMessage.getData();
-
             Log.e("onMessageFirebase: ", remoteMessage.getData().toString());
-
             if (data.get("post_id") != null) {
-                //String type = data.get("type");
+                String _unique_id = data.get("unique_id");
                 String title = data.get("title");
                 String message = data.get("message");
-                String imageUrl = data.get("big_image");
-                String webUrl = data.get("link");
-                String post = data.get("post_id");
-                createNotification(title, message, webUrl, imageUrl);
+                String big_image = data.get("big_image");
+                String link = data.get("link");
+                String post_id = data.get("post_id");
+                assert _unique_id != null;
+                long unique_id = Long.parseLong(_unique_id);
+                createNotification(unique_id, title, message, big_image, link, post_id);
             }
         }
     }
 
-    private void createNotification(String title, String message, String web_url, String image_url) {
+    private void createNotification(long unique_id, String title, String message, String image_url, String link, String post_id) {
 
         Intent intent = new Intent(this, MainActivity.class);
+        intent.putExtra("unique_id", unique_id);
+        intent.putExtra("post_id", post_id);
         intent.putExtra("title", title);
-        intent.putExtra("link", web_url);
+        intent.putExtra("link", link);
 
-        int FLAG_PENDING_INTENT;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            FLAG_PENDING_INTENT = PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT;
-        } else {
-            FLAG_PENDING_INTENT = PendingIntent.FLAG_UPDATE_CURRENT;
-        }
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
-        //intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent,FLAG_PENDING_INTENT);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, (int) System.currentTimeMillis(), intent, PendingIntent.FLAG_IMMUTABLE);
 
         NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         String NOTIFICATION_CHANNEL_ID = getApplicationContext().getString(R.string.app_name);

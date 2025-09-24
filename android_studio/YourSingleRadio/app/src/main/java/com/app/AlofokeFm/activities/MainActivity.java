@@ -1,76 +1,64 @@
 package com.app.AlofokeFm.activities;
 
-import static com.app.AlofokeFm.utils.Constant.BANNER_AD;
-import static com.app.AlofokeFm.utils.Constant.INTERSTITIAL_AD;
-import static com.app.AlofokeFm.utils.Constant.NATIVE_AD;
-import static com.solodroid.ads.sdk.util.Constant.AD_STATUS_ON;
-
-import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
-import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
-import android.graphics.Color;
-import android.graphics.PorterDuff;
-import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
-import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
-import android.view.animation.TranslateAnimation;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.Button;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
-import android.widget.SeekBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
+import androidx.activity.OnBackPressedDispatcher;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.recyclerview.widget.DefaultItemAnimator;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.app.AlofokeFm.BuildConfig;
 import com.app.AlofokeFm.Config;
 import com.app.AlofokeFm.R;
+import com.app.AlofokeFm.adapters.AdapterNavigation;
 import com.app.AlofokeFm.database.dao.AppDatabase;
 import com.app.AlofokeFm.database.dao.DAO;
 import com.app.AlofokeFm.database.dao.RadioEntity;
 import com.app.AlofokeFm.database.prefs.AdsPref;
 import com.app.AlofokeFm.database.prefs.SharedPref;
 import com.app.AlofokeFm.fragments.FragmentRadio;
-import com.app.AlofokeFm.fragments.FragmentSocial;
+import com.app.AlofokeFm.fragments.FragmentSettings;
 import com.app.AlofokeFm.fragments.FragmentWebView;
 import com.app.AlofokeFm.models.Radio;
 import com.app.AlofokeFm.services.RadioPlayerService;
 import com.app.AlofokeFm.utils.AdsManager;
 import com.app.AlofokeFm.utils.Constant;
-import com.app.AlofokeFm.utils.RelativePopupWindow;
-import com.app.AlofokeFm.utils.SleepTimeReceiver;
-import com.app.AlofokeFm.utils.Utils;
+import com.app.AlofokeFm.utils.Tools;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
@@ -83,16 +71,14 @@ import com.google.android.gms.tasks.Task;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.imageview.ShapeableImageView;
 import com.google.android.material.navigation.NavigationView;
+import com.google.android.material.slider.Slider;
 import com.google.android.play.core.appupdate.AppUpdateInfo;
 import com.google.android.play.core.appupdate.AppUpdateManager;
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory;
 import com.google.android.play.core.install.model.AppUpdateType;
 import com.google.android.play.core.install.model.UpdateAvailability;
-import com.google.android.play.core.review.ReviewInfo;
-import com.google.android.play.core.review.ReviewManager;
-import com.google.android.play.core.review.ReviewManagerFactory;
-import com.h6ah4i.android.widget.verticalseekbar.VerticalSeekBar;
 import com.makeramen.roundedimageview.RoundedImageView;
 import com.solodroid.push.sdk.provider.OneSignalPush;
 
@@ -101,7 +87,7 @@ import java.util.List;
 
 import es.claucookie.miniequalizerlibrary.EqualizerView;
 
-public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
     private final static String COLLAPSING_TOOLBAR_FRAGMENT_TAG = "";
@@ -112,52 +98,58 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private DrawerLayout drawerLayout;
     NavigationView navigationView;
     ProgressBar progressBar;
-    RoundedImageView imgRadioLarge;
-    RoundedImageView imgAlbumArtLarge;
+
+    RelativeLayout lytCoverImagePortrait;
+    RoundedImageView imgRadioLargePortrait;
+    RoundedImageView imgAlbumArtLargePortrait;
+
+    RelativeLayout lytCoverImageLandscape;
+    ShapeableImageView imgRadioLargeLandscape;
+    ShapeableImageView imgAlbumArtLargeLandscape;
+
     ImageView imgMusicBackground;
     ImageView imgMusicBackgroundAlbumArt;
-    ImageButton imgVolume;
-    ImageButton imgTimer;
+    ImageView imgVolume;
+    ImageView imgTimer;
+    ImageView imgTimerStop;
     MaterialButton fabPlayExpand;
     TextView txtRadioExpand, txtRadioMusicSong, txtSongExpand;
     SharedPref sharedPref;
     Handler handler = new Handler();
     FragmentManager fragmentManager;
     EqualizerView equalizerView;
-    Utils utils;
+    Tools tools;
     AdsPref adsPref;
     private DAO db;
     AdsManager adsManager;
     List<RadioEntity> radioEntities;
     ArrayList<Radio> radios;
     private AppUpdateManager appUpdateManager;
-    View lytDialogExit;
-    View lytDialogTimer;
-    LinearLayout lytPanelView;
-    LinearLayout lytPanelViewTimer;
-    LinearLayout lytPanelDialog;
-    LinearLayout lytPanelDialogTimer;
-    LinearLayout lytSeekbarTimer;
     TextView txtTimer;
     TextView txtMinutes;
-    Button btnCancelTimer, btnSetTimer, btnStopTimer;
     CountDownTimer mCountDownTimer;
     public static long minutes = 1;
     LinearLayout lytBannerAd;
+    OnBackPressedDispatcher onBackPressedDispatcher;
+    RecyclerView recyclerView;
+    public static AlertDialog alertDialog = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Utils.darkStatusBar(this, true);
+        Tools.darkStatusBar(this, true);
         setContentView(R.layout.activity_main);
-        db = AppDatabase.getDb(this).get();
+        Tools.setNavigation(this);
 
+        db = AppDatabase.getDb(this).get();
         adsPref = new AdsPref(this);
         adsManager = new AdsManager(this);
-        adsManager.initializeAd();
-        adsManager.updateConsentStatus();
-        adsManager.loadBannerAd(BANNER_AD);
-        adsManager.loadInterstitialAd(INTERSTITIAL_AD, adsPref.getInterstitialAdInterval());
+        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+            adsManager.initializeAd();
+            adsManager.updateConsentStatus();
+            adsManager.loadBannerAd(Constant.BANNER_AD);
+            adsManager.loadInterstitialAd(Constant.INTERSTITIAL_AD, adsPref.getInterstitialAdInterval());
+        }, 100);
 
         if (Config.ENABLE_RTL_MODE) {
             getWindow().getDecorView().setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
@@ -167,43 +159,91 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         sharedPref = new SharedPref(this);
         sharedPref.setCheckSleepTime();
-        utils = new Utils(this);
+        tools = new Tools(this);
 
         navigationView = findViewById(R.id.navigation_view);
-        navigationView.setNavigationItemSelectedListener(this);
-
         drawerLayout = findViewById(R.id.drawer_layout);
-
-        if ((ContextCompat.checkSelfPermission(MainActivity.this, "android.permission.READ_PHONE_STATE") == PackageManager.PERMISSION_GRANTED)) {
-            Menu menu = navigationView.getMenu();
-            MenuItem menuItem = menu.findItem(R.id.drawer_permission);
-            menuItem.setVisible(false);
-        }
-
-        if (savedInstanceState != null) {
-            navigationView.getMenu().getItem(savedInstanceState.getInt(SELECTED_TAG)).setChecked(true);
-            return;
-        }
 
         selectedIndex = COLLAPSING_TOOLBAR;
         getSupportFragmentManager().beginTransaction()
-                .add(R.id.fragment_container, new FragmentRadio(), COLLAPSING_TOOLBAR_FRAGMENT_TAG)
+                .add(R.id.frame_layout, new FragmentRadio(), COLLAPSING_TOOLBAR_FRAGMENT_TAG)
                 .commit();
 
+        initView();
         initComponent();
-        Utils.notificationHandler(this, getIntent());
+
+        Tools.notificationHandler(this, getIntent());
         loadConfig();
 
         if (!BuildConfig.DEBUG) {
             appUpdateManager = AppUpdateManagerFactory.create(getApplicationContext());
             inAppUpdate();
-            inAppReview();
+            tools.inAppReview(this);
         }
 
         new OneSignalPush.Builder(this).requestNotificationPermission();
-        initExitDialog();
-        initTimerDialog();
 
+        isPortrait(getResources().getConfiguration().orientation != Configuration.ORIENTATION_LANDSCAPE);
+
+        handleOnBackPressed();
+        loadNavigationMenu();
+    }
+
+    private void loadNavigationMenu() {
+
+        recyclerView = findViewById(R.id.recyclerView);
+        recyclerView.setLayoutManager(new LinearLayoutManager(MainActivity.this));
+        recyclerView.setItemAnimator(new DefaultItemAnimator());
+
+        AdapterNavigation adapterNavigation = new AdapterNavigation(this, new ArrayList<>());
+        adapterNavigation.setListData(db.getAllSocial());
+
+        recyclerView.setAdapter(adapterNavigation);
+
+        adapterNavigation.setOnItemClickListener((v, obj, position) -> {
+            if (position == 0) {
+                Log.d(TAG, "space for native ad");
+            } else if (position == 1) {
+                Log.d(TAG, "open home");
+            } else if (position == 2) {
+                openFragmentSettings();
+                Log.d(TAG, "open settings");
+            } else {
+                if (obj.social_url.contains("?target=internal")) {
+                    openFragmentWebView(obj.social_name, obj.social_url);
+                } else if (obj.social_url.contains("?target=external")) {
+                    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(obj.social_url.trim())));
+                }  else if (obj.social_url.contains("?target=custom-tabs")) {
+                    Tools.openCustomTabs(this, obj.social_url);
+                } else {
+                    openFragmentWebView(obj.social_name, obj.social_url);
+                }
+            }
+            drawerLayout.closeDrawer(GravityCompat.START);
+        });
+
+    }
+
+    public void openFragmentSettings() {
+        FragmentSettings fragment = new FragmentSettings();
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction transaction = fragmentManager.beginTransaction().setCustomAnimations(R.anim.slide_up, 0, 0, R.anim.slide_down);
+        transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+        transaction.add(R.id.fragment_container, fragment).addToBackStack("settings");
+        transaction.commit();
+    }
+
+    public void openFragmentWebView(String title, String url) {
+        FragmentWebView fragment = new FragmentWebView();
+        Bundle args = new Bundle();
+        args.putString("title", title);
+        args.putString("url", url);
+        fragment.setArguments(args);
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction transaction = fragmentManager.beginTransaction().setCustomAnimations(R.anim.slide_up, 0, 0, R.anim.slide_down);
+        transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+        transaction.add(R.id.fragment_container, fragment).addToBackStack("webview");
+        transaction.commit();
     }
 
     private void loadConfig() {
@@ -222,7 +262,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         changeText(radios.get(0));
 
         fabPlayExpand.setOnClickListener(view -> {
-            if (!utils.isNetworkAvailable()) {
+            if (!tools.isNetworkAvailable()) {
                 Toast.makeText(MainActivity.this, getResources().getString(R.string.internet_not_connected), Toast.LENGTH_SHORT).show();
             } else {
                 Radio radio = radios.get(0);
@@ -255,17 +295,17 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         });
 
         if (sharedPref.getAutoPlay().equals("true")) {
-            if (utils.isNetworkAvailable()) {
+            if (tools.isNetworkAvailable()) {
                 new Handler(Looper.getMainLooper()).postDelayed(() -> fabPlayExpand.performClick(), Constant.DELAY_PERFORM_CLICK);
             }
         }
 
     }
 
-    public void initComponent() {
+    private void initView() {
 
         fragmentManager = getSupportFragmentManager();
-        txtTimer = findViewById(R.id.txt_timer);
+
         txtMinutes = findViewById(R.id.txt_minutes);
         imgMusicBackground = findViewById(R.id.img_music_background);
         imgMusicBackgroundAlbumArt = findViewById(R.id.img_music_background_album_art);
@@ -273,26 +313,37 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         equalizerView = findViewById(R.id.equalizer_view);
         progressBar = findViewById(R.id.progress_bar);
+
+        txtTimer = findViewById(R.id.txt_timer);
         imgTimer = findViewById(R.id.img_timer);
+        imgTimerStop = findViewById(R.id.img_timer_stop);
 
-        imgRadioLarge = findViewById(R.id.img_radio_large);
-        imgAlbumArtLarge = findViewById(R.id.img_album_art_large);
+        lytCoverImagePortrait = findViewById(R.id.lyt_cover_image_portrait);
+        imgRadioLargePortrait = findViewById(R.id.img_radio_large_portrait);
+        imgAlbumArtLargePortrait = findViewById(R.id.img_album_art_large_portrait);
 
-        if (Config.CIRCULAR_RADIO_IMAGE_ALBUM_ART) {
-            imgRadioLarge.setOval(true);
-            imgAlbumArtLarge.setOval(true);
-        } else {
-            imgRadioLarge.setOval(false);
-            imgAlbumArtLarge.setOval(false);
-        }
+        lytCoverImageLandscape = findViewById(R.id.lyt_cover_image_landscape);
+        imgRadioLargeLandscape = findViewById(R.id.img_radio_large_landscape);
+        imgAlbumArtLargeLandscape = findViewById(R.id.img_album_art_large_landscape);
 
         imgVolume = findViewById(R.id.img_volume);
         fabPlayExpand = findViewById(R.id.fab_play);
         txtRadioExpand = findViewById(R.id.txt_radio_name_expand);
         txtSongExpand = findViewById(R.id.txt_metadata_expand);
+    }
+
+    public void initComponent() {
+
+        if (Config.CIRCULAR_RADIO_IMAGE_ALBUM_ART) {
+            imgRadioLargePortrait.setOval(true);
+            imgAlbumArtLargePortrait.setOval(true);
+        } else {
+            imgRadioLargePortrait.setOval(false);
+            imgAlbumArtLargePortrait.setOval(false);
+        }
         txtSongExpand.setSelected(true);
 
-        if (!utils.isNetworkAvailable()) {
+        if (!tools.isNetworkAvailable()) {
             txtRadioExpand.setText(getResources().getString(R.string.app_name));
             txtSongExpand.setText(getResources().getString(R.string.internet_not_connected));
         }
@@ -300,12 +351,36 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         setIfPlaying();
 
         imgTimer.setOnClickListener(v -> {
-            if (lytDialogTimer.getVisibility() != View.VISIBLE) {
-                showTimerDialog(true);
-            }
+            showBannerAd(false);
+
+            View view = getLayoutInflater().inflate(R.layout.dialog_timer, null);
+
+            TextView txtMinutes = view.findViewById(R.id.txt_minutes);
+            txtMinutes.setText(minutes + " " + getString(R.string.min));
+
+            Slider seekBar = view.findViewById(R.id.seek_bar_timer);
+            seekBar.setValueFrom(1);
+            seekBar.setValueTo(180);
+            seekBar.setValue(minutes);
+            seekBar.addOnChangeListener((slider, value, fromUser) -> {
+                int min = (int) value;
+                txtMinutes.setText(min + " " + getString(R.string.min));
+                minutes = min;
+            });
+
+            final MaterialAlertDialogBuilder alert = new MaterialAlertDialogBuilder(this);
+            alert.setView(view);
+            AlertDialog alertDialog = alert.create();
+            Tools.dialogButtonSelected(this, view, alertDialog, () -> {
+                startTimer(minutes);
+            });
+            alertDialog.setOnDismissListener(dialogInterface -> showBannerAd(true));
+            alertDialog.show();
         });
 
-        imgVolume.setOnClickListener(v -> changeVolume());
+        imgTimerStop.setOnClickListener(v -> stopTimer());
+
+        imgVolume.setOnClickListener(v -> tools.changeVolume(this, imgVolume));
 
     }
 
@@ -315,132 +390,22 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         outState.putInt(SELECTED_TAG, selectedIndex);
     }
 
-    @Override
-    public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
-        int itemId = menuItem.getItemId();
-        if (itemId == R.id.drawer_recent) {
-            FragmentRadio fragment = new FragmentRadio();
-            loadFrag(fragment, fragmentManager);
-            drawerLayout.closeDrawer(GravityCompat.START);
-            hideKeyboard();
-
-            return true;
-        } else if (itemId == R.id.drawer_social) {
-            FragmentManager fragmentManager = getSupportFragmentManager();
-            FragmentSocial fragmentSocial = new FragmentSocial();
-            FragmentTransaction transaction = fragmentManager.beginTransaction()
-                    .setCustomAnimations(R.anim.slide_up, 0, 0, R.anim.slide_down);
-            transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
-            transaction.add(android.R.id.content, fragmentSocial).addToBackStack("social");
-            transaction.commit();
-            Utils.darkStatusBar(this, false);
-            drawerLayout.closeDrawer(GravityCompat.START);
-            hideKeyboard();
-
-            return true;
-        } else if (itemId == R.id.drawer_rate) {
-            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://play.google.com/store/apps/details?id=" + BuildConfig.APPLICATION_ID)));
-            drawerLayout.closeDrawer(GravityCompat.START);
-            return true;
-        } else if (itemId == R.id.drawer_more) {
-            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(sharedPref.getMoreAppsUrl())));
-            drawerLayout.closeDrawer(GravityCompat.START);
-            return true;
-        } else if (itemId == R.id.drawer_share) {
-            Intent intent = new Intent();
-            intent.setAction(Intent.ACTION_SEND);
-            intent.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.app_name));
-            intent.putExtra(Intent.EXTRA_TEXT, getString(R.string.share_content) + "\n" + "https://play.google.com/store/apps/details?id=" + BuildConfig.APPLICATION_ID);
-            intent.setType("text/plain");
-            startActivity(intent);
-            drawerLayout.closeDrawer(GravityCompat.START);
-            return true;
-        } else if (itemId == R.id.drawer_privacy) {
-            FragmentWebView fragmentWebView = new FragmentWebView();
-            Bundle args = new Bundle();
-            args.putString("title", getString(R.string.drawer_privacy_policy));
-            args.putString("url", sharedPref.getPrivacyPolicyUrl());
-            fragmentWebView.setArguments(args);
-
-            FragmentManager fragmentManager = getSupportFragmentManager();
-            FragmentTransaction transaction = fragmentManager.beginTransaction()
-                    .setCustomAnimations(R.anim.slide_up, 0, 0, R.anim.slide_down);
-            transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
-            transaction.add(android.R.id.content, fragmentWebView).addToBackStack("page");
-            transaction.commit();
-            Utils.darkStatusBar(this, false);
-            drawerLayout.closeDrawer(GravityCompat.START);
-            hideKeyboard();
-            return true;
-        } else if (itemId == R.id.drawer_permission) {
-            startActivity(new Intent(getApplicationContext(), ActivityPermission.class));
-            drawerLayout.closeDrawer(GravityCompat.START);
-            hideKeyboard();
-            return true;
-        } else if (itemId == R.id.drawer_about) {
-            aboutDialog();
-            drawerLayout.closeDrawer(GravityCompat.START);
-            hideKeyboard();
-
-            return true;
-        }
-        return false;
-    }
-
     public void setupNavigationDrawer(Toolbar toolbar) {
         actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.drawer_open, R.string.drawer_close) {
-//            @Override
-//            public void onDrawerOpened(View drawerView) {
-//                super.onDrawerOpened(drawerView);
-//                lytBannerAd.setVisibility(View.GONE);
-//            }
-//
-//            @Override
-//            public void onDrawerClosed(View drawerView) {
-//                super.onDrawerClosed(drawerView);
-//                lytBannerAd.setVisibility(View.VISIBLE);
-//            }
+            @Override
+            public void onDrawerOpened(View drawerView) {
+                super.onDrawerOpened(drawerView);
+                showBannerAd(false);
+            }
+
+            @Override
+            public void onDrawerClosed(View drawerView) {
+                super.onDrawerClosed(drawerView);
+                showBannerAd(true);
+            }
         };
-//
-//        drawerLayout.addDrawerListener(actionBarDrawerToggle);
+        drawerLayout.addDrawerListener(actionBarDrawerToggle);
         actionBarDrawerToggle.syncState();
-
-        drawerLayout.addDrawerListener(new DrawerLayout.DrawerListener() {
-            @Override
-            public void onDrawerSlide(@NonNull View drawerView, float slideOffset) {
-                Log.d("Rawr", "offset: " + slideOffset);
-                if (slideOffset > 0) {
-                    lytBannerAd.setVisibility(View.GONE);
-                } else {
-                    lytBannerAd.setVisibility(View.VISIBLE);
-                }
-            }
-
-            @Override
-            public void onDrawerOpened(@NonNull View drawerView) {
-
-            }
-
-            @Override
-            public void onDrawerClosed(@NonNull View drawerView) {
-
-            }
-
-            @Override
-            public void onDrawerStateChanged(int newState) {
-
-            }
-        });
-    }
-
-    public void loadFrag(Fragment f1, FragmentManager fm) {
-        for (int i = 0; i < fm.getBackStackEntryCount(); ++i) {
-            fm.popBackStack();
-        }
-        FragmentTransaction ft = fm.beginTransaction();
-        ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
-        ft.replace(R.id.fragment_container, f1);
-        ft.commit();
     }
 
     public void changePlayPause(Boolean flag) {
@@ -449,26 +414,31 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             Radio radio = RadioPlayerService.getInstance().getPlayingRadioStation();
             if (radio != null) {
                 changeText(radio);
-                fabPlayExpand.setIcon(ContextCompat.getDrawable(MainActivity.this, R.drawable.ic_button_pause));
+                fabPlayExpand.setIcon(ContextCompat.getDrawable(MainActivity.this, R.drawable.ic_action_pause));
                 equalizerView.animateBars();
             }
         } else {
             if (Constant.item_radio.size() > 0) {
                 changeText(Constant.item_radio.get(Constant.position));
             }
-            fabPlayExpand.setIcon(ContextCompat.getDrawable(MainActivity.this, R.drawable.ic_button_play));
+            fabPlayExpand.setIcon(ContextCompat.getDrawable(MainActivity.this, R.drawable.ic_action_play));
             equalizerView.stopBars();
-            imgAlbumArtLarge.setVisibility(View.GONE);
+
+            imgAlbumArtLargePortrait.setVisibility(View.GONE);
+            imgAlbumArtLargeLandscape.setVisibility(View.GONE);
+
             imgMusicBackgroundAlbumArt.setVisibility(View.GONE);
         }
     }
 
     public void showImageAlbumArt(boolean show) {
         if (show) {
-            imgAlbumArtLarge.setVisibility(View.VISIBLE);
+            imgAlbumArtLargePortrait.setVisibility(View.VISIBLE);
+            imgAlbumArtLargeLandscape.setVisibility(View.VISIBLE);
             imgMusicBackgroundAlbumArt.setVisibility(View.VISIBLE);
         } else {
-            imgAlbumArtLarge.setVisibility(View.GONE);
+            imgAlbumArtLargePortrait.setVisibility(View.GONE);
+            imgAlbumArtLargeLandscape.setVisibility(View.GONE);
             imgMusicBackgroundAlbumArt.setVisibility(View.GONE);
         }
     }
@@ -478,20 +448,18 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             changeSongName(Constant.metadata);
 
             if (Constant.metadata == null || Constant.metadata.equals(radio.getRadio_genre())) {
-                imgAlbumArtLarge.setVisibility(View.GONE);
-                //imgMusicBackgroundAlbumArt.setVisibility(View.GONE);
+                imgAlbumArtLargePortrait.setVisibility(View.GONE);
+                imgAlbumArtLargeLandscape.setVisibility(View.GONE);
             } else {
-                imgAlbumArtLarge.setVisibility(View.VISIBLE);
-                //imgMusicBackgroundAlbumArt.setVisibility(View.VISIBLE);
+                imgAlbumArtLargePortrait.setVisibility(View.VISIBLE);
+                imgAlbumArtLargeLandscape.setVisibility(View.VISIBLE);
             }
 
             txtSongExpand.setVisibility(View.VISIBLE);
-            imgTimer.setVisibility(View.VISIBLE);
         } else {
             txtRadioMusicSong.setText("");
             txtSongExpand.setText(radio.getRadio_name());
             txtSongExpand.setVisibility(View.INVISIBLE);
-            imgTimer.setVisibility(View.GONE);
         }
         txtRadioExpand.setText(radio.getRadio_name());
 
@@ -507,7 +475,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     .into(new CustomTarget<Bitmap>() {
                         @Override
                         public void onResourceReady(@NonNull Bitmap bitmap, @Nullable Transition<? super Bitmap> transition) {
-                            Bitmap blurImage = Utils.blurImage(MainActivity.this, bitmap);
+                            Bitmap blurImage = Tools.blurImage(MainActivity.this, bitmap);
                             imgMusicBackground.setImageBitmap(blurImage);
                         }
 
@@ -516,7 +484,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
                         }
                     });
-        } /*else {
+        } else {
             Glide.with(getApplicationContext())
                     .load(radio.getBackground_image_url().replace(" ", "%20"))
                     .placeholder(R.drawable.ic_thumbnail)
@@ -527,7 +495,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         Glide.with(getApplicationContext())
                 .load(radio.getRadio_image_url().replace(" ", "%20"))
                 .placeholder(R.drawable.ic_artwork)
-                .into(imgRadioLarge);*/
+                .into(imgRadioLargePortrait);
+
+        Glide.with(getApplicationContext())
+                .load(radio.getRadio_image_url().replace(" ", "%20"))
+                .placeholder(R.drawable.ic_artwork)
+                .into(imgRadioLargeLandscape);
     }
 
     public void changeSongName(String songName) {
@@ -544,17 +517,36 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 .listener(new RequestListener<Drawable>() {
                     @Override
                     public boolean onLoadFailed(@Nullable GlideException e, Object model, @NonNull Target<Drawable> target, boolean isFirstResource) {
-                        imgAlbumArtLarge.setVisibility(View.GONE);
+                        imgAlbumArtLargePortrait.setVisibility(View.GONE);
                         return false;
                     }
 
                     @Override
                     public boolean onResourceReady(@NonNull Drawable resource, @NonNull Object model, Target<Drawable> target, @NonNull DataSource dataSource, boolean isFirstResource) {
-                        imgAlbumArtLarge.setVisibility(View.VISIBLE);
+                        imgAlbumArtLargePortrait.setVisibility(View.VISIBLE);
                         return false;
                     }
                 })
-                .into(imgAlbumArtLarge);
+                .into(imgAlbumArtLargePortrait);
+
+        Glide.with(getApplicationContext())
+                .load(artworkUrl.replace(" ", "%20"))
+                .placeholder(android.R.color.transparent)
+                .diskCacheStrategy(DiskCacheStrategy.ALL)
+                .listener(new RequestListener<Drawable>() {
+                    @Override
+                    public boolean onLoadFailed(@Nullable GlideException e, Object model, @NonNull Target<Drawable> target, boolean isFirstResource) {
+                        imgAlbumArtLargeLandscape.setVisibility(View.GONE);
+                        return false;
+                    }
+
+                    @Override
+                    public boolean onResourceReady(@NonNull Drawable resource, @NonNull Object model, Target<Drawable> target, @NonNull DataSource dataSource, boolean isFirstResource) {
+                        imgAlbumArtLargeLandscape.setVisibility(View.VISIBLE);
+                        return false;
+                    }
+                })
+                .into(imgAlbumArtLargeLandscape);
 
         if (sharedPref.getDynamicAlbumArtBackground().equals("true")) {
             if (sharedPref.getBlurRadioBackground().equals("true")) {
@@ -579,7 +571,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         .into(new CustomTarget<Bitmap>() {
                             @Override
                             public void onResourceReady(@NonNull Bitmap bitmap, @Nullable Transition<? super Bitmap> transition) {
-                                Bitmap blurImage = Utils.blurImage(MainActivity.this, bitmap);
+                                Bitmap blurImage = Tools.blurImage(MainActivity.this, bitmap);
                                 imgMusicBackgroundAlbumArt.setImageBitmap(blurImage);
                             }
 
@@ -620,7 +612,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
     }
 
-
     public void setBuffer(Boolean flag) {
         if (flag) {
             progressBar.setVisibility(View.VISIBLE);
@@ -629,66 +620,21 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
     }
 
-    public void changeVolume() {
-        final RelativePopupWindow popupWindow = new RelativePopupWindow(this);
-        LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-
-        assert inflater != null;
-        @SuppressLint("InflateParams") View view = inflater.inflate(R.layout.lyt_volume, null);
-        ImageView imageView1 = view.findViewById(R.id.img_volume_max);
-        ImageView imageView2 = view.findViewById(R.id.img_volume_min);
-        imageView1.setColorFilter(Color.BLACK);
-        imageView2.setColorFilter(Color.BLACK);
-
-        VerticalSeekBar seekBar = view.findViewById(R.id.seek_bar_volume);
-        seekBar.getThumb().setColorFilter(sharedPref.getFirstColor(), PorterDuff.Mode.SRC_IN);
-        seekBar.getProgressDrawable().setColorFilter(sharedPref.getSecondColor(), PorterDuff.Mode.SRC_IN);
-
-        final AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-        assert am != null;
-        seekBar.setMax(am.getStreamMaxVolume(AudioManager.STREAM_MUSIC));
-        int volume_level = am.getStreamVolume(AudioManager.STREAM_MUSIC);
-        seekBar.setProgress(volume_level);
-        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+    public void handleOnBackPressed() {
+        onBackPressedDispatcher = getOnBackPressedDispatcher();
+        onBackPressedDispatcher.addCallback(this, new OnBackPressedCallback(true) {
             @Override
-            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
-                am.setStreamVolume(AudioManager.STREAM_MUSIC, i, 0);
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-
+            public void handleOnBackPressed() {
+                int count = getSupportFragmentManager().getBackStackEntryCount();
+                if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+                    drawerLayout.closeDrawer(GravityCompat.START);
+                } else if (count != 0) {
+                    getSupportFragmentManager().popBackStack();
+                } else {
+                    showExitDialog();
+                }
             }
         });
-
-        popupWindow.setFocusable(true);
-        popupWindow.setWidth(WindowManager.LayoutParams.WRAP_CONTENT);
-        popupWindow.setHeight(WindowManager.LayoutParams.WRAP_CONTENT);
-        popupWindow.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-        popupWindow.setContentView(view);
-        popupWindow.showOnAnchor(imgVolume, RelativePopupWindow.VerticalPosition.ABOVE, RelativePopupWindow.HorizontalPosition.CENTER);
-    }
-
-    @Override
-    public void onBackPressed() {
-        int count = getSupportFragmentManager().getBackStackEntryCount();
-        if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
-            drawerLayout.closeDrawer(GravityCompat.START);
-        } else if (count != 0) {
-            getSupportFragmentManager().popBackStack();
-            if (count == 1) {
-                Utils.darkStatusBar(this, true);
-            }
-        } else {
-            if (lytDialogExit.getVisibility() != View.VISIBLE) {
-                showExitDialog(true);
-            }
-        }
     }
 
     public void minimizeApp() {
@@ -720,18 +666,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
     }
 
-    public void aboutDialog() {
-        LayoutInflater layoutInflater = LayoutInflater.from(MainActivity.this);
-        View view = layoutInflater.inflate(R.layout.custom_dialog_about, null);
-        ((TextView) view.findViewById(R.id.txt_app_version)).setText(getString(R.string.sub_about_app_version) + " " + BuildConfig.VERSION_NAME);
-
-        final MaterialAlertDialogBuilder alert = new MaterialAlertDialogBuilder(MainActivity.this);
-        alert.setView(view);
-        alert.setCancelable(false);
-        alert.setPositiveButton(R.string.option_ok, (dialog, which) -> dialog.dismiss());
-        alert.show();
-    }
-
     @Override
     public void onPause() {
         super.onPause();
@@ -740,8 +674,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @Override
     public void onResume() {
         super.onResume();
-        initComponent();
-        adsManager.resumeBannerAd(1);
+        adsManager.resumeBannerAd(Constant.BANNER_AD);
     }
 
     @Override
@@ -749,6 +682,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         super.onDestroy();
         Constant.is_app_open = false;
         Constant.isAppOpen = false;
+        Constant.isRadioPlaying = false;
         adsManager.destroyBannerAd();
     }
 
@@ -757,31 +691,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         return getResources().getAssets();
     }
 
-    private void inAppReview() {
-        if (sharedPref.getInAppReviewToken() <= 3) {
-            sharedPref.updateInAppReviewToken(sharedPref.getInAppReviewToken() + 1);
-            Log.d(TAG, "in app update token");
-        } else {
-            ReviewManager manager = ReviewManagerFactory.create(this);
-            Task<ReviewInfo> request = manager.requestReviewFlow();
-            request.addOnCompleteListener(task -> {
-                if (task.isSuccessful()) {
-                    ReviewInfo reviewInfo = task.getResult();
-                    manager.launchReviewFlow(MainActivity.this, reviewInfo).addOnFailureListener(e -> {
-                    }).addOnCompleteListener(complete -> Log.d(TAG, "Success")
-                    ).addOnFailureListener(failure -> Log.d(TAG, "Rating Failed"));
-                }
-            }).addOnFailureListener(failure -> Log.d(TAG, "In-App Request Failed " + failure));
-            Log.d(TAG, "in app token complete, show in app review if available");
-        }
-        Log.d(TAG, "in app review token : " + sharedPref.getInAppReviewToken());
-    }
-
     private void inAppUpdate() {
         Task<AppUpdateInfo> appUpdateInfoTask = appUpdateManager.getAppUpdateInfo();
         appUpdateInfoTask.addOnSuccessListener(appUpdateInfo -> {
-            if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE
-                    && appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.IMMEDIATE)) {
+            if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE && appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.IMMEDIATE)) {
                 startUpdateFlow(appUpdateInfo);
             } else if (appUpdateInfo.updateAvailability() == UpdateAvailability.DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS) {
                 startUpdateFlow(appUpdateInfo);
@@ -813,57 +726,44 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
     }
 
-    public void initExitDialog() {
+    @SuppressLint("InflateParams")
+    private void showExitDialog() {
+        showBannerAd(false);
+        View view;
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            view = getLayoutInflater().inflate(R.layout.dialog_exit_landscape, null);
+        } else {
+            view = getLayoutInflater().inflate(R.layout.dialog_exit_portrait, null);
+        }
 
-        lytDialogExit = findViewById(R.id.lyt_dialog_exit);
-        lytPanelView = findViewById(R.id.lyt_panel_view);
-        lytPanelDialog = findViewById(R.id.lyt_panel_dialog);
+        final MaterialAlertDialogBuilder alert = new MaterialAlertDialogBuilder(this);
+        alert.setView(view);
 
-        lytPanelView.setBackgroundColor(getResources().getColor(R.color.color_dialog_background_light));
-        lytPanelDialog.setBackgroundResource(R.drawable.bg_dialog_default);
+        FloatingActionButton btnRate = view.findViewById(R.id.btn_rate);
+        FloatingActionButton btnShare = view.findViewById(R.id.btn_share);
 
-        lytPanelView.setOnClickListener(view -> {
-            //empty state
-        });
+        LinearLayout nativeAdView = view.findViewById(R.id.native_ad_view);
+        Tools.setNativeAdStyle(MainActivity.this, nativeAdView, Constant.NATIVE_AD_STYLE_EXIT_DIALOG);
+        adsManager.loadNativeAdView(view, Constant.NATIVE_AD_EXIT_DIALOG, Constant.NATIVE_AD_STYLE_EXIT_DIALOG);
 
-        LinearLayout nativeAdView = findViewById(R.id.native_ad_view);
-        Utils.setNativeAdStyle(this, nativeAdView, Constant.NATIVE_AD_STYLE);
-        adsManager.loadNativeAd(Constant.NATIVE_AD);
-
-        Button btnCancel = findViewById(R.id.btn_cancel);
-        Button btnMinimize = findViewById(R.id.btn_minimize);
-        Button btnExit = findViewById(R.id.btn_exit);
-
-        FloatingActionButton btnRate = findViewById(R.id.btn_rate);
-        FloatingActionButton btnShare = findViewById(R.id.btn_share);
-
-        btnCancel.setOnClickListener(view -> showExitDialog(false));
-
-        btnMinimize.setOnClickListener(view -> {
-            showExitDialog(false);
-            new Handler(Looper.getMainLooper()).postDelayed(this::minimizeApp, 300);
-        });
-
-        btnExit.setOnClickListener(view -> {
-            showExitDialog(false);
-            new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                finish();
-                adsManager.destroyBannerAd();
-                if (isServiceRunning()) {
-                    Intent stop = new Intent(this, RadioPlayerService.class);
-                    stop.setAction(RadioPlayerService.ACTION_STOP);
-                    startService(stop);
-                    Log.d("RADIO_SERVICE", "Service Running");
-                } else {
-                    Log.d("RADIO_SERVICE", "Service Not Running");
-                }
-            }, 300);
-            Constant.isAppOpen = false;
-        });
+        alertDialog = alert.create();
+        Tools.dialogExitButtonSelected(this, view, alertDialog, () -> {
+            finish();
+            adsManager.destroyBannerAd();
+            if (isServiceRunning()) {
+                Intent stop = new Intent(this, RadioPlayerService.class);
+                stop.setAction(RadioPlayerService.ACTION_STOP);
+                startService(stop);
+                Log.d(TAG, "Service Running");
+            } else {
+                Log.d(TAG, "Service Not Running");
+            }
+        }, this::minimizeApp);
+        alertDialog.setOnDismissListener(dialogInterface -> showBannerAd(true));
 
         btnRate.setOnClickListener(v -> {
             startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://play.google.com/store/apps/details?id=" + BuildConfig.APPLICATION_ID)));
-            showExitDialog(false);
+            alertDialog.dismiss();
         });
 
         btnShare.setOnClickListener(v -> {
@@ -873,116 +773,21 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             intent.putExtra(Intent.EXTRA_TEXT, getString(R.string.share_content) + "\n" + "https://play.google.com/store/apps/details?id=" + BuildConfig.APPLICATION_ID);
             intent.setType("text/plain");
             startActivity(intent);
-            showExitDialog(false);
-        });
-    }
-
-    public void initTimerDialog() {
-
-        lytDialogTimer = findViewById(R.id.lyt_dialog_timer);
-        lytPanelViewTimer = findViewById(R.id.lyt_panel_view_timer);
-        lytPanelDialogTimer = findViewById(R.id.lyt_panel_dialog_timer);
-        lytSeekbarTimer = findViewById(R.id.lyt_seekbar_timer);
-
-        lytPanelViewTimer.setBackgroundColor(getResources().getColor(R.color.color_dialog_background_light));
-        lytPanelDialogTimer.setBackgroundResource(R.drawable.bg_dialog_default);
-
-        lytPanelViewTimer.setOnClickListener(view -> {
-            //empty state
+            alertDialog.dismiss();
         });
 
-        SeekBar seekBar = findViewById(R.id.seek_bar_timer);
-        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int min, boolean fromUser) {
-                txtMinutes.setText(min + " " + getString(R.string.min));
-                minutes = min;
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-
-            }
-        });
-
-        btnCancelTimer = findViewById(R.id.btn_cancel_timer);
-        btnSetTimer = findViewById(R.id.btn_set_timer);
-        btnStopTimer = findViewById(R.id.btn_stop_timer);
-
-        btnCancelTimer.setOnClickListener(view -> showTimerDialog(false));
-
-        btnSetTimer.setOnClickListener(view -> {
-            showTimerDialog(false);
-            startTimer(minutes);
-        });
-
-        btnStopTimer.setOnClickListener(view -> {
-            showTimerDialog(false);
-            stopTimer();
-        });
-    }
-
-    private void showExitDialog(boolean show) {
-        if (show) {
-            lytDialogExit.setVisibility(View.VISIBLE);
-            slideUp(findViewById(R.id.dialog_card_view));
-            ObjectAnimator.ofFloat(lytDialogExit, View.ALPHA, 0.1f, 1.0f).setDuration(300).start();
-            Utils.fullScreenMode(this, true);
-        } else {
-            slideDown(findViewById(R.id.dialog_card_view));
-            ObjectAnimator.ofFloat(lytDialogExit, View.ALPHA, 1.0f, 0.1f).setDuration(300).start();
-            new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                lytDialogExit.setVisibility(View.GONE);
-                Utils.fullScreenMode(this, false);
-            }, 300);
-        }
-    }
-
-    private void showTimerDialog(boolean show) {
-        if (show) {
-            lytDialogTimer.setVisibility(View.VISIBLE);
-            slideUp(findViewById(R.id.dialog_card_view_timer));
-            ObjectAnimator.ofFloat(lytDialogTimer, View.ALPHA, 0.1f, 1.0f).setDuration(300).start();
-            Utils.fullScreenMode(this, true);
-        } else {
-            slideDown(findViewById(R.id.dialog_card_view_timer));
-            ObjectAnimator.ofFloat(lytDialogTimer, View.ALPHA, 1.0f, 0.1f).setDuration(300).start();
-            new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                lytDialogTimer.setVisibility(View.GONE);
-                Utils.fullScreenMode(this, false);
-            }, 300);
-        }
-    }
-
-    public void slideUp(View view) {
-        view.setVisibility(View.VISIBLE);
-        TranslateAnimation animate = new TranslateAnimation(0, 0, findViewById(R.id.main_content).getHeight(), 0);
-        animate.setDuration(300);
-        animate.setFillAfter(true);
-        view.startAnimation(animate);
-    }
-
-    public void slideDown(View view) {
-        TranslateAnimation animate = new TranslateAnimation(0, 0, 0, findViewById(R.id.main_content).getHeight());
-        animate.setDuration(300);
-        animate.setFillAfter(true);
-        view.startAnimation(animate);
+        alertDialog.show();
     }
 
     private void startTimer(long minutes) {
         setCountDownTimer(minutes * 60);
-        showSetTimerButton(true);
+        showCountDownTimer(true);
         mCountDownTimer.start();
     }
 
     private void stopTimer() {
         mCountDownTimer.cancel();
-        showSetTimerButton(true);
+        showCountDownTimer(false);
         txtTimer.setText("00:00:00");
     }
 
@@ -990,11 +795,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         mCountDownTimer = new CountDownTimer(seconds * 1000, 1000) {
             @Override
             public void onTick(long millisUntilFinished) {
-                txtTimer.setText(Utils.formatSeconds(millisUntilFinished / 1000));
+                txtTimer.setText(Tools.formatSeconds(millisUntilFinished / 1000));
                 if (millisUntilFinished > 0) {
-                    showSetTimerButton(false);
+                    showCountDownTimer(true);
                 } else {
-                    showSetTimerButton(true);
+                    showCountDownTimer(false);
                 }
                 Log.d(TAG, "seconds remaining: " + millisUntilFinished / 1000);
             }
@@ -1002,7 +807,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             @Override
             public void onFinish() {
                 txtTimer.setText("00:00:00");
-                showSetTimerButton(true);
+                showCountDownTimer(false);
                 if (isServiceRunning()) {
                     Intent stop = new Intent(MainActivity.this, RadioPlayerService.class);
                     stop.setAction(RadioPlayerService.ACTION_STOP);
@@ -1012,17 +817,42 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         };
     }
 
-    private void showSetTimerButton(boolean show) {
+    private void showCountDownTimer(boolean show) {
         if (show) {
-            btnSetTimer.setVisibility(View.VISIBLE);
-            btnStopTimer.setVisibility(View.GONE);
-            txtTimer.setVisibility(View.GONE);
-            lytSeekbarTimer.setVisibility(View.VISIBLE);
-        } else {
-            btnSetTimer.setVisibility(View.GONE);
-            btnStopTimer.setVisibility(View.VISIBLE);
+            imgTimer.setVisibility(View.GONE);
+            imgTimerStop.setVisibility(View.VISIBLE);
             txtTimer.setVisibility(View.VISIBLE);
-            lytSeekbarTimer.setVisibility(View.GONE);
+        } else {
+            imgTimer.setVisibility(View.VISIBLE);
+            imgTimerStop.setVisibility(View.GONE);
+            txtTimer.setVisibility(View.GONE);
+        }
+    }
+
+    private void showBannerAd(boolean show) {
+        if (show) {
+            lytBannerAd.setVisibility(View.VISIBLE);
+        } else {
+            lytBannerAd.setVisibility(View.GONE);
+        }
+    }
+
+    @Override
+    public void onConfigurationChanged(@NonNull Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        isPortrait(newConfig.orientation != Configuration.ORIENTATION_LANDSCAPE);
+        if (alertDialog != null) {
+            alertDialog.dismiss();
+        }
+    }
+
+    private void isPortrait(boolean isPortrait) {
+        if (isPortrait) {
+            lytCoverImagePortrait.setVisibility(View.VISIBLE);
+            lytCoverImageLandscape.setVisibility(View.GONE);
+        } else {
+            lytCoverImagePortrait.setVisibility(View.GONE);
+            lytCoverImageLandscape.setVisibility(View.VISIBLE);
         }
     }
 
