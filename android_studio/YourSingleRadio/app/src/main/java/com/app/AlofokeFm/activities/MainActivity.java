@@ -1,23 +1,29 @@
 package com.app.AlofokeFm.activities;
 
-import android.annotation.SuppressLint;
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentSender;
 import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.view.WindowMetrics;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -27,6 +33,9 @@ import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.activity.OnBackPressedDispatcher;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.IntentSenderRequest;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBarDrawerToggle;
@@ -35,6 +44,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
+import androidx.core.view.WindowCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
@@ -42,7 +52,6 @@ import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.app.AlofokeFm.BuildConfig;
 import com.app.AlofokeFm.Config;
 import com.app.AlofokeFm.R;
 import com.app.AlofokeFm.adapters.AdapterNavigation;
@@ -77,10 +86,15 @@ import com.google.android.material.slider.Slider;
 import com.google.android.play.core.appupdate.AppUpdateInfo;
 import com.google.android.play.core.appupdate.AppUpdateManager;
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory;
+import com.google.android.play.core.appupdate.AppUpdateOptions;
 import com.google.android.play.core.install.model.AppUpdateType;
 import com.google.android.play.core.install.model.UpdateAvailability;
+import com.google.android.play.core.review.ReviewInfo;
+import com.google.android.play.core.review.ReviewManager;
+import com.google.android.play.core.review.ReviewManagerFactory;
 import com.makeramen.roundedimageview.RoundedImageView;
 import com.solodroid.push.sdk.provider.OneSignalPush;
+import com.solodroidx.ads.appopen.AppOpenAd;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -124,7 +138,6 @@ public class MainActivity extends AppCompatActivity {
     AdsManager adsManager;
     List<RadioEntity> radioEntities;
     ArrayList<Radio> radios;
-    private AppUpdateManager appUpdateManager;
     TextView txtTimer;
     TextView txtMinutes;
     CountDownTimer mCountDownTimer;
@@ -132,7 +145,17 @@ public class MainActivity extends AppCompatActivity {
     LinearLayout lytBannerAd;
     OnBackPressedDispatcher onBackPressedDispatcher;
     RecyclerView recyclerView;
-    public static AlertDialog alertDialog = null;
+    private AppUpdateManager appUpdateManager;
+    private ActivityResultLauncher<IntentSenderRequest> appUpdateResultLauncher;
+    LinearLayout customDialogLayout;
+    View dimBackground;
+    FloatingActionButton btnRate;
+    FloatingActionButton btnShare;
+    Button btnExit;
+    Button btnMinimize;
+    Button btnCancel;
+    LinearLayout nativeAdView;
+    private int screenWidth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -175,16 +198,18 @@ public class MainActivity extends AppCompatActivity {
         Tools.notificationHandler(this, getIntent());
         loadConfig();
 
-        if (!BuildConfig.DEBUG) {
-            appUpdateManager = AppUpdateManagerFactory.create(getApplicationContext());
+        if (!Tools.isDebug()) {
             inAppUpdate();
-            tools.inAppReview(this);
+            inAppReview();
         }
 
         new OneSignalPush.Builder(this).requestNotificationPermission();
 
         isPortrait(getResources().getConfiguration().orientation != Configuration.ORIENTATION_LANDSCAPE);
 
+        initExitDialog();
+        getScreenDimensions();
+        setCustomDialogWidth();
         handleOnBackPressed();
         loadNavigationMenu();
     }
@@ -210,11 +235,11 @@ public class MainActivity extends AppCompatActivity {
                 Log.d(TAG, "open settings");
             } else {
                 if (obj.social_url.contains("?target=internal")) {
-                    openFragmentWebView(obj.social_name, obj.social_url);
+                    openFragmentWebView(obj.social_name, obj.social_url.replace("?target=internal", ""));
                 } else if (obj.social_url.contains("?target=external")) {
-                    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(obj.social_url.trim())));
-                }  else if (obj.social_url.contains("?target=custom-tabs")) {
-                    Tools.openCustomTabs(this, obj.social_url);
+                    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(obj.social_url.replace("?target=external", "").trim())));
+                } else if (obj.social_url.contains("?target=custom-tabs")) {
+                    Tools.openCustomTabs(this, obj.social_url.replace("?target=custom-tabs", ""));
                 } else {
                     openFragmentWebView(obj.social_name, obj.social_url);
                 }
@@ -262,31 +287,10 @@ public class MainActivity extends AppCompatActivity {
         changeText(radios.get(0));
 
         fabPlayExpand.setOnClickListener(view -> {
-            if (!tools.isNetworkAvailable()) {
+            if (!Tools.isNetworkAvailable(this)) {
                 Toast.makeText(MainActivity.this, getResources().getString(R.string.internet_not_connected), Toast.LENGTH_SHORT).show();
             } else {
-                Radio radio = radios.get(0);
-                final Intent intent = new Intent(MainActivity.this, RadioPlayerService.class);
-
-                if (RadioPlayerService.getInstance() != null) {
-                    Radio playerCurrentRadio = RadioPlayerService.getInstance().getPlayingRadioStation();
-                    if (playerCurrentRadio != null) {
-                        if (radio.getRadio_id() != RadioPlayerService.getInstance().getPlayingRadioStation().getRadio_id()) {
-                            RadioPlayerService.getInstance().initializeRadio(MainActivity.this, radio);
-                            intent.setAction(RadioPlayerService.ACTION_PLAY);
-                        } else {
-                            intent.setAction(RadioPlayerService.ACTION_TOGGLE);
-                        }
-                    } else {
-                        RadioPlayerService.getInstance().initializeRadio(MainActivity.this, radio);
-                        intent.setAction(RadioPlayerService.ACTION_PLAY);
-                    }
-                } else {
-                    RadioPlayerService.createInstance().initializeRadio(MainActivity.this, radio);
-                    intent.setAction(RadioPlayerService.ACTION_PLAY);
-                }
-                startService(intent);
-
+                togglePlayPause();
                 if (!Constant.is_playing) {
                     adsManager.showInterstitialAd();
                 }
@@ -295,11 +299,34 @@ public class MainActivity extends AppCompatActivity {
         });
 
         if (sharedPref.getAutoPlay().equals("true")) {
-            if (tools.isNetworkAvailable()) {
+            if (Tools.isNetworkAvailable(this)) {
                 new Handler(Looper.getMainLooper()).postDelayed(() -> fabPlayExpand.performClick(), Constant.DELAY_PERFORM_CLICK);
             }
         }
 
+    }
+
+    private void togglePlayPause() {
+        Radio radio = radios.get(0);
+        final Intent intent = new Intent(MainActivity.this, RadioPlayerService.class);
+        if (RadioPlayerService.getInstance() != null) {
+            Radio playerCurrentRadio = RadioPlayerService.getInstance().getPlayingRadioStation();
+            if (playerCurrentRadio != null) {
+                if (radio.getRadio_id() != RadioPlayerService.getInstance().getPlayingRadioStation().getRadio_id()) {
+                    RadioPlayerService.getInstance().initializeRadio(MainActivity.this, radio);
+                    intent.setAction(RadioPlayerService.ACTION_PLAY);
+                } else {
+                    intent.setAction(RadioPlayerService.ACTION_TOGGLE);
+                }
+            } else {
+                RadioPlayerService.getInstance().initializeRadio(MainActivity.this, radio);
+                intent.setAction(RadioPlayerService.ACTION_PLAY);
+            }
+        } else {
+            RadioPlayerService.createInstance().initializeRadio(MainActivity.this, radio);
+            intent.setAction(RadioPlayerService.ACTION_PLAY);
+        }
+        startService(intent);
     }
 
     private void initView() {
@@ -343,7 +370,7 @@ public class MainActivity extends AppCompatActivity {
         }
         txtSongExpand.setSelected(true);
 
-        if (!tools.isNetworkAvailable()) {
+        if (!Tools.isNetworkAvailable(this)) {
             txtRadioExpand.setText(getResources().getString(R.string.app_name));
             txtSongExpand.setText(getResources().getString(R.string.internet_not_connected));
         }
@@ -629,9 +656,18 @@ public class MainActivity extends AppCompatActivity {
                 if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
                     drawerLayout.closeDrawer(GravityCompat.START);
                 } else if (count != 0) {
+//                    Constant.isPausedFromClick = false;
                     getSupportFragmentManager().popBackStack();
                 } else {
-                    showExitDialog();
+                    if (customDialogLayout != null) {
+                        if (customDialogLayout.getVisibility() == View.VISIBLE) {
+                            hideCustomDialog();
+                        } else {
+                            showCustomDialog();
+                        }
+                    } else {
+                        showCustomDialog();
+                    }
                 }
             }
         });
@@ -669,21 +705,42 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onPause() {
         super.onPause();
+//        Tools.postDelayed(() -> {
+//            if (Constant.isPausedFromClick && Constant.isForeground) {
+//                Intent stop = new Intent(this, RadioPlayerService.class);
+//                stop.setAction(RadioPlayerService.ACTION_STOP);
+//                startService(stop);
+//            }
+//        }, 1000);
+        Log.d(TAG, "onPause");
     }
 
     @Override
     public void onResume() {
         super.onResume();
+//        Tools.postDelayed(() -> {
+//            if (Constant.isPausedFromClick && Constant.isForeground) {
+//                Intent start = new Intent(this, RadioPlayerService.class);
+//                start.setAction(RadioPlayerService.ACTION_PLAY);
+//                startService(start);
+//                Constant.isPausedFromClick = false;
+//            }
+//        }, 1000);
         adsManager.resumeBannerAd(Constant.BANNER_AD);
+        Log.d(TAG, "onResume");
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
         Constant.is_app_open = false;
-        Constant.isAppOpen = false;
         Constant.isRadioPlaying = false;
+//        Constant.isPausedFromClick = false;
         adsManager.destroyBannerAd();
+    }
+
+    public void destroyAppOpenAd() {
+        AppOpenAd.isAppOpenAdLoaded = false;
     }
 
     @Override
@@ -691,7 +748,40 @@ public class MainActivity extends AppCompatActivity {
         return getResources().getAssets();
     }
 
+    public void inAppReview() {
+        if (sharedPref.getInAppReviewToken() <= 3) {
+            sharedPref.updateInAppReviewToken(sharedPref.getInAppReviewToken() + 1);
+            Log.d(TAG, "in app update token");
+        } else {
+            ReviewManager manager = ReviewManagerFactory.create(MainActivity.this);
+            Task<ReviewInfo> request = manager.requestReviewFlow();
+            request.addOnCompleteListener(task -> {
+                if (task.isSuccessful()) {
+                    ReviewInfo reviewInfo = task.getResult();
+                    manager.launchReviewFlow(MainActivity.this, reviewInfo).addOnFailureListener(e -> {
+                    }).addOnCompleteListener(complete -> Log.d(TAG, "Success")
+                    ).addOnFailureListener(failure -> Log.d(TAG, "Rating Failed"));
+                }
+            }).addOnFailureListener(failure -> Log.d(TAG, "In-App Request Failed " + failure));
+            Log.d(TAG, "in app token complete, show in app review if available");
+        }
+        Log.d(TAG, "in app review token : " + sharedPref.getInAppReviewToken());
+    }
+
     private void inAppUpdate() {
+        appUpdateManager = AppUpdateManagerFactory.create(getApplicationContext());
+        appUpdateResultLauncher = registerForActivityResult(new ActivityResultContracts.StartIntentSenderForResult(), result -> {
+            if (result.getResultCode() == Activity.RESULT_OK) {
+                Toast.makeText(getApplicationContext(), getString(R.string.msg_success_update), Toast.LENGTH_SHORT).show();
+            } else if (result.getResultCode() == Activity.RESULT_CANCELED) {
+                Toast.makeText(getApplicationContext(), getString(R.string.msg_cancel_update), Toast.LENGTH_SHORT).show();
+                Log.d(TAG, "Update flow cancelled by user.");
+            } else {
+                Toast.makeText(getApplicationContext(), getString(R.string.msg_failed_update), Toast.LENGTH_SHORT).show();
+                Log.e(TAG, "Update flow failed with result code: " + result.getResultCode());
+            }
+        });
+
         Task<AppUpdateInfo> appUpdateInfoTask = appUpdateManager.getAppUpdateInfo();
         appUpdateInfoTask.addOnSuccessListener(appUpdateInfo -> {
             if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE && appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.IMMEDIATE)) {
@@ -702,23 +792,19 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    @SuppressWarnings("deprecation")
     private void startUpdateFlow(AppUpdateInfo appUpdateInfo) {
-        try {
-            appUpdateManager.startUpdateFlowForResult(appUpdateInfo, AppUpdateType.IMMEDIATE, this, Constant.IMMEDIATE_APP_UPDATE_REQ_CODE);
-        } catch (IntentSender.SendIntentException e) {
-            e.printStackTrace();
-        }
+        AppUpdateOptions appUpdateOptions = AppUpdateOptions.newBuilder(AppUpdateType.IMMEDIATE).setAllowAssetPackDeletion(true).build();
+        appUpdateManager.startUpdateFlowForResult(appUpdateInfo, appUpdateResultLauncher, appUpdateOptions);
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == Constant.IMMEDIATE_APP_UPDATE_REQ_CODE) {
-            if (resultCode == RESULT_CANCELED) {
-                Toast.makeText(getApplicationContext(), getString(R.string.msg_cancel_update), Toast.LENGTH_SHORT).show();
-            } else if (resultCode == RESULT_OK) {
+            if (resultCode == RESULT_OK) {
                 Toast.makeText(getApplicationContext(), getString(R.string.msg_success_update), Toast.LENGTH_SHORT).show();
+            } else if (resultCode == RESULT_CANCELED) {
+                Toast.makeText(getApplicationContext(), getString(R.string.msg_cancel_update), Toast.LENGTH_SHORT).show();
             } else {
                 Toast.makeText(getApplicationContext(), getString(R.string.msg_failed_update), Toast.LENGTH_SHORT).show();
                 inAppUpdate();
@@ -726,57 +812,111 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    @SuppressLint("InflateParams")
-    private void showExitDialog() {
-        showBannerAd(false);
-        View view;
-        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            view = getLayoutInflater().inflate(R.layout.dialog_exit_landscape, null);
-        } else {
-            view = getLayoutInflater().inflate(R.layout.dialog_exit_portrait, null);
-        }
+    private void initExitDialog() {
+        customDialogLayout = findViewById(R.id.custom_dialog_layout);
+        customDialogLayout.setBackgroundResource(R.drawable.bg_dialog_light);
+        customDialogLayout.setOnClickListener(v -> {
+            //do nothing
+        });
 
-        final MaterialAlertDialogBuilder alert = new MaterialAlertDialogBuilder(this);
-        alert.setView(view);
+        dimBackground = findViewById(R.id.dim_background);
+        btnRate = findViewById(R.id.btn_rate);
+        btnShare = findViewById(R.id.btn_share);
+        btnExit = findViewById(R.id.btn_exit);
+        btnMinimize = findViewById(R.id.btn_minimize);
+        btnCancel = findViewById(R.id.btn_cancel);
+        nativeAdView = findViewById(R.id.native_ad_view);
 
-        FloatingActionButton btnRate = view.findViewById(R.id.btn_rate);
-        FloatingActionButton btnShare = view.findViewById(R.id.btn_share);
-
-        LinearLayout nativeAdView = view.findViewById(R.id.native_ad_view);
         Tools.setNativeAdStyle(MainActivity.this, nativeAdView, Constant.NATIVE_AD_STYLE_EXIT_DIALOG);
-        adsManager.loadNativeAdView(view, Constant.NATIVE_AD_EXIT_DIALOG, Constant.NATIVE_AD_STYLE_EXIT_DIALOG);
-
-        alertDialog = alert.create();
-        Tools.dialogExitButtonSelected(this, view, alertDialog, () -> {
-            finish();
-            adsManager.destroyBannerAd();
-            if (isServiceRunning()) {
-                Intent stop = new Intent(this, RadioPlayerService.class);
-                stop.setAction(RadioPlayerService.ACTION_STOP);
-                startService(stop);
-                Log.d(TAG, "Service Running");
-            } else {
-                Log.d(TAG, "Service Not Running");
-            }
-        }, this::minimizeApp);
-        alertDialog.setOnDismissListener(dialogInterface -> showBannerAd(true));
-
+        adsManager.loadNativeAd(Constant.NATIVE_AD_EXIT_DIALOG, Constant.NATIVE_AD_STYLE_EXIT_DIALOG);
         btnRate.setOnClickListener(v -> {
-            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://play.google.com/store/apps/details?id=" + BuildConfig.APPLICATION_ID)));
-            alertDialog.dismiss();
+            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://play.google.com/store/apps/details?id=" + Tools.getApplicationId())));
+            hideCustomDialog();
         });
 
         btnShare.setOnClickListener(v -> {
             Intent intent = new Intent();
             intent.setAction(Intent.ACTION_SEND);
             intent.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.app_name));
-            intent.putExtra(Intent.EXTRA_TEXT, getString(R.string.share_content) + "\n" + "https://play.google.com/store/apps/details?id=" + BuildConfig.APPLICATION_ID);
+            intent.putExtra(Intent.EXTRA_TEXT, getString(R.string.share_content) + "\n" + "https://play.google.com/store/apps/details?id=" + Tools.getApplicationId());
             intent.setType("text/plain");
             startActivity(intent);
-            alertDialog.dismiss();
+            hideCustomDialog();
         });
 
-        alertDialog.show();
+        btnExit.setOnClickListener(v -> {
+            finish();
+            adsManager.destroyBannerAd();
+            destroyAppOpenAd();
+            if (isServiceRunning()) {
+                Intent stop = new Intent(this, RadioPlayerService.class);
+                stop.setAction(RadioPlayerService.ACTION_STOP);
+                startService(stop);
+                Log.d("RADIO_SERVICE", "Service Running");
+            } else {
+                Log.d("RADIO_SERVICE", "Service Not Running");
+            }
+            hideCustomDialog();
+        });
+
+        btnMinimize.setOnClickListener(v -> {
+            minimizeApp();
+            hideCustomDialog();
+        });
+
+        btnCancel.setOnClickListener(v -> hideCustomDialog());
+        dimBackground.setOnClickListener(v -> hideCustomDialog());
+    }
+
+    private void getScreenDimensions() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            WindowMetrics windowMetrics = getWindowManager().getCurrentWindowMetrics();
+            screenWidth = windowMetrics.getBounds().width();
+        } else {
+            DisplayMetrics displayMetrics = new DisplayMetrics();
+            getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+            screenWidth = displayMetrics.widthPixels;
+        }
+    }
+
+    private void setCustomDialogWidth() {
+        int desiredWidth = (int) (screenWidth * 0.85);
+        ViewGroup.LayoutParams params = customDialogLayout.getLayoutParams();
+        params.width = desiredWidth;
+        customDialogLayout.setLayoutParams(params);
+    }
+
+    private void showCustomDialog() {
+        customDialogLayout.setAlpha(0f);
+        dimBackground.setAlpha(0f);
+        customDialogLayout.setVisibility(View.VISIBLE);
+        dimBackground.setVisibility(View.VISIBLE);
+        customDialogLayout.animate().alpha(1f).setDuration(250).setListener(null);
+        dimBackground.animate().alpha(1f).setDuration(250).setListener(null);
+        isWindowLightStatusBarNavigation(false);
+        showBannerAd(false);
+    }
+
+    private void hideCustomDialog() {
+        customDialogLayout.animate().alpha(0f).setDuration(250).setListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                customDialogLayout.setVisibility(View.GONE);
+            }
+        });
+        dimBackground.animate().alpha(0f).setDuration(250).setListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                dimBackground.setVisibility(View.GONE);
+            }
+        });
+        isWindowLightStatusBarNavigation(true);
+        showBannerAd(true);
+    }
+
+    private void isWindowLightStatusBarNavigation(boolean show) {
+        WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView()).setAppearanceLightStatusBars(false);
+        WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView()).setAppearanceLightNavigationBars(false);
     }
 
     private void startTimer(long minutes) {
@@ -841,9 +981,6 @@ public class MainActivity extends AppCompatActivity {
     public void onConfigurationChanged(@NonNull Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         isPortrait(newConfig.orientation != Configuration.ORIENTATION_LANDSCAPE);
-        if (alertDialog != null) {
-            alertDialog.dismiss();
-        }
     }
 
     private void isPortrait(boolean isPortrait) {

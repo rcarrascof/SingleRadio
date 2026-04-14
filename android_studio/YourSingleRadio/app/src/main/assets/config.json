@@ -8,7 +8,7 @@
       "background_image_url": "https://www.diariodigital.com.do/wp-content/uploads/2021/09/Alofoke.jpg",
       "blur_radio_background": "true",
       "song_metadata": "true",
-      "image_album_art": "true",
+      "image_album_art": "false",
       "image_album_art_dynamic_background": "true",
       "auto_play": "false"
     }

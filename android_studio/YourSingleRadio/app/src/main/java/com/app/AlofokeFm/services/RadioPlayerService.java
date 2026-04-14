@@ -31,48 +31,49 @@ import android.view.KeyEvent;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+import androidx.annotation.OptIn;
 import androidx.core.app.NotificationCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+import androidx.media3.common.AudioAttributes;
+import androidx.media3.common.C;
+import androidx.media3.common.MediaItem;
+import androidx.media3.common.MediaMetadata;
+import androidx.media3.common.Metadata;
+import androidx.media3.common.PlaybackException;
+import androidx.media3.common.Player;
+import androidx.media3.common.util.UnstableApi;
+import androidx.media3.common.util.Util;
+import androidx.media3.datasource.AssetDataSource;
+import androidx.media3.datasource.DataSource;
+import androidx.media3.datasource.DataSpec;
+import androidx.media3.datasource.DefaultHttpDataSource;
+import androidx.media3.exoplayer.ExoPlayer;
+import androidx.media3.exoplayer.hls.HlsMediaSource;
+import androidx.media3.exoplayer.source.MediaSource;
+import androidx.media3.exoplayer.source.ProgressiveMediaSource;
+import androidx.media3.extractor.metadata.icy.IcyInfo;
+import androidx.media3.extractor.metadata.id3.TextInformationFrame;
 
-import com.app.AlofokeFm.BuildConfig;
 import com.app.AlofokeFm.Config;
 import com.app.AlofokeFm.R;
 import com.app.AlofokeFm.activities.MainActivity;
 import com.app.AlofokeFm.callbacks.CallbackAlbumArt;
 import com.app.AlofokeFm.database.prefs.SharedPref;
-import com.app.AlofokeFm.metadata.IcyHttpDataSourceFactory;
 import com.app.AlofokeFm.models.AlbumArt;
 import com.app.AlofokeFm.models.Radio;
 import com.app.AlofokeFm.rests.RestAdapter;
-import com.app.AlofokeFm.services.parser.URLParser;
+import com.app.AlofokeFm.services.parser.ParserM3UToURL;
 import com.app.AlofokeFm.utils.AsyncTaskExecutor;
 import com.app.AlofokeFm.utils.Constant;
 import com.app.AlofokeFm.utils.HttpsTrustManager;
 import com.app.AlofokeFm.utils.Tools;
-import com.vhall.android.exoplayer2.ExoPlaybackException;
-import com.vhall.android.exoplayer2.ExoPlayerFactory;
-import com.vhall.android.exoplayer2.PlaybackParameters;
-import com.vhall.android.exoplayer2.Player;
-import com.vhall.android.exoplayer2.Timeline;
-import com.vhall.android.exoplayer2.extractor.DefaultExtractorsFactory;
-import com.vhall.android.exoplayer2.extractor.ts.DefaultTsPayloadReaderFactory;
-import com.vhall.android.exoplayer2.source.ExtractorMediaSource;
-import com.vhall.android.exoplayer2.source.MediaSource;
-import com.vhall.android.exoplayer2.source.TrackGroupArray;
-import com.vhall.android.exoplayer2.source.hls.DefaultHlsExtractorFactory;
-import com.vhall.android.exoplayer2.source.hls.HlsMediaSource;
-import com.vhall.android.exoplayer2.trackselection.AdaptiveTrackSelection;
-import com.vhall.android.exoplayer2.trackselection.DefaultTrackSelector;
-import com.vhall.android.exoplayer2.trackselection.TrackSelectionArray;
-import com.vhall.android.exoplayer2.upstream.DefaultBandwidthMeter;
-import com.vhall.android.exoplayer2.upstream.DefaultDataSourceFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -93,6 +94,7 @@ public class RadioPlayerService extends Service implements AudioFocusChangedCall
     NotificationCompat.Builder builder;
     static NotificationManager notificationManager;
     private BroadcastReceiver broadcastReceiver;
+//    DefaultBandwidthMeter.Builder bandwidthMeter;
     static SharedPref sharedPref;
     Bitmap bitmap;
     private Boolean isCanceled = false;
@@ -103,16 +105,16 @@ public class RadioPlayerService extends Service implements AudioFocusChangedCall
     ComponentName componentName;
     AudioManager mAudioManager;
     PowerManager.WakeLock mWakeLock;
-    Tools tools;
+//    Tools tools;
     private static final int NOTIFICATION_ID = 1;
-    private static final String NOTIFICATION_CHANNEL_ID = BuildConfig.APPLICATION_ID;
-    public static final String ACTION_TOGGLE = BuildConfig.APPLICATION_ID + ".togglepause";
-    public static final String ACTION_PLAY = BuildConfig.APPLICATION_ID + ".play";
-    public static final String ACTION_NEXT = BuildConfig.APPLICATION_ID + ".next";
-    public static final String ACTION_PREVIOUS = BuildConfig.APPLICATION_ID + ".prev";
-    public static final String ACTION_STOP = BuildConfig.APPLICATION_ID + ".stop";
-
+    private static final String NOTIFICATION_CHANNEL_ID = Tools.getApplicationId();
+    public static final String ACTION_TOGGLE = Tools.getApplicationId() + ".togglepause";
+    public static final String ACTION_PLAY = Tools.getApplicationId() + ".play";
+    public static final String ACTION_NEXT = Tools.getApplicationId() + ".next";
+    public static final String ACTION_PREVIOUS = Tools.getApplicationId() + ".prev";
+    public static final String ACTION_STOP = Tools.getApplicationId() + ".stop";
     public static final String MEDIA_SESSION_TAG = "MEDIA_SESSION";
+    MediaMetadata mediaMetadata;
 
     static public void initialize(Context context) {
         RadioPlayerService.context = context;
@@ -154,8 +156,8 @@ public class RadioPlayerService extends Service implements AudioFocusChangedCall
     @Override
     public void onCreate() {
         super.onCreate();
-        tools = new Tools(context);
-        mAudioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+//        tools = new Tools(context);
+        mAudioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
         if (mAudioManager != null) {
             mAudioManager.requestAudioFocus(onAudioFocusChangeListener, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
         }
@@ -165,16 +167,18 @@ public class RadioPlayerService extends Service implements AudioFocusChangedCall
 
         LocalBroadcastManager.getInstance(this).registerReceiver(onCallIncome, new IntentFilter("android.intent.action.PHONE_STATE"));
         LocalBroadcastManager.getInstance(this).registerReceiver(onHeadPhoneDetect, new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY));
-
-        DefaultBandwidthMeter bandwidthMeter = new DefaultBandwidthMeter();
-        AdaptiveTrackSelection.Factory trackSelectionFactory = new AdaptiveTrackSelection.Factory(bandwidthMeter);
-        DefaultTrackSelector trackSelector = new DefaultTrackSelector(trackSelectionFactory);
-        Constant.exoPlayer = ExoPlayerFactory.newSimpleInstance(getApplicationContext(), trackSelector);
-        Constant.exoPlayer.addListener(eventListener);
+        Constant.exoPlayer = new ExoPlayer.Builder(getApplicationContext()).build();
+        Constant.exoPlayer.addListener(listener);
 
         PowerManager powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
         mWakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, getClass().getName());
         mWakeLock.setReferenceCounted(false);
+
+        AudioAttributes audioAttributes = new AudioAttributes.Builder()
+                .setUsage(C.USAGE_MEDIA)
+                .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
+                .build();
+        Constant.exoPlayer.setAudioAttributes(audioAttributes, true);
 
         stateBuilder = new PlaybackStateCompat.Builder();
 
@@ -309,12 +313,6 @@ public class RadioPlayerService extends Service implements AudioFocusChangedCall
             mediaControllerCompat.registerCallback(controllerCallback);
         }
 
-//        mediaSessionCompat.setCallback(callback);
-//        mediaSessionCompat.setPlaybackState(createPlaybackState(PlaybackStateCompat.STATE_NONE));
-//        mediaSessionCompat.setMetadata(new MediaMetadataCompat.Builder().build());
-//        mediaControllerCompat = new MediaControllerCompat(this, mediaSessionCompat);
-//        mediaControllerCompat.registerCallback(controllerCallback);
-
     }
 
     @Override
@@ -331,6 +329,7 @@ public class RadioPlayerService extends Service implements AudioFocusChangedCall
             stop(false);
         }
         Constant.isRadioPlaying = false;
+//        stopCountDownTimerMetadata();
     }
 
     @Override
@@ -349,43 +348,37 @@ public class RadioPlayerService extends Service implements AudioFocusChangedCall
     private void handleCommand(Intent intent) {
         String action = intent.getAction();
         if (action != null) {
-            switch (action) {
-                case ACTION_TOGGLE:
+            if (action.equals(ACTION_TOGGLE)) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    togglePlayPause();
+                } else {
+                    callback.onPause();
+                }
+            } else if (action.equals(ACTION_NEXT)) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    next();
+                } else {
+                    callback.onSkipToNext();
+                }
+            } else if (action.equals(ACTION_PREVIOUS)) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    previous();
+                } else {
+                    callback.onSkipToPrevious();
+                }
+            } else if (action.equals(ACTION_PLAY)) {
+                newPlay();
+            } else if (action.equals(ACTION_STOP)) {
+                if (isPlaying()) {
+                    new Handler(Looper.getMainLooper()).postDelayed(() -> callback.onStop(), 2000);
+                    pause();
+                } else {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                        togglePlayPause();
+                        stop(false);
                     } else {
-                        callback.onPause();
+                        callback.onStop();
                     }
-                    break;
-                case ACTION_NEXT:
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                        next();
-                    } else {
-                        callback.onSkipToNext();
-                    }
-                    break;
-                case ACTION_PREVIOUS:
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                        previous();
-                    } else {
-                        callback.onSkipToPrevious();
-                    }
-                    break;
-                case ACTION_PLAY:
-                    newPlay();
-                    break;
-                case ACTION_STOP:
-                    if (isPlaying()) {
-                        new Handler(Looper.getMainLooper()).postDelayed(() -> callback.onStop(), 2000);
-                        pause();
-                    } else {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                            stop(false);
-                        } else {
-                            callback.onStop();
-                        }
-                    }
-                    break;
+                }
             }
         }
     }
@@ -393,80 +386,99 @@ public class RadioPlayerService extends Service implements AudioFocusChangedCall
     public class LoadSong extends AsyncTaskExecutor<Void, Void, Void> {
 
         MediaSource mediaSource;
+        List<MediaSource> mediaItemsSource;
 
         @Override
         protected void onPreExecute() {
             ((MainActivity) context).setBuffer(true);
             ((MainActivity) context).changeSongName(Constant.item_radio.get(Constant.position).radio_genre);
+            updateNotificationMetadata(Constant.item_radio.get(Constant.position).radio_genre);
+            onMediaMetadataCompatChanged(Constant.item_radio.get(Constant.position).radio_genre);
+            updateNotificationAlbumArt(Constant.item_radio.get(Constant.position).radio_image_url);
         }
 
+        @OptIn(markerClass = UnstableApi.class)
         @Override
         protected Void doInBackground(Void params) {
             try {
                 HttpsTrustManager.allowAllSSL();
                 String url = Constant.item_radio.get(Constant.position).radio_url;
-                DefaultDataSourceFactory dataSourceFactory = new DefaultDataSourceFactory(getApplicationContext(), null, icy);
-                if (url.contains(".m3u8") || url.contains(".M3U8")) {
-                    mediaSource = new HlsMediaSource.Factory(dataSourceFactory)
-                            .setAllowChunklessPreparation(false)
-                            .setExtractorFactory(new DefaultHlsExtractorFactory(DefaultTsPayloadReaderFactory.FLAG_IGNORE_H264_STREAM))
-                            .createMediaSource(Uri.parse(url));
-                } else if (url.contains(".m3u") || url.contains("yp.shoutcast.com/sbin/tunein-station.m3u?id=")) {
-                    url = URLParser.getUrl(url);
-                    mediaSource = new ExtractorMediaSource.Factory(dataSourceFactory)
-                            .setExtractorsFactory(new DefaultExtractorsFactory())
-                            .createMediaSource(Uri.parse(url));
-                } else if (url.contains(".pls") || url.contains("listen.pls?sid=") || url.contains("yp.shoutcast.com/sbin/tunein-station.pls?id=")) {
-                    url = URLParser.getUrl(url);
-                    mediaSource = new ExtractorMediaSource.Factory(dataSourceFactory)
-                            .setExtractorsFactory(new DefaultExtractorsFactory())
-                            .createMediaSource(Uri.parse(url));
+
+                DataSource.Factory dataSourceFactory = new DefaultHttpDataSource.Factory()
+                        .setAllowCrossProtocolRedirects(true)
+                        .setKeepPostFor302Redirects(true)
+                        .setUserAgent(Util.getUserAgent(getApplicationContext(), getString(R.string.app_name)));
+
+                mediaItemsSource = new ArrayList<>();
+                mediaMetadata = getMediaMetadata(Constant.item_radio.get(Constant.position).radio_genre);
+
+                if (url.startsWith("http") || url.startsWith("https")) {
+                    if (url.contains(".m3u8")) {
+                        MediaItem mediaItem = new MediaItem.Builder().setUri(url).setMediaMetadata(mediaMetadata).build();
+                        mediaSource = new HlsMediaSource.Factory(dataSourceFactory).createMediaSource(mediaItem);
+                    } else if (url.contains(".m3u") || url.contains("yp.shoutcast.com/sbin/tunein-station.m3u?id=")) {
+                        url = ParserM3UToURL.parse(url, "m3u");
+                        MediaItem mediaItem = new MediaItem.Builder().setUri(url).setMediaMetadata(mediaMetadata).build();
+                        mediaSource = new ProgressiveMediaSource.Factory(dataSourceFactory).createMediaSource(mediaItem);
+                    } else if (url.contains(".pls") || url.contains("listen.pls?sid=") || url.contains("yp.shoutcast.com/sbin/tunein-station.pls?id=")) {
+                        url = ParserM3UToURL.parse(url, "pls");
+                        MediaItem mediaItem = new MediaItem.Builder().setUri(url).setMediaMetadata(mediaMetadata).build();
+                        mediaSource = new ProgressiveMediaSource.Factory(dataSourceFactory).createMediaSource(mediaItem);
+                    } else {
+                        MediaItem mediaItem = new MediaItem.Builder().setUri(url).setMediaMetadata(mediaMetadata).build();
+                        mediaSource = new ProgressiveMediaSource.Factory(dataSourceFactory).createMediaSource(mediaItem);
+                    }
+                    Log.d(TAG, "from url");
                 } else {
-                    mediaSource = new ExtractorMediaSource.Factory(dataSourceFactory)
-                            .setExtractorsFactory(new DefaultExtractorsFactory())
-                            .createMediaSource(Uri.parse(url));
+                    AssetDataSource assetDataSource = new AssetDataSource(context);
+                    DataSpec dataSpec = new DataSpec(Uri.parse("asset:///" + url));
+                    assetDataSource.open(dataSpec);
+                    MediaItem mediaItem = new MediaItem.Builder().setUri(dataSpec.uri).setMediaMetadata(mediaMetadata).build();
+                    mediaSource = new ProgressiveMediaSource.Factory(() -> assetDataSource).createMediaSource(mediaItem);
+                    Log.d(TAG, "from assets");
                 }
+
+                mediaItemsSource.add(mediaSource);
+
             } catch (Exception e) {
                 e.printStackTrace();
             }
             return params;
         }
 
+        @OptIn(markerClass = UnstableApi.class)
         @Override
         protected void onPostExecute(Void result) {
-            if (context != null) {
+            if (context != null && mediaItemsSource != null && !mediaItemsSource.isEmpty()) {
+                Constant.exoPlayer.setMediaSources(mediaItemsSource);
                 Constant.exoPlayer.seekTo(Constant.exoPlayer.getCurrentWindowIndex(), Constant.exoPlayer.getCurrentPosition());
-                Constant.exoPlayer.prepare(mediaSource, false, false);
+                Constant.exoPlayer.prepare();
                 Constant.exoPlayer.setPlayWhenReady(true);
             }
         }
 
     }
 
-    Player.EventListener eventListener = new Player.EventListener() {
+    public MediaMetadata getMediaMetadata(String metadata) {
+        String description = "Media description for item";
+        return new MediaMetadata.Builder()
+                .setTitle(Constant.item_radio.get(Constant.position).radio_name)
+                .setSubtitle(metadata)
+                .setDescription(description + " " + Constant.item_radio.get(Constant.position).radio_name)
+                .build();
+    }
+
+    Player.Listener listener = new Player.Listener() {
         @Override
-        public void onTimelineChanged(Timeline timeline, @Nullable Object manifest, int reason) {
-
-        }
-
-        @Override
-        public void onTracksChanged(TrackGroupArray trackGroups, TrackSelectionArray trackSelections) {
-
-        }
-
-        @Override
-        public void onLoadingChanged(boolean isLoading) {
-
-        }
-
-        @Override
-        public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
+        public void onPlaybackStateChanged(int playbackState) {
+            Player.Listener.super.onPlaybackStateChanged(playbackState);
             if (playbackState == Player.STATE_ENDED) {
                 next();
+                Log.d(TAG, "player end");
             }
-            if (playbackState == Player.STATE_READY && playWhenReady) {
+            if (playbackState == Player.STATE_READY) {
                 if (!isCanceled) {
-                    //((MainActivity) context).seekBarUpdate();
+                    Constant.exoPlayer.play();
                     ((MainActivity) context).setBuffer(false);
                     if (builder == null) {
                         createNotification();
@@ -474,25 +486,26 @@ public class RadioPlayerService extends Service implements AudioFocusChangedCall
                         notificationManager.notify(NOTIFICATION_ID, builder.build());
                         updateNotificationPlay(Constant.exoPlayer.getPlayWhenReady());
                     }
-
-                    //Constant.radio_type = !Constant.item_radio.get(Constant.position).radio_type.equals("mp3");
                     updateNotificationAlbumArt(Constant.item_radio.get(Constant.position).radio_image_url);
                     updateNotificationMetadata(Constant.item_radio.get(Constant.position).radio_genre);
-
                     changePlayPause(true);
-
                     if (Config.ENABLE_RADIO_TIMEOUT) {
                         if (isCounterRunning) {
                             mCountDownTimer.cancel();
                         }
                     }
-
                 } else {
                     isCanceled = false;
                     stopExoPlayer();
                 }
+                Log.d(TAG, "player ready");
             }
-            if (playWhenReady) {
+        }
+
+        @Override
+        public void onIsPlayingChanged(boolean isPlaying) {
+            Player.Listener.super.onIsPlayingChanged(isPlaying);
+            if (isPlaying) {
                 if (!mWakeLock.isHeld()) {
                     mWakeLock.acquire(60000);
                 }
@@ -501,20 +514,12 @@ public class RadioPlayerService extends Service implements AudioFocusChangedCall
                     mWakeLock.release();
                 }
             }
+            Log.d("Rawr", "player changed");
         }
 
         @Override
-        public void onRepeatModeChanged(int repeatMode) {
-
-        }
-
-        @Override
-        public void onShuffleModeEnabledChanged(boolean shuffleModeEnabled) {
-
-        }
-
-        @Override
-        public void onPlayerError(ExoPlaybackException error) {
+        public void onPlayerError(@NonNull PlaybackException error) {
+            Player.Listener.super.onPlayerError(error);
             stop(true);
             if (Config.ENABLE_RADIO_TIMEOUT) {
                 if (isCounterRunning) {
@@ -524,21 +529,73 @@ public class RadioPlayerService extends Service implements AudioFocusChangedCall
         }
 
         @Override
-        public void onPositionDiscontinuity(int reason) {
-
+        public void onPositionDiscontinuity(@NonNull Player.PositionInfo oldPosition, @NonNull Player.PositionInfo newPosition, int reason) {
+            Player.Listener.super.onPositionDiscontinuity(oldPosition, newPosition, reason);
         }
 
         @Override
-        public void onPlaybackParametersChanged(PlaybackParameters playbackParameters) {
-
+        public void onMediaMetadataChanged(@NonNull MediaMetadata mediaMetadata) {
+            Player.Listener.super.onMediaMetadataChanged(mediaMetadata);
+            //Log.d(TAG, "get mediaMetadata: " + Constant.exoPlayer.getMediaMetadata().subtitle);
         }
 
+        @OptIn(markerClass = UnstableApi.class)
+        @SuppressWarnings("ConstantValue")
         @Override
-        public void onSeekProcessed() {
-
+        public void onMetadata(@NonNull Metadata metadata) {
+            Player.Listener.super.onMetadata(metadata);
+            String category = Constant.item_radio.get(Constant.position).radio_genre;
+            if (sharedPref.getSongMetadata().equals("true")) {
+                if (metadata != null) {
+                    for (int i = 0; i < metadata.length(); i++) {
+                        Metadata.Entry entry = metadata.get(i);
+                        if (entry instanceof TextInformationFrame textFrame) {
+                            if (textFrame.id.equals("TIT2") || textFrame.id.equals("TIT1") || textFrame.id.equals("TPE1")) {
+                                String title = textFrame.value;
+                                if (!title.isEmpty()) {
+                                    updateMetadata(title, true);
+                                } else {
+                                    updateMetadata(category, false);
+                                }
+                                Log.d(TAG, "Metadata (onMetadata) - Title: " + title);
+                                return;
+                            }
+                        } else if (entry instanceof IcyInfo icyInfo) {
+                            if (icyInfo.title != null) {
+                                String title = icyInfo.title;
+                                if (!title.isEmpty()) {
+                                    updateMetadata(title, true);
+                                } else {
+                                    updateMetadata(category, false);
+                                }
+                                Log.d(TAG, "Metadata (onMetadata - ICY) - Title: " + title);
+                                return;
+                            }
+                        }
+                    }
+                    updateMetadata(category, false);
+                    Log.d(TAG, "Metadata (onMetadata) - Title not found in this metadata.");
+                } else {
+                    updateMetadata(category, false);
+                    Log.d(TAG, "Metadata (onMetadata) - Received null metadata.");
+                }
+            } else {
+                updateMetadata(category, false);
+                Log.d(TAG, "Metadata is disabled");
+            }
         }
     };
 
+    private void updateMetadata(String metadata, boolean requestAlbumArt) {
+        Tools.postDelayed(()-> {
+            mediaMetadata = getMediaMetadata(metadata);
+            updateNotificationMetadata(metadata);
+            onMediaMetadataCompatChanged(metadata);
+            if (requestAlbumArt) {
+                requestAlbumArt(metadata);
+            }
+        }, 1000);
+    }
     private void changePlayPause(Boolean play) {
         ((MainActivity) context).changePlayPause(play);
     }
@@ -549,7 +606,7 @@ public class RadioPlayerService extends Service implements AudioFocusChangedCall
             updateNotificationAlbumArt(Constant.item_radio.get(Constant.position).radio_image_url);
             updateNotificationMetadata(Constant.item_radio.get(Constant.position).radio_genre);
         } else {
-            if (tools.isNetworkAvailable()) {
+            if (Tools.isNetworkAvailable(context)) {
                 newPlay();
             } else {
                 Toast.makeText(context, getString(R.string.internet_not_connected), Toast.LENGTH_SHORT).show();
@@ -562,14 +619,6 @@ public class RadioPlayerService extends Service implements AudioFocusChangedCall
         changePlayPause(false);
         updateNotificationPlay(Constant.exoPlayer.getPlayWhenReady());
     }
-
-//    private void play() {
-//        Constant.exoPlayer.setPlayWhenReady(true);
-//        Constant.exoPlayer.seekTo(Constant.exoPlayer.getCurrentWindowIndex(), Constant.exoPlayer.getCurrentPosition());
-//        changePlayPause(true);
-//        updateNotificationPlay(Constant.exoPlayer.getPlayWhenReady());
-//        //((MainActivity) context).seekBarUpdate();
-//    }
 
     private void newPlay() {
         loadSong = new LoadSong();
@@ -599,9 +648,9 @@ public class RadioPlayerService extends Service implements AudioFocusChangedCall
     };
 
     private void next() {
-        if (Constant.item_radio != null && Constant.item_radio.size() > 0) {
+        if (Constant.item_radio != null && !Constant.item_radio.isEmpty()) {
             RadioPlayerService.createInstance().initializeRadio(context, Constant.item_radio.get(Constant.position));
-            tools.getPosition(true);
+            Tools.getPosition(true);
             radio = Constant.item_radio.get(Constant.position);
             newPlay();
             //((MainActivity) context).hideSeekBar();
@@ -609,9 +658,9 @@ public class RadioPlayerService extends Service implements AudioFocusChangedCall
     }
 
     private void previous() {
-        if (Constant.item_radio != null && Constant.item_radio.size() > 0) {
+        if (Constant.item_radio != null && !Constant.item_radio.isEmpty()) {
             RadioPlayerService.createInstance().initializeRadio(context, Constant.item_radio.get(Constant.position));
-            tools.getPosition(false);
+            Tools.getPosition(false);
             radio = Constant.item_radio.get(Constant.position);
             newPlay();
             //((MainActivity) context).hideSeekBar();
@@ -646,6 +695,7 @@ public class RadioPlayerService extends Service implements AudioFocusChangedCall
         if (Constant.exoPlayer != null) {
             Constant.exoPlayer.stop();
         }
+//        stopCountDownTimerMetadata();
     }
 
     private PlaybackStateCompat createPlaybackState(int state) {
@@ -664,31 +714,6 @@ public class RadioPlayerService extends Service implements AudioFocusChangedCall
         mediaSessionCompat.setPlaybackState(createPlaybackState(PlaybackStateCompat.STATE_PAUSED));
     }
 
-    public IcyHttpDataSourceFactory icy = new IcyHttpDataSourceFactory
-            .Builder(Tools.getUserAgent())
-            .setAllowCrossProtocolRedirects(true)
-            .setConnectTimeoutMillis(1000)
-            .setIcyHeadersListener(icyHeaders -> {
-            })
-            .setIcyMetadataChangeListener(icyMetadata -> {
-                try {
-                    if (sharedPref.getSongMetadata().equals("true")) {
-                        new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                            if ("".equalsIgnoreCase(icyMetadata.getStreamTitle())) {
-                                updateNotificationMetadata(Constant.item_radio.get(Constant.position).radio_genre);
-                                onMediaMetadataCompatChanged(Constant.item_radio.get(Constant.position).radio_genre);
-                            } else {
-                                updateNotificationMetadata(icyMetadata.getStreamTitle());
-                                onMediaMetadataCompatChanged(icyMetadata.getStreamTitle());
-                                requestAlbumArt(icyMetadata.getStreamTitle());
-                            }
-                        }, 1000);
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }).build();
-
     private void onMediaMetadataCompatChanged(String metadata) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (mediaSessionCompat != null) {
@@ -703,7 +728,7 @@ public class RadioPlayerService extends Service implements AudioFocusChangedCall
     private void requestAlbumArt(String title) {
         if (sharedPref.getImageAlbumArt().equals("true")) {
             callbackCall = RestAdapter.createAlbumArtAPI().getAlbumArt(title, "music", 1);
-            callbackCall.enqueue(new Callback<CallbackAlbumArt>() {
+            callbackCall.enqueue(new Callback<>() {
                 public void onResponse(@NonNull Call<CallbackAlbumArt> call, @NonNull Response<CallbackAlbumArt> response) {
                     CallbackAlbumArt resp = response.body();
                     if (resp != null && resp.resultCount != 0) {
@@ -787,7 +812,7 @@ public class RadioPlayerService extends Service implements AudioFocusChangedCall
         switch (focusChange) {
             case AudioManager.AUDIOFOCUS_GAIN:
             case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
-                if (Config.RESUME_RADIO_ON_PHONE_CALL) {
+                if (Config.RESUME_RADIO_ON_PHONE_CALL && Constant.isRadioPlaying) {
                     togglePlayPause();
                 }
                 break;
@@ -918,7 +943,7 @@ public class RadioPlayerService extends Service implements AudioFocusChangedCall
 
             Constant.exoPlayer.stop();
             Constant.exoPlayer.release();
-            Constant.exoPlayer.removeListener(eventListener);
+            Constant.exoPlayer.removeListener(listener);
             if (mWakeLock.isHeld()) {
                 mWakeLock.release();
             }

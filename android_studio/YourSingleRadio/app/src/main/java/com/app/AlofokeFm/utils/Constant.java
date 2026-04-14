@@ -1,7 +1,8 @@
 package com.app.AlofokeFm.utils;
 
+import androidx.media3.exoplayer.ExoPlayer;
+
 import com.app.AlofokeFm.models.Radio;
-import com.vhall.android.exoplayer2.SimpleExoPlayer;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -14,6 +15,8 @@ public class Constant implements Serializable {
     public static final boolean INTERSTITIAL_AD = true;
     public static final boolean NATIVE_AD_DRAWER_MENU = true;
     public static final boolean NATIVE_AD_EXIT_DIALOG = true;
+    public static final boolean APP_OPEN_AD_ON_START = true;
+    public static final boolean APP_OPEN_AD_ON_RESUME = true;
 
     public static final String NATIVE_AD_STYLE_DRAWER_MENU = "small";
     public static final String NATIVE_AD_STYLE_EXIT_DIALOG = "small";
@@ -30,16 +33,19 @@ public class Constant implements Serializable {
 
     public static String metadata;
     public static String albumArt;
-    public static SimpleExoPlayer exoPlayer;
+    public static ExoPlayer exoPlayer;
     public static Boolean is_playing = false;
     public static Boolean radio_type = true;
     public static Boolean is_app_open = false;
     public static ArrayList<Radio> item_radio = new ArrayList<>();
     public static int position = 0;
 
-    public static final String LOCALHOST_ADDRESS = "https://drive.google.com/file/d/1vgUP-0c2pkDjff_59bSIX6O0KVDx9veN/view?usp=share_link";
+    public static final String LOCALHOST_ADDRESS = "http://10.0.2.2";
 
-    public static boolean isAppOpen = false;
+    public static String customMetadata = "";
+
+//    public static boolean isForeground;
+//    public static boolean isPausedFromClick = false;
     public static boolean isRadioPlaying = false;
 
 }

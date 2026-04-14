@@ -11,13 +11,13 @@ public class AdsPref {
 
     public AdsPref(Context context) {
         this.context = context;
-        sharedPreferences = context.getSharedPreferences("ads_setting", Context.MODE_PRIVATE);
+        sharedPreferences = context.getSharedPreferences("ads_settings", Context.MODE_PRIVATE);
         editor = sharedPreferences.edit();
     }
 
-    public void saveAds(String adStatus, String adType, String backupAds, String adMobPublisherId, String adMobBannerId, String adMobInterstitialId, String adMobNativeId, String adMobAppOpenId, String adManagerBannerUnitId, String adManagerInterstitialUnitId, String adManagerNativeUnitId, String adManagerAppOpenAdUnitId, String fanBannerUnitId, String fanInterstitialUnitId, String fanNativeUnitId, String startAppId, String unityGameId, String unityBannerId, String unityInterstitialId, String appLovinBannerId, String appLovinInterstitialId, String applovinNativeAdManualUnitId, String applovinBannerZoneId, String applovinInterstitialZoneId, String ironSourceAppKey, String ironSourceBannerId, String ironSourceInterstitialId, int interstitialAdInterval) {
-        editor.putString("ad_status", adStatus);
-        editor.putString("ad_type", adType);
+    public void saveAds(boolean adStatus, String adType, String backupAds, String adMobPublisherId, String adMobBannerId, String adMobInterstitialId, String adMobNativeId, String adMobAppOpenId, String adManagerBannerUnitId, String adManagerInterstitialUnitId, String adManagerNativeUnitId, String adManagerAppOpenAdUnitId, String fanBannerUnitId, String fanInterstitialUnitId, String fanNativeUnitId, String startAppId, String unityGameId, String unityBannerId, String unityInterstitialId, String appLovinBannerId, String appLovinInterstitialId, String applovinNativeAdManualUnitId, String applovinBannerZoneId, String applovinInterstitialZoneId, String ironSourceAppKey, String ironSourceBannerId, String ironSourceInterstitialId, int interstitialAdInterval) {
+        editor.putBoolean("status_ads", adStatus);
+        editor.putString("main_ads", adType);
         editor.putString("backup_ads", backupAds);
         editor.putString("admob_publisher_id", adMobPublisherId);
         editor.putString("admob_banner_unit_id", adMobBannerId);
@@ -47,12 +47,12 @@ public class AdsPref {
         editor.apply();
     }
 
-    public String getAdStatus() {
-        return sharedPreferences.getString("ad_status", "0");
+    public boolean getAdStatus() {
+        return sharedPreferences.getBoolean("status_ads", true);
     }
 
-    public String getAdType() {
-        return sharedPreferences.getString("ad_type", "0");
+    public String getMainAds() {
+        return sharedPreferences.getString("main_ads", "0");
     }
 
     public String getBackupAds() {

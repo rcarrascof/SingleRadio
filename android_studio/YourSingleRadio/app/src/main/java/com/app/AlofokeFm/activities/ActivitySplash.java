@@ -1,9 +1,6 @@
 package com.app.AlofokeFm.activities;
 
 import static com.app.AlofokeFm.utils.Constant.LOCALHOST_ADDRESS;
-import static com.solodroid.ads.sdk.util.Constant.ADMOB;
-import static com.solodroid.ads.sdk.util.Constant.AD_STATUS_ON;
-import static com.solodroid.ads.sdk.util.Constant.GOOGLE_AD_MANAGER;
 
 import android.app.Application;
 import android.content.Intent;
@@ -17,7 +14,6 @@ import android.widget.ProgressBar;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.app.AlofokeFm.BuildConfig;
 import com.app.AlofokeFm.Config;
 import com.app.AlofokeFm.R;
 import com.app.AlofokeFm.callbacks.CallbackConfig;
@@ -30,8 +26,10 @@ import com.app.AlofokeFm.models.Radio;
 import com.app.AlofokeFm.models.Settings;
 import com.app.AlofokeFm.rests.RestAdapter;
 import com.app.AlofokeFm.utils.AdsManager;
+import com.app.AlofokeFm.utils.Constant;
 import com.app.AlofokeFm.utils.Tools;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.solodroidx.ads.appopen.AppOpenAd;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -79,7 +77,6 @@ public class ActivitySplash extends AppCompatActivity {
         progressBar = findViewById(R.id.progressBar);
         progressBar.setVisibility(View.VISIBLE);
 
-
     }
 
     private void initAppConfiguration() {
@@ -101,12 +98,12 @@ public class ActivitySplash extends AppCompatActivity {
                     .setCancelable(false)
                     .show();
         } else {
-            String data = com.solodroid.ads.sdk.util.Tools.decode(Config.ACCESS_KEY);
+            String data = com.solodroidx.ads.util.Tools.decode(Config.ACCESS_KEY);
             String[] results = data.split("_applicationId_");
             String remoteUrl = results[0].replace("http://localhost", LOCALHOST_ADDRESS);
             String applicationId = results[1];
 
-            if (applicationId.equals(BuildConfig.APPLICATION_ID)) {
+            if (applicationId.equals(Tools.getApplicationId())) {
                 requestConfig(remoteUrl);
             } else {
                 new MaterialAlertDialogBuilder(this)
@@ -197,7 +194,7 @@ public class ActivitySplash extends AppCompatActivity {
                             radio.radio_image_url,
                             radio.background_image_url
                     );
-                    showOpenAdsIfAvailable();
+                    showAppOpenAdIfAvailable();
                 }, 100);
             }
             Log.d(TAG, "success load config");
@@ -277,7 +274,7 @@ public class ActivitySplash extends AppCompatActivity {
             );
 
             adsPref.saveAds(
-                    ad_status.replace("on", "1"),
+                    ad_status.equals("1"),
                     ad_type,
                     backup_ads,
                     admob_publisher_id,
@@ -317,7 +314,7 @@ public class ActivitySplash extends AppCompatActivity {
                         radio_image_url,
                         background_image_url
                 );
-                showOpenAdsIfAvailable();
+                showAppOpenAdIfAvailable();
             }, 100);
 
             Log.d(TAG, "success");
@@ -325,7 +322,7 @@ public class ActivitySplash extends AppCompatActivity {
         } catch (JSONException e) {
             e.printStackTrace();
             Log.d(TAG, "failed : " + e.getMessage());
-            showOpenAdsIfAvailable();
+            showAppOpenAdIfAvailable();
         }
     }
 
@@ -364,27 +361,13 @@ public class ActivitySplash extends AppCompatActivity {
         return json;
     }
 
-
-    private void showOpenAdsIfAvailable() {
-        if (adsPref.getAdStatus().equals(AD_STATUS_ON)) {
+    private void showAppOpenAdIfAvailable() {
+        if (adsPref.getAdStatus() && Constant.APP_OPEN_AD_ON_START) {
             Application application = getApplication();
-            if (adsPref.getAdType().equals(ADMOB)) {
-                if (!adsPref.getAdMobAppOpenAdId().equals("0")) {
-                    ((MyApplication) application).showAdIfAvailable(ActivitySplash.this, this::startMainActivity);
-                } else {
-                    startMainActivity();
-                }
-            } else if (adsPref.getAdType().equals(GOOGLE_AD_MANAGER)) {
-                if (!adsPref.getAdManagerAppOpenAdId().equals("0")) {
-                    ((MyApplication) application).showAdIfAvailable(ActivitySplash.this, this::startMainActivity);
-                } else {
-                    startMainActivity();
-                }
-            } else {
-                startMainActivity();
-            }
+            ((MyApplication) application).showAdIfAvailable(this, this::startMainActivity);
         } else {
             startMainActivity();
+            Log.d(TAG, "startMainActivity");
         }
     }
 
@@ -392,6 +375,12 @@ public class ActivitySplash extends AppCompatActivity {
         Intent intent = new Intent(getApplicationContext(), MainActivity.class);
         startActivity(intent);
         finish();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Constant.isRadioPlaying = false;
     }
 
 }

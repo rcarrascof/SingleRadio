@@ -18,7 +18,7 @@ public class SharedPref {
     @SuppressLint("CommitPrefEdits")
     public SharedPref(Context context) {
         this.context = context;
-        sharedPreferences = context.getSharedPreferences("setting", Context.MODE_PRIVATE);
+        sharedPreferences = context.getSharedPreferences("settings", Context.MODE_PRIVATE);
         editor = sharedPreferences.edit();
     }
 

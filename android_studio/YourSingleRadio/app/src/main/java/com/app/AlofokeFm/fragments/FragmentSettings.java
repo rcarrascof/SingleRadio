@@ -18,6 +18,7 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -41,6 +42,7 @@ import com.app.AlofokeFm.utils.Constant;
 import com.app.AlofokeFm.utils.Tools;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
+import com.solodroid.push.sdk.provider.OneSignalPush;
 
 import org.apache.commons.io.FileUtils;
 
@@ -53,10 +55,6 @@ public class FragmentSettings extends DialogFragment {
     private LinearLayout parentView;
     private ImageButton btnBack;
     private TextView toolbarTitle;
-    //    MaterialSwitch switchTheme;
-//    RelativeLayout btnSwitchTheme;
-    TextView txtTheme;
-    private String singleChoiceSelected;
     TextView txt_cache_size;
     private View rootView;
     private MainActivity activity;
@@ -93,32 +91,8 @@ public class FragmentSettings extends DialogFragment {
         btnBack = rootView.findViewById(R.id.btn_back);
         btnPermission = rootView.findViewById(R.id.btn_permission);
 
-//        switchTheme = rootView.findViewById(R.id.switch_theme);
-//        switchTheme.setChecked(sharedPref.getIsDarkTheme());
-//        switchTheme.setOnCheckedChangeListener((buttonView, isChecked) -> {
-//            sharedPref.setIsDarkTheme(isChecked);
-//            Tools.postDelayed(() -> {
-//                activity.recreate();
-//                activity.goToFirstPage();
-//            }, 200);
-//        });
-//
-//        btnSwitchTheme = rootView.findViewById(R.id.btn_switch_theme);
-//        btnSwitchTheme.setOnClickListener(v -> {
-//            if (switchTheme.isChecked()) {
-//                sharedPref.setIsDarkTheme(false);
-//                switchTheme.setChecked(false);
-//            } else {
-//                sharedPref.setIsDarkTheme(true);
-//                switchTheme.setChecked(true);
-//            }
-//            Tools.postDelayed(() -> {
-//                activity.recreate();
-//                activity.goToFirstPage();
-//            }, 200);
-//        });
-
-        rootView.findViewById(R.id.btn_notification).setOnClickListener(v -> {
+        RelativeLayout btnNotification = rootView.findViewById(R.id.btn_notification);
+        btnNotification.setOnClickListener(v -> {
             Intent intent = new Intent();
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 intent.setAction(Settings.ACTION_APP_NOTIFICATION_SETTINGS);
@@ -130,6 +104,12 @@ public class FragmentSettings extends DialogFragment {
             }
             startActivity(intent);
         });
+
+        if (new OneSignalPush.Builder(activity).getSdkName().equals("no-notification-sdk")) {
+            btnNotification.setVisibility(View.GONE);
+        } else {
+            btnNotification.setVisibility(View.VISIBLE);
+        }
 
         txt_cache_size = rootView.findViewById(R.id.txt_cache_size);
         initializeCache();

@@ -2,9 +2,9 @@ package com.app.AlofokeFm.database.dao;
 
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
+import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
-import com.app.AlofokeFm.models.Social;
 import com.google.gson.annotations.Expose;
 
 @Entity(tableName = "social")
@@ -25,6 +25,7 @@ public class SocialEntity {
     @ColumnInfo(name = "social_url")
     public String social_url = "";
 
+    @Ignore
     public SocialEntity() {
     }
 
@@ -34,11 +35,4 @@ public class SocialEntity {
         this.social_url = social_url;
     }
 
-    public Social original() {
-        Social social = new Social();
-        social.social_name = social_name;
-        social.social_icon = social_icon;
-        social.social_url = social_url;
-        return social;
-    }
 }

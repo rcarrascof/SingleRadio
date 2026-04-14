@@ -13,6 +13,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.app.AlofokeFm.R;
 import com.app.AlofokeFm.utils.Constant;
 import com.google.android.material.snackbar.Snackbar;
+import com.solodroidx.ads.appopen.AppOpenAd;
 
 public class ActivityRedirect extends AppCompatActivity {
 
@@ -36,7 +37,7 @@ public class ActivityRedirect extends AppCompatActivity {
             @Override
             public void handleOnBackPressed() {
                 finish();
-                Constant.isAppOpen = false;
+                AppOpenAd.isAppOpenAdLoaded = false;
             }
         });
     }
@@ -47,7 +48,7 @@ public class ActivityRedirect extends AppCompatActivity {
 
         btnClose.setOnClickListener(view -> {
             finish();
-            Constant.isAppOpen = false;
+            AppOpenAd.isAppOpenAdLoaded = false;
         });
 
         btnRedirect.setOnClickListener(view -> {
@@ -56,7 +57,7 @@ public class ActivityRedirect extends AppCompatActivity {
             } else {
                 startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(redirectUrl)));
                 finish();
-                Constant.isAppOpen = false;
+                AppOpenAd.isAppOpenAdLoaded = false;
             }
         });
     }
@@ -64,7 +65,7 @@ public class ActivityRedirect extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        Constant.isAppOpen = false;
+        AppOpenAd.isAppOpenAdLoaded = false;
         Constant.isRadioPlaying = false;
     }
 

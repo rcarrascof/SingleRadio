@@ -39,7 +39,7 @@ public class MyFirebaseMessageService extends FirebaseMessagingService {
     @Override
     public void onMessageReceived(@NonNull RemoteMessage remoteMessage) {
         super.onMessageReceived(remoteMessage);
-        if (remoteMessage.getData().size() > 0) {
+        if (!remoteMessage.getData().isEmpty()) {
             Map<String, String> data = remoteMessage.getData();
             Log.e("onMessageFirebase: ", remoteMessage.getData().toString());
             if (data.get("post_id") != null) {

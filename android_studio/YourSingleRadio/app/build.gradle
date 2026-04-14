@@ -4,19 +4,19 @@ plugins {
 }
 
 android {
-    namespace "com.app.AlofokeFm"
-    compileSdk 35
+    namespace = "com.app.AlofokeFm"
+    compileSdk = 36
     defaultConfig {
-        applicationId "com.app.AlofokeFm"
-        minSdk 23
-        targetSdk 35
-        versionCode 23
-        versionName "6.0.0"
-        multiDexEnabled true
+        applicationId = "com.app.AlofokeFm"
+        minSdk = 23
+        targetSdk = 36
+        versionCode = 24
+        versionName = "6.1.1"
+        multiDexEnabled = true
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_17
-        targetCompatibility JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     buildFeatures {
         buildConfig = true
@@ -37,40 +37,47 @@ android {
 dependencies {
     implementation fileTree(include: ['*.jar', '*.aar'], dir: 'libs')
     //google support library
-    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'androidx.appcompat:appcompat:1.7.1'
     implementation 'androidx.browser:browser:1.8.0'
     implementation 'androidx.cardview:cardview:1.0.0'
     implementation 'androidx.recyclerview:recyclerview:1.4.0'
     implementation 'androidx.cardview:cardview:1.0.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.2.1'
-    implementation 'androidx.lifecycle:lifecycle-common-java8:2.5.1'
-    implementation 'androidx.lifecycle:lifecycle-process:2.5.1'
-    implementation 'androidx.lifecycle:lifecycle-runtime:2.5.1'
-    implementation 'androidx.media:media:1.5.0'
+    implementation 'androidx.lifecycle:lifecycle-process:2.9.0'
+    implementation 'androidx.lifecycle:lifecycle-runtime:2.9.0'
+    implementation 'androidx.lifecycle:lifecycle-common-java8:2.9.0'
+    implementation 'androidx.media:media:1.7.1'
     implementation 'androidx.palette:palette:1.0.0'
     implementation 'androidx.work:work-runtime:2.9.0'
     implementation 'com.google.android.material:material:1.12.0'
     implementation 'com.google.android.play:review:2.0.2'
     implementation 'com.google.android.play:app-update:2.1.0'
 
+    //Media3 ExoPlayer
+    def media3_version = "1.8.0"
+    implementation "androidx.media3:media3-exoplayer:$media3_version"
+    implementation "androidx.media3:media3-exoplayer-hls:$media3_version"
+    implementation "androidx.media3:media3-exoplayer-rtsp:$media3_version"
+    implementation "androidx.media3:media3-exoplayer-dash:$media3_version"
+
     //Firebase
-    implementation platform('com.google.firebase:firebase-bom:33.12.0')
+    implementation platform('com.google.firebase:firebase-bom:34.6.0')
     implementation 'com.google.firebase:firebase-analytics'
     implementation 'com.google.firebase:firebase-messaging'
 
     //Ad Network Sdk, see the documentation for other Ad Network Sdk options
-    implementation 'com.github.solodroid-dev:simple-ads-sdk:1.+'
+    implementation 'com.github.solodroid-dev.ads:admob-ads-sdk:1.+'
 
     //Push notification
-    implementation 'com.github.solodroid-dev:push-notification-sdk:1.+'
+    implementation 'com.github.solodroid-dev.push:notification-sdk:1.+'
 
     //seek bar and layout library
     implementation 'com.sothree.slidinguppanel:library:3.4.0'
     implementation 'com.h6ah4i.android.widget.verticalseekbar:verticalseekbar:1.0.0'
 
     //image library
-    implementation 'com.github.bumptech.glide:glide:4.16.0'
-    annotationProcessor 'com.github.bumptech.glide:compiler:4.16.0'
+    implementation 'com.github.bumptech.glide:glide:5.0.5'
+    annotationProcessor 'com.github.bumptech.glide:compiler:5.0.5'
     implementation 'jp.wasabeef:glide-transformations:4.3.0'
     implementation 'com.makeramen:roundedimageview:2.3.0'
 
@@ -78,9 +85,9 @@ dependencies {
     implementation 'com.github.claucookie.miniequalizer:library:1.0.0'
 
     //network library
-    implementation 'com.squareup.retrofit2:converter-gson:2.11.0'
-    implementation 'com.squareup.retrofit2:retrofit:2.11.0'
-    implementation(platform('com.squareup.okhttp3:okhttp-bom:4.12.0'))
+    implementation 'com.squareup.retrofit2:converter-gson:3.0.0'
+    implementation 'com.squareup.retrofit2:retrofit:3.0.0'
+    implementation(platform('com.squareup.okhttp3:okhttp-bom:5.3.2'))
     implementation("com.squareup.okhttp3:okhttp")
     implementation("com.squareup.okhttp3:logging-interceptor")
 
@@ -95,6 +102,9 @@ dependencies {
     annotationProcessor 'androidx.room:room-compiler:2.7.1'
 
     //File utils
-    implementation 'commons-io:commons-io:2.19.0'
+    implementation 'commons-io:commons-io:2.21.0'
+
+    //Html parser
+    implementation 'org.jsoup:jsoup:1.21.2'
 
 }

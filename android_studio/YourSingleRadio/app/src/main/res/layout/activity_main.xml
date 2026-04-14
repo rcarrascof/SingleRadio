@@ -88,7 +88,7 @@
                     android:layout_alignParentBottom="true"
                     android:orientation="vertical">
 
-                    <com.solodroid.ads.sdk.ui.BannerAdView
+                    <com.solodroidx.ads.ui.BannerAdView
                         android:id="@+id/bannerAdView"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content" />
@@ -96,15 +96,6 @@
                 </LinearLayout>
 
             </RelativeLayout>
-
-            <!--            <com.google.android.material.navigation.NavigationView-->
-            <!--                android:id="@+id/navigation_view"-->
-            <!--                android:layout_width="match_parent"-->
-            <!--                android:layout_height="match_parent"-->
-            <!--                android:layout_gravity="start"-->
-            <!--                app:headerLayout="@layout/drawer_header"-->
-            <!--                app:itemTextAppearance="@style/NavigationView"-->
-            <!--                app:menu="@menu/menu_drawer" />-->
 
             <com.google.android.material.navigation.NavigationView
                 android:id="@+id/navigation_view"
@@ -143,6 +134,12 @@
 
     <FrameLayout
         android:id="@+id/fragment_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <include
+        android:id="@+id/dialog_view"
+        layout="@layout/dialog_exit"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 

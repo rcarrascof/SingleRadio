@@ -1,6 +1,7 @@
 package com.app.AlofokeFm.adapters;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.PorterDuff;
 import android.view.LayoutInflater;
@@ -8,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -18,11 +20,10 @@ import com.app.AlofokeFm.R;
 import com.app.AlofokeFm.database.dao.SocialEntity;
 import com.app.AlofokeFm.database.prefs.AdsPref;
 import com.app.AlofokeFm.database.prefs.SharedPref;
-import com.app.AlofokeFm.utils.Constant;
+import com.app.AlofokeFm.utils.AdsManager;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
-import com.google.android.material.card.MaterialCardView;
-import com.solodroid.ads.sdk.format.NativeAdViewHolder;
+import com.solodroidx.ads.nativead.NativeAdViewHolder;
 
 import java.util.List;
 
@@ -36,6 +37,7 @@ public class AdapterNavigation extends RecyclerView.Adapter<RecyclerView.ViewHol
     private int clickedItemPosition = 1;
     SharedPref sharedPref;
     AdsPref adsPref;
+    AdsManager adsManager;
     public static boolean isFirstItemClicked = false;
 
     public interface OnItemClickListener {
@@ -51,6 +53,7 @@ public class AdapterNavigation extends RecyclerView.Adapter<RecyclerView.ViewHol
         this.context = context;
         this.sharedPref = new SharedPref(context);
         this.adsPref = new AdsPref(context);
+        this.adsManager = new AdsManager((Activity) context);
     }
 
     public static class OriginalViewHolder extends RecyclerView.ViewHolder {
@@ -59,8 +62,7 @@ public class AdapterNavigation extends RecyclerView.Adapter<RecyclerView.ViewHol
         public TextView menuName;
         public ImageView menuIcon;
         public LinearLayout lytItem;
-        //public RelativeLayout lytParent;
-        public MaterialCardView cardView;
+        public RelativeLayout lytParent;
 
         public OriginalViewHolder(View v) {
             super(v);
@@ -68,8 +70,7 @@ public class AdapterNavigation extends RecyclerView.Adapter<RecyclerView.ViewHol
             menuName = v.findViewById(R.id.menu_name);
             menuIcon = v.findViewById(R.id.menu_icon);
             lytItem = v.findViewById(R.id.lyt_item);
-            //lytParent = v.findViewById(R.id.lyt_parent);
-            cardView = v.findViewById(R.id.lyt_parent);
+            lytParent = v.findViewById(R.id.lyt_parent);
         }
     }
 
@@ -78,17 +79,7 @@ public class AdapterNavigation extends RecyclerView.Adapter<RecyclerView.ViewHol
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         RecyclerView.ViewHolder vh;
         if (viewType == VIEW_AD) {
-            View view;
-            if (Constant.NATIVE_AD_STYLE_DRAWER_MENU.equals("small")) {
-                view = LayoutInflater.from(parent.getContext()).inflate(com.solodroid.ads.sdk.R.layout.view_native_ad_radio, parent, false);
-            } else if (Constant.NATIVE_AD_STYLE_DRAWER_MENU.equals("medium")) {
-                view = LayoutInflater.from(parent.getContext()).inflate(com.solodroid.ads.sdk.R.layout.view_native_ad_news, parent, false);
-            } else if (Constant.NATIVE_AD_STYLE_DRAWER_MENU.equals("large")) {
-                view = LayoutInflater.from(parent.getContext()).inflate(com.solodroid.ads.sdk.R.layout.view_native_ad_medium, parent, false);
-            } else {
-                view = LayoutInflater.from(parent.getContext()).inflate(com.solodroid.ads.sdk.R.layout.view_native_ad_medium, parent, false);
-            }
-            vh = new NativeAdViewHolder(view);
+            vh = adsManager.createNativeAdViewHolder(context, parent);
         } else {
             View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_drawer, parent, false);
             vh = new OriginalViewHolder(v);
@@ -131,7 +122,7 @@ public class AdapterNavigation extends RecyclerView.Adapter<RecyclerView.ViewHol
                         .into(vItem.menuIcon);
             }
 
-            vItem.cardView.setOnClickListener(view -> {
+            vItem.lytParent.setOnClickListener(view -> {
                 if (mOnItemClickListener != null) {
                     mOnItemClickListener.onItemClick(view, obj, position);
                     clickedItemPosition = position;
@@ -150,36 +141,7 @@ public class AdapterNavigation extends RecyclerView.Adapter<RecyclerView.ViewHol
             }
 
         } else if (holder instanceof NativeAdViewHolder) {
-
-            final NativeAdViewHolder vItem = (NativeAdViewHolder) holder;
-
-            if (Constant.NATIVE_AD_DRAWER_MENU) {
-
-                if (adsPref.getAdStatus().equals("1")) {
-                    vItem.loadNativeAd(context,
-                            "1",
-                            1,
-                            adsPref.getAdType(),
-                            adsPref.getBackupAds(),
-                            adsPref.getAdMobNativeId(),
-                            adsPref.getAdManagerNativeId(),
-                            adsPref.getFanNativeUnitId(),
-                            adsPref.getAppLovinNativeAdManualUnitId(),
-                            "0",
-                            "0",
-                            false,
-                            false,
-                            Constant.NATIVE_AD_STYLE_DRAWER_MENU,
-                            R.color.color_native_ad_background,
-                            R.color.color_native_ad_background
-                    );
-                }
-
-                int margin = context.getResources().getDimensionPixelOffset(R.dimen.padding_medium);
-                vItem.setNativeAdMargin(0, 0, 0, margin);
-
-            }
-
+            adsManager.bindNativeAdViewHolder(context, (NativeAdViewHolder) holder);
         }
 
     }
