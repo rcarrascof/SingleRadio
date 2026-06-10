@@ -342,7 +342,7 @@ public class RadioPlayerService extends Service implements AudioFocusChangedCall
                 e.printStackTrace();
                 Log.d(TAG, "error " + e.getMessage());
             }
-        return START_NOT_STICKY;
+        return START_STICKY;
     }
 
     private void handleCommand(Intent intent) {
@@ -507,7 +507,7 @@ public class RadioPlayerService extends Service implements AudioFocusChangedCall
             Player.Listener.super.onIsPlayingChanged(isPlaying);
             if (isPlaying) {
                 if (!mWakeLock.isHeld()) {
-                    mWakeLock.acquire(60000);
+                    mWakeLock.acquire(3 * 60 * 60 * 1000L); // 3 hours max
                 }
             } else {
                 if (mWakeLock.isHeld()) {
@@ -520,7 +520,14 @@ public class RadioPlayerService extends Service implements AudioFocusChangedCall
         @Override
         public void onPlayerError(@NonNull PlaybackException error) {
             Player.Listener.super.onPlayerError(error);
-            stop(true);
+            Log.d(TAG, "player error: " + error.getMessage() + " — retrying in 5s");
+            new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                if (service != null && radio != null) {
+                    newPlay();
+                } else {
+                    stop(true);
+                }
+            }, 5000);
             if (Config.ENABLE_RADIO_TIMEOUT) {
                 if (isCounterRunning) {
                     mCountDownTimer.cancel();

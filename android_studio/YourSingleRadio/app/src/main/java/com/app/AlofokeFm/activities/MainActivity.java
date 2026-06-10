@@ -282,6 +282,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void displayData() {
+        if (radios == null || radios.isEmpty()) return;
 
         Constant.item_radio.addAll(radios);
         changeText(radios.get(0));
@@ -307,6 +308,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void togglePlayPause() {
+        if (radios == null || radios.isEmpty()) return;
         Radio radio = radios.get(0);
         final Intent intent = new Intent(MainActivity.this, RadioPlayerService.class);
         if (RadioPlayerService.getInstance() != null) {
